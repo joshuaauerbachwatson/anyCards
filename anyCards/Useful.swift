@@ -15,85 +15,18 @@
  */
 
 import UIKit
-import AVFoundation
 
-// Miscellaneous Useful extensions and functions.  Note: some dependencies of this file are kept in Logger.swift for packaging reasons.
+// Miscellaneous Useful extensions and functions.
 
 //
 // Extensions
 //
-
-/* Java-like String.trim() */
-extension String {
-    func trim() -> String {
-        return self.trimmingCharacters(in: NSCharacterSet.whitespaces)
-    }
-}
-
-/* Determine if a a size exceeds another in either dimension */
-extension CGSize {
-    func exceeds(_ other: CGSize) -> Bool {
-        return width > other.width || height > other.height
-    }
-}
-
-/* Make CGPoint hashable, and allow x and y to be swapped */
-extension CGPoint : Hashable {
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.x)
-        hasher.combine(self.y)
-    }
-    var swapped : CGPoint {
-        return CGPoint(x: self.y, y: self.x)
-    }
-}
-
-/* Also add a swapped member to CGSize */
-extension CGSize {
-    var swapped : CGSize {
-        return CGSize(width: self.height, height: self.width)
-    }
-}
 
 /* Convenient constructor for colors (uses three integers 0-255 for RGB) */
 extension UIColor {
     convenience init(_ r: Int, _ g: Int, _ b: Int) {
         let div = CGFloat(255)
         self.init(red: r/div, green: g/div, blue: b/div, alpha: CGFloat(1.0))
-    }
-}
-
-// 'Screenshot' initializers for UIImage from CALayer or UIView.  The image is created from the layer's content but does not reflect rotation
-// that might be imparted by its transform.
-extension UIImage {
-    convenience init(view: UIView) {
-        self.init(layer: view.layer)
-    }
-    convenience init(layer: CALayer, size: CGSize? = nil) {
-        let sizeToUse = size ?? layer.bounds.size // use bounds, not frame, since frame might reflect a transform that will be ignored by the rendering
-        UIGraphicsBeginImageContext(sizeToUse)
-        layer.render(in:UIGraphicsGetCurrentContext()!)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        self.init(cgImage: image!.cgImage!)
-    }
-}
-
-// Add 'center' property to CGRect and CALayer
-extension CGRect {
-    var center : CGPoint {
-        get { return CGPoint(x: midX, y: midY) }
-        set {
-            let dx = midX - minX
-            let dy = midY - minY
-            origin = newValue - CGPoint(x: dx, y: dy)
-        }
-    }
-}
-extension CALayer {
-    var center : CGPoint {
-        get { return frame.center }
-        set { frame.center = newValue }
     }
 }
 
@@ -153,33 +86,6 @@ func * (_ rect: CGRect, _ scale: CGFloat) -> CGRect {
 // Functions (alphabetical)
 //
 
-// Add a border to an image
-func addBorder(_ image: UIImage, _ borderSize: CGFloat) -> UIImage {
-    let imageSize = image.size
-    let borderedSize = CGSize(width: imageSize.width + 2 * borderSize, height: imageSize.height + 2 * borderSize)
-    let bordered = UIView(frame: CGRect(origin: CGPoint.zero, size: borderedSize))
-    bordered.backgroundColor = UIColor.black
-    let inner = UIImageView(frame: CGRect(x: borderSize, y: borderSize, width: imageSize.width, height: imageSize.height))
-    inner.image = image
-    bordered.addSubview(inner)
-    return UIImage(view: bordered)
-}
-
-// Display a dialog with a cancellation button that does nothing and a second button that does something
-func confirmBeforeDoing(host: UIViewController, destructive: Bool, title: String, message: String, doNothing: String, doSomething: String,
-                        handler: @escaping ()->Void) {
-    let ignore = UIAlertAction(title: doNothing, style: .cancel) { _ in
-        // Do nothing if this is chosen
-    }
-    let proceed = UIAlertAction(title: doSomething, style: destructive ? .destructive : .default) { _ in
-        handler()
-    }
-    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-    alert.addAction(ignore)
-    alert.addAction(proceed)
-    Logger.logPresent(alert, host: host, animated: true)
-}
-
 // Crop an image to a given rectangle
 func cropImage(_ original: UIImage, _ rect: CGRect) -> UIImage {
     // A correct cropping requires the image to be in the "up" orientation, so we first assure that.
@@ -208,93 +114,27 @@ func ensureUpOrientation(_ image: UIImage)->UIImage {
     return newImage ?? image
 }
 
-// Finds the highest used numeric suffix for a given file prefix. Returns -1 if there are no files with that prefix.  Also -1 for any systemic errors
-func getMaxSuffixForFilePrefix(_ prefix: String) -> Int {
-    let allFiles = (try? FileManager.default.contentsOfDirectory(atPath: getDocDirectory().path)) ?? []
-    let targetFiles = allFiles.filter { $0.hasPrefix(prefix) }
-    var last = -1
-    for file in targetFiles {
-        if let next = getSuffix(file, prefix.count) {
-            last = max(last, next)
-        }
+// Get documents directory as a URL.  This method will crash the app if there is no documents directory, but I believe that never happens.
+func getDocDirectory() -> URL {
+    if let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+        return docs
     }
-    return last
+    // There is no point in logging the error since (1) when debugging the fatalError will report its text on the console and (2) in production there is no
+    // way to log the error without a doc directory
+    fatalError("Documents directory is missing")
 }
 
-// Move a path by a given translation distance
-func movePath(_ path: CGPath, by: CGPoint) -> CGPath? {
-    var transform = CGAffineTransform(translationX: by.x, y: by.y)
-    return path.copy(using: &transform)
+// Get the size of a file, if possible (returns nil if the attempt fails, but I don't believe this is likely)
+func getFileSize(_ path: String) -> UInt64? {
+    let fileAttributes = try? FileManager.default.attributesOfItem(atPath: path)
+    let size = fileAttributes?[FileAttributeKey.size]
+    return (size as? NSNumber)?.uint64Value
 }
 
-// Special packaging of bummer for noting holes in the implementation during development (shouldn't be called in production).
-// To allow it to be called in tight places, it will present on the console if no host is given to present the dialog.
-// If a host is given, the dialog is always attempted but does not always work since the host could be busy with another dialog or
-// may not be fully initialized.  We don't test for these conditions because there isn't a solidly reliable test.   If the dialog
-// fails, it will result in a message on the console, but a less informative one.
-func notImplemented(_ function: String, host maybeHost: UIViewController?) {
-    if let host = maybeHost {
-        bummer(title: "Not Implemented", message: "You need to write the code for \(function)", host: host)
-    } else {
-        print("Not implemented: you need to write the code for \(function)")
-    }
-}
-
-// Play a sound.  Returns the player, which must be kept long enough to let the sound complete.
-func playSound(_ name: String, _ ext: String) -> AVAudioPlayer? {
-    guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { return nil }
-    try? AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.default)
-    try? AVAudioSession.sharedInstance().setActive(true)
-    guard let player = try? AVAudioPlayer(contentsOf: url, fileTypeHint: nil) else { return nil }
-    player.play()
-    return player
-}
-
-// Random Bool
-func randomBool() -> Bool {
-    return arc4random_uniform(2) == 1
-}
-
-// Random double in the range -1.0...1.0
-func randomDouble() -> Double {
-    return drand48() * 2.0 - 1.0
-}
-
-// Choose a random origin for a rectangle of a given size to fit entirely inside another rectangle
-func randomOrigin(_ size: CGSize, _ outer: CGRect) -> CGPoint {
-    let minX = outer.minX
-    let minY = outer.minY
-    let maxX = outer.maxX - size.width
-    let maxY = outer.maxY - size.height
-    let x = minX + drand48() * (maxX - minX)
-    let y = minY + drand48() * (maxY - minY)
-    return CGPoint(x: x, y: y)
-}
-
-// Resize an image given the original image and a target rectangle
-func resizeImage(_ original: UIImage, to: CGSize) -> UIImage {
-    UIGraphicsBeginImageContextWithOptions(to, true, 0.0)
-    original.draw(in: CGRect(origin: CGPoint.zero, size: to))
-    let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
-    UIGraphicsEndImageContext()
-    return scaledImage ?? original
-}
-
-// Rotate a CGPath around zero.
-func rotatePath(_ path: CGPath, by: CGFloat) -> CGPath? {
-    var transform = CGAffineTransform(rotationAngle: by)
-    return path.copy(using: &transform)
-}
-
-// Rotate one point around another
-func rotatePoint(_ point: CGPoint, around: CGPoint, by: CGFloat) -> CGPoint {
-    let dx = point.x - around.x
-    let dy = point.y - around.y
-    let radius = sqrt(dx * dx + dy * dy)
-    let azimuth = atan2(dy, dx) + by
-    let x = around.x + radius * cos(azimuth)
-    let y = around.y + radius * sin(azimuth)
-    return CGPoint(x: x, y: y)
+// Get the suffix portion of a file name in prefix/suffix form
+func getSuffix(_ file: String, _ prefixLen: Int) -> Int? {
+    let indexFrom = file.index(file.startIndex, offsetBy: prefixLen)
+    return Int(file.suffix(from: indexFrom))
 }
 
 // Determine the safe area of a main view.  Since we are assuming at least iOS 11, we
@@ -302,6 +142,17 @@ func rotatePoint(_ point: CGPoint, around: CGPoint, by: CGFloat) -> CGPoint {
 func safeAreaOf(_ view: UIView) -> CGRect {
     let insets = view.safeAreaInsets
     return view.bounds.inset(by: insets)
+}
+
+// Parse a file name into prefix and suffix form while looking for a particular prefix; useful when scanning a folder for files of a given kind
+// Boolean return aids in chaining when scanning for multiple kinds in a single pass
+@discardableResult
+func screenFileName(_ file: String, prefix: String, into: inout [Int]) -> Bool {
+    if file.hasPrefix(prefix), let suffix = getSuffix(file, prefix.count) {
+        into.append(suffix)
+        return true
+    }
+    return false
 }
 
 // Provide a shuffled version of an array
@@ -314,10 +165,4 @@ func shuffle<T>(_ array : [T]) -> [T] {
         ans.append(holder.remove(at: toRemove))
     }
     return ans
-}
-
-// Determine if a file exists, using our prefix / suffix style of naming
-func userFileExists(prefix: String, suffix: Int) -> Bool {
-    let path = getDocDirectory().appendingPathComponent(prefix + String(suffix)).path
-    return FileManager.default.fileExists(atPath: path)
 }
