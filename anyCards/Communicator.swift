@@ -16,9 +16,15 @@
 
 import UIKit
 
-// Basic support for game communication (either multi-peer or game center)
+// Basic support for game communication.  Three implementations are
+// contemplated.
+// 1.  Multi-peer (proximity).  Implemented.
+// 2.  Apple Game center.  Maybe.  If it can be tested conveniently.
+// 3.  Serverless backend (using the Nimbella stack).
+// If (3) can be implemented and implementing (2) will be any kind of a
+//   problem, I will drop (2).
 
-// The protocol implemented by both Communicator implementations
+// The protocol implemented by all Communicator implementations
 protocol Communicator {
     init(_ localID: String, _ delegate: CommunicatorDelegate)
     func send(_ gameState: GameState)
@@ -36,7 +42,7 @@ protocol CommunicatorDelegate {
 
 // Enumerate the kinds of communicators that exist
 enum CommunicatorKind : Int {
-    case MultiPeer, GameCenter
+    case MultiPeer, GameCenter, Serverless
 
     var displayName : String {
         switch self {
@@ -44,6 +50,8 @@ enum CommunicatorKind : Int {
             return LocalOnly
         case .GameCenter:
             return PlayViaGameCenter
+        case .Serverless:
+            return PlayServerless
         }
     }
 }
@@ -55,5 +63,7 @@ func makeCommunicator(_ kind: CommunicatorKind, _ localID: String, _ delegate: C
         return MultiPeerCommunicator(localID, delegate)
     case .GameCenter:
         Logger.logFatalError("Game Center communication not implemented yet")
+    case .Serverless:
+        Logger.logFatalError("AnyCards Service not implemented yet")
     }
 }
