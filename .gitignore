@@ -6,3 +6,4 @@ Secrets.swift
 .build/
 Package.resolved
 .nimbella/
+sim-build/
