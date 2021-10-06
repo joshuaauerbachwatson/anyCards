@@ -2,3 +2,7 @@
 xcuserdata/
 xcshareddata/
 Secrets.swift
+.swiftpm/
+.build/
+Package.resolved
+.nimbella/

@@ -17,25 +17,42 @@
 
 import nimbella_key_value
 import RediStack
+import Foundation
 
+// Source for the createGame Action.
+// Inputs: appToken - the value of the appToken used by the app.  Must match the environment variable ANYCARDS_APP_TOKEN.
+// Outputs: gameToken - a 16 character random string to be used as a password by the calling app and other app instances
+// The game is marked as existing but has no player list or game state.  These are added by other operations.
+// Once a game exists, it persists even when its user list becomes empty again.  Games are deleted explicitly.
+// The idea is that a "game" is really a community of users who like to play AnyCards together, and encompasses
+// any number of "game sessions" that could actually be playing different kinds of games (different rules, etc.).
 func main(args: [String:Any]) -> [String:Any] {
+    guard let expectedToken = ProcessInfo.processInfo.environment["ANYCARDS_APP_TOKEN"] else {
+        return [ "error": "Action mis-configured (ANYCARDS_APP_TOKEN is not in the environment)"]
+    }
+    guard let actualToken = args["appToken"] as? String else {
+        return [ "error": "appToken argument is required by this action" ]
+    }
+    if actualToken != expectedToken {
+        return [ "error": "createGame was invoked outside the expected action context; no game created" ]
+    }
+    let gamePass = randomPassword()
+    let client: RedisClient
+    let key = RedisKey("game_" + gamePass + "_exists")
     do {
-        let redisClient = try redis()
-        try redisClient.set("foo", to: "bar").wait()
-        let result = try redisClient.get("foo").wait()?.string
-        if (result != "bar") {
-            return [ "error": "Result of get was not 'bar'" ]
-        }
-        let deleted = try redisClient.delete(["foo"]).wait()
-        if (deleted != 1) {
-            return [ "error": "result of delete was not '1'" ]
-        }
-        let newResult = try redisClient.get("foo").wait()
-        if (newResult != nil) {
-            return [ "error": "delete did not have the desired effect" ]
-        }
+        client = try redis()
+        _ = try client.set(key, to: "").wait()
     } catch {
         return [ "error": "\(error)"]
     }
-    return [ "success": true ]
+    return [ "gameToken": gamePass ]
+}
+
+func randomPassword() -> String {
+    let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    var ans = ""
+    for _ in 0 ..< 64 {
+        ans.append(chars.randomElement()!)
+    }
+    return ans
 }

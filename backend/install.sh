@@ -14,7 +14,34 @@
 
 # This script installs the backend package.
 
+# As part of a temporary workaround, the environment variable NIMBELLA_SWIFT_RUNTIME must be set to the
+# location of a clone of https://github.com/joshuaauerbach/openwhisk-runtime-swift, branch
+# remote-build-fixes.  Some fixes thereare not yet present in production runtimes but can be patched in
+# by the remote build script.  To avoid confusion and possible legal ambiguities, these fixes are not
+# committed to this repo.
+
+function fixup() {
+		rm -fr "$1/sim-build"
+		mkdir "$1/sim-build"
+		cp "$NIMBELLA_SWIFT_RUNTIME/core/swift54Action/defaultBuild" "$1/sim-build"
+		cp "$NIMBELLA_SWIFT_RUNTIME/core/swift54Action/swiftbuild.py" "$1/sim-build/compile"
+}
+
+if [ -z "$NIMBELLA_SWIFT_RUNTIME" ]; then
+	 echo "NIMBELLA_SWIFT_RUNTIME must be set in the environment"
+   exit 1
+fi
+
+echo "Removing XCode and swift build artifacts from the Action source"
+find . -name .swiftpm -type d | xargs rm -fr
+find . -name .build -type d | xargs rm -fr
+find . -name Package.resolved -type f | xargs rm
+
 echo "Fixing up the project with material that can't be committed to the repo"
+set -e
+for i in createGame; do
+		fixup packages/anyCards/$i
+done
 
 echo "Starting project deployment (which will remotely build the actions)"
 if ! nim project deploy . --env ~/.nimbella/anyCards.env --remote-build; then
