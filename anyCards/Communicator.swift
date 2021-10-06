@@ -34,7 +34,7 @@ protocol Communicator {
 
 // The protocol for the delegate (callbacks)
 protocol CommunicatorDelegate {
-    func connectedDevicesChanged(_ connectedDevices: [String])
+    func connectedDevicesChanged(_ numDevices: Int)
     func gameChanged(_ gameState: GameState)
     func error(_ error: Error)
     func lostPlayer(_ peer: String)
@@ -64,6 +64,6 @@ func makeCommunicator(_ kind: CommunicatorKind, _ localID: String, _ delegate: C
     case .GameCenter:
         Logger.logFatalError("Game Center communication not implemented yet")
     case .Serverless:
-        Logger.logFatalError("AnyCards Service not implemented yet")
+        return ServerlessCommunicator(localID, delegate)
     }
 }

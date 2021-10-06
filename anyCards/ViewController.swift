@@ -16,9 +16,7 @@
 
 import UIKit
 
-// Main ViewController for the Any Old Card Game app
-// WIP: The current state of this controller is completely anarchic but allows us to start setting up multi-user aspects.
-//      The final version will not place cards randomly but will reflect a model structure of some sort.
+// Main ViewController for the AnyCards Game app
 class ViewController: UIViewController {
 
     // Model-related fields
@@ -686,8 +684,8 @@ class ViewController: UIViewController {
 extension ViewController : CommunicatorDelegate {
     // Respond to change in membership.   Sometimes we ignore this, but if we are in the starting state we send out a game state with the
     // player list.  Note: we don't use this to detect lost peers; we use the more specific up-call for that purpose.
-    func connectedDevicesChanged(_ connectedDevices: [String]) {
-        Logger.log("connectedDevicesChanged, now \(connectedDevices.count)")
+    func connectedDevicesChanged(_ numConnectedDevices: Int) {
+        Logger.log("connectedDevicesChanged, now \(numConnectedDevices)")
         if players.count < minPlayers {
             communicator?.send(GameState(players: players, minPlayers: minPlayers, maxPlayers: maxPlayers))
         }

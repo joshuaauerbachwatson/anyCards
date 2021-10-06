@@ -34,10 +34,3 @@ struct Player : Codable, Equatable {
         self.init(name: name, order: arc4random())
     }
 }
-
-// Quick conversion to peer ID
-extension MCPeerID {
-    convenience init(player: Player) {
-        self.init(displayName: player.name)
-    }
-}

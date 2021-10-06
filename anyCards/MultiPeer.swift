@@ -135,7 +135,7 @@ extension MultiPeerCommunicator : MCSessionDelegate {
     // React to state change
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
         Logger.log("peer \(peerID) didChangeState: \(state.rawValue)")
-        self.delegate?.connectedDevicesChanged(session.connectedPeers.map{$0.displayName})
+        self.delegate?.connectedDevicesChanged(session.connectedPeers.count)
     }
 
     // React to incoming data
