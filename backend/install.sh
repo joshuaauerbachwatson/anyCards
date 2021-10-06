@@ -39,7 +39,7 @@ find . -name Package.resolved -type f | xargs rm
 
 echo "Fixing up the project with material that can't be committed to the repo"
 set -e
-for i in createGame; do
+for i in createGame deleteGame; do
 		fixup packages/anyCards/$i
 done
 
