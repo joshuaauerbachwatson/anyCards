@@ -20,12 +20,12 @@ import RediStack
 import Foundation
 
 // Source for the createGame Action.
-// Inputs: appToken - the value of the appToken used by the app.  Must match the environment variable ANYCARDS_APP_TOKEN.
-// Outputs: gameToken - a 16 character random string to be used as a password by the calling app and other app instances
-// The game is marked as existing but has no player list or game state.  These are added by other operations.
-// Once a game exists, it persists even when its user list becomes empty again.  Games are deleted explicitly.
-// The idea is that a "game" is really a community of users who like to play AnyCards together, and encompasses
-// any number of "game sessions" that could actually be playing different kinds of games (different rules, etc.).
+// Inputs: appToken - the value of the appToken used by the app.
+//                    Must match the environment variable ANYCARDS_APP_TOKEN.
+// Outputs: gameToken - a 16 character random string to be used for admission to the game
+// The game is marked as existing and further developments (such as starting actual game play)
+// are awaited.  THe game can return to "merely existing" when all players of the game have withdrawn.
+// This does not delete the game.  Only a deleteGame call can do that.
 func main(args: [String:Any]) -> [String:Any] {
     guard let expectedToken = ProcessInfo.processInfo.environment["ANYCARDS_APP_TOKEN"] else {
         return [ "error": "Action mis-configured (ANYCARDS_APP_TOKEN is not in the environment)"]
@@ -34,21 +34,20 @@ func main(args: [String:Any]) -> [String:Any] {
         return [ "error": "appToken argument is required by this action" ]
     }
     if actualToken != expectedToken {
-        return [ "error": "createGame was invoked outside the expected action context; no game created" ]
+        return [ "error": "createGame was invoked outside the expected context; no game created" ]
     }
-    let gamePass = randomPassword()
+    let gameToken = random64CharString()
     let client: RedisClient
-    let key = RedisKey("game_" + gamePass + "_exists")
     do {
         client = try redis()
-        _ = try client.set(key, to: "").wait()
+        _ = try client.set(cleanupKey(gameToken), to: String(Date().timeIntervalSinceReferenceDate)).wait()
     } catch {
         return [ "error": "\(error)"]
     }
-    return [ "gameToken": gamePass ]
+    return [ "gameToken": gameToken ]
 }
 
-func randomPassword() -> String {
+func random64CharString() -> String {
     let chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     var ans = ""
     for _ in 0 ..< 64 {
