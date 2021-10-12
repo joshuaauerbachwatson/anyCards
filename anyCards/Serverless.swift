@@ -18,26 +18,52 @@ import Foundation
 
 typealias HttpCompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
+class ServerlessError: LocalizedError {
+    var localizedDescription: String
+    init(_ msg: String) {
+        localizedDescription = msg
+    }
+}
+
 // To use a serverless model for what is, conceptually, a multi-cast group, requires overcoming an impedence mismatch.
 // We use a 2-second repeating timer to poll for what would otherwise be push notifications from the group.
 class ServerlessCommunicator : NSObject, Communicator {
     let localID: String
     let delegate: CommunicatorDelegate
-    let timer: DispatchSourceTimer
+    let encoder: JSONEncoder
+    let decoder: JSONDecoder
+    var gameToken: Data? = nil
+    var timer: DispatchSourceTimer? = nil
     var lastGameState: GameState? = nil
+    var lastPlayerList: [Player] = []
     var opRunning: Bool = false
+
+    convenience init(_ gameToken: String, _ localID: String, _ delegate: CommunicatorDelegate) {
+        self.init(localID, delegate)
+        guard let encoded = try? encoder.encode([ "gameToken": gameToken ]) else {
+            Logger.logFatalError("Unexpected failure to encode gameToken")
+        }
+        self.gameToken = encoded
+        startListening(encoded)
+    }
 
     required init(_ localID: String, _ delegate: CommunicatorDelegate) {
         self.localID = localID
         self.delegate = delegate
-        let queue = DispatchQueue.global(qos: .background)
-        self.timer = DispatchSource.makeTimerSource(queue: queue)
-        self.timer.schedule(deadline: .now(), repeating: .seconds(2), leeway: .milliseconds(100))
+        self.encoder = JSONEncoder()
+        self.decoder = JSONDecoder()
         super.init()
-        self.timer.setEventHandler {
-            self.postAnAction("getGameState", nil, self.newGameState)
+    }
+
+    func startListening(_ gameToken: Data) {
+        let queue = DispatchQueue.global(qos: .background)
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        self.timer = timer
+        timer.schedule(deadline: .now(), repeating: .seconds(2), leeway: .milliseconds(100))
+        timer.setEventHandler {
+            self.postAnAction("getAllState", gameToken, self.newState)
         }
-        self.timer.resume()
+        timer.resume()
     }
 
     // Subroutine for invoking actions
@@ -58,8 +84,59 @@ class ServerlessCommunicator : NSObject, Communicator {
         task.resume()
     }
 
-    func newGameState(_ data: Data?, _ response: URLResponse?, _ err: Error?) {
+    // Subroutine used by all response handlers to validate the response and up-call an error if appropriate
+    // Returns data or nil.
+    func validateResponse(_ data: Data?, _ response: URLResponse?, _ err: Error?) -> Dictionary<String, String>? {
         opRunning = false
+        if let err = err {
+            delegate.error(err)
+            return nil
+        }
+        guard let resp = response as? HTTPURLResponse else {
+            delegate.error(ServerlessError("Could not interpret response from backend"))
+            return nil
+        }
+        if resp.statusCode < 200 || resp.statusCode > 299 {
+            delegate.error(ServerlessError("Got status code \(resp.statusCode) communicating with backend"))
+            return nil
+        }
+        guard let body = data else {
+            delegate.error(ServerlessError("No response data provided"))
+            return nil
+        }
+        do {
+            return try decoder.decode(Dictionary.self, from: body)
+        } catch {
+            delegate.error(error)
+            return nil
+        }
+    }
+
+    // Interpret a new state
+    func newState(_ data: Data?, _ response: URLResponse?, _ err: Error?) {
+        guard let validData = validateResponse(data, response, err) else {
+            return
+        }
+        if let playerList = validData["players"] {
+            do {
+                let players = try decoder.decode([String].self, from: playerList.data(using: .utf8)!)
+                let report = players == self.lastPlayerList
+                // TODO process players
+            } catch {
+                delegate.error(error)
+                return
+            }
+        }
+        if let gameState = validData["gameState"] {
+            do {
+                let state = try decoder.decode(GameState.self, from: gameState.data(using: .utf8)!)
+                // TODO process state
+            } catch {
+                delegate.error(error)
+                return
+            }
+        }
+
     }
 
     func send(_ gameState: GameState) {

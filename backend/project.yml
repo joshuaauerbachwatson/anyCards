@@ -2,6 +2,3 @@ packages:
   - name: anyCards
     environment:
       $(ANYCARDS_APP_TOKEN)
-    actions:
-      - name: createGame
-        runtime: swift:default

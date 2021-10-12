@@ -15,7 +15,6 @@
  */
 
 import Foundation
-import MultipeerConnectivity
 
 // Represents a Player.  The player is known by a name and has an "order" field (each player generates this field randomly; once generated,
 // it determines the order that players appear in the player list.
