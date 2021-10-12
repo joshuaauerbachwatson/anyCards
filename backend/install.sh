@@ -25,7 +25,7 @@ function fixup() {
 		mkdir "$1/sim-build"
 		cp "$NIMBELLA_SWIFT_RUNTIME/core/swift54Action/defaultBuild" "$1/sim-build"
 		cp "$NIMBELLA_SWIFT_RUNTIME/core/swift54Action/swiftbuild.py" "$1/sim-build/compile"
-		cp common/Package.swift $1
+		cp common/Package.swift common/build.sh $1
 		cp common/Keys.swift common/Cleanup.swift $1/Sources
 }
 

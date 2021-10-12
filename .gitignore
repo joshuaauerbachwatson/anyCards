@@ -10,3 +10,5 @@ sim-build/
 /backend/packages/**/Package.swift
 /backend/packages/**/Keys.swift
 /backend/packages/**/Cleanup.swift
+/backend/packages/**/build.sh
+
