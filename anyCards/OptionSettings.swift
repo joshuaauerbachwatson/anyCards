@@ -54,10 +54,10 @@ class OptionSettings {
 
     var communication : CommunicatorKind {
         get {
-            return CommunicatorKind(rawValue: UserDefaults.standard.integer(forKey: OptionSettings.CommunicationKey)) ?? .MultiPeer
+            return CommunicatorKind.from(UserDefaults.standard.string(forKey: OptionSettings.CommunicationKey))
         }
         set {
-            UserDefaults.standard.set(newValue.rawValue, forKey: OptionSettings.CommunicationKey)
+            UserDefaults.standard.set(newValue.tag, forKey: OptionSettings.CommunicationKey)
         }
     }
 

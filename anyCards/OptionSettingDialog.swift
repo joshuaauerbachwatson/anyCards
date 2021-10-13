@@ -144,7 +144,7 @@ class OptionSettingsDialog : UIViewController {
 
     // Respond to touch of the communication style label by toggling the style
     @objc func communicationStyleTouched() {
-        let newStyle = settings.communication == .MultiPeer ? CommunicatorKind.GameCenter : .MultiPeer
+        let newStyle = settings.communication.next
         communicationStyle.text = newStyle.displayName
         settings.communication = newStyle
         vc.settingsChanged()
@@ -180,8 +180,8 @@ class OptionSettingsDialog : UIViewController {
         configureLabel(label, SettingsDialogBackground, parent: view)
         label.text = labelText
         label.textAlignment = .right
-        stepper.value = stepperValue
         stepper.delegate = self
+        stepper.value = stepperValue
         view.addSubview(stepper)
     }
 

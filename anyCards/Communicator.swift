@@ -26,7 +26,7 @@ import UIKit
 
 // The protocol implemented by all Communicator implementations
 protocol Communicator {
-    init(_ localID: String, _ delegate: CommunicatorDelegate)
+    init(_ player: Player, _ delegate: CommunicatorDelegate)
     func send(_ gameState: GameState)
     func shutdown()
     func updatePlayers(_ players: [Player])
@@ -40,30 +40,88 @@ protocol CommunicatorDelegate {
     func lostPlayer(_ peer: String)
 }
 
-// Enumerate the kinds of communicators that exist
-enum CommunicatorKind : Int {
-    case MultiPeer, GameCenter, Serverless
+// Enumerate the kinds of communicators that exist.  We treat serverless communicators
+// with different game groups as different "kinds".
+enum CommunicatorKind {
+    case MultiPeer, GameCenter, Serverless(String)
 
+    // Construct CommunicatorKind from a tag value (e.g. one stored in UserDefaults).
+    static func from(_ tag: String?) -> CommunicatorKind {
+        guard let name = tag else {
+            return .MultiPeer
+        }
+        switch name {
+            // Serverless group names must not begin with blank
+        case " MultiPeer":
+            return .MultiPeer
+        case " GameCenter":
+            return .GameCenter
+        default: return .Serverless(name)
+        }
+    }
+
+    // Get the appropriate tag value for this CommunicatorKind
+    var tag : String {
+        switch self {
+        case .MultiPeer:
+            return " MultiPeer"
+        case .GameCenter:
+            return " GameCenter"
+        case .Serverless (let gameName):
+            return gameName
+        }
+    }
+
+    // Get the appropriate display name (e.g for option dialogs)
     var displayName : String {
         switch self {
         case .MultiPeer:
             return LocalOnly
         case .GameCenter:
             return PlayViaGameCenter
-        case .Serverless:
-            return PlayServerless
+        case .Serverless (let gameName):
+            return gameName
+        }
+    }
+
+    // Get the "next" kind.  This sequences through the fixed kinds and uses the serverless game
+    // table to sequence through perhaps multiple serverless game groups.
+    var next: CommunicatorKind {
+        switch self {
+        case .MultiPeer:
+            return .GameCenter
+        case .GameCenter:
+            if let name = serverlessGames.names.first {
+                return .Serverless(name)
+            } else {
+                return .MultiPeer
+            }
+        case .Serverless (let name):
+            if let nextName = serverlessGames.next(name) {
+                return .Serverless(nextName)
+            } else {
+                return .MultiPeer
+            }
         }
     }
 }
 
 // Global function to create a communicator of given kind
-func makeCommunicator(_ kind: CommunicatorKind, _ localID: String, _ delegate: CommunicatorDelegate) -> Communicator {
+func makeCommunicator(_ kind: CommunicatorKind, _ player: Player, _ delegate: CommunicatorDelegate,
+                      _ host: UIViewController) -> Communicator? {
     switch kind {
     case .MultiPeer:
-        return MultiPeerCommunicator(localID, delegate)
+        return MultiPeerCommunicator(player, delegate)
     case .GameCenter:
-        Logger.logFatalError("Game Center communication not implemented yet")
-    case .Serverless:
-        return ServerlessCommunicator(localID, delegate)
+        bummer(title: "Not implemented", message: "Game Center communications are not yet implemented", host: host)
+        return nil
+    case .Serverless(let groupName):
+        guard let gameToken = serverlessGames.getToken(groupName) else {
+            // This actually represents a loss of internal consistency since the group name was chosen from
+            // a dialog and should have an associated token.  Not clear what else we can do about it though.
+            bummer(title: "Not found", message: "Game group \(groupName) was not found", host: host)
+            return nil
+        }
+        return ServerlessCommunicator(gameToken, player, delegate)
     }
 }

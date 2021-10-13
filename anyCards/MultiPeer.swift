@@ -33,20 +33,21 @@ class MultiPeerCommunicator : NSObject, Communicator {
 
     // The session as a lazily initialized private property
     private lazy var session : MCSession = {
-        let session = MCSession(peer: self.peerId, securityIdentity: nil, encryptionPreference: .required)
+        let session = MCSession(peer: self.peerId, securityIdentity: nil, encryptionPreference: .none)
         session.delegate = self
         return session
     }()
 
     // Initializer conformed to Communicator protocol (accepts delegate argument)
-    required init(_ localID: String, _ delegate: CommunicatorDelegate) {
+    required init(_ player: Player, _ delegate: CommunicatorDelegate) {
         self.delegate = delegate
-        self.peerId = MCPeerID(displayName: localID)
+        self.peerId = MCPeerID(displayName: String(player.order))
         self.serviceAdvertiser = MCNearbyServiceAdvertiser(peer: peerId, discoveryInfo: nil, serviceType: MultiPeerServiceName)
         self.serviceBrowser = MCNearbyServiceBrowser(peer: peerId, serviceType: MultiPeerServiceName)
         super.init()
         serviceBrowser.delegate = self
         serviceAdvertiser.delegate = self
+        Logger.log("Multipeer: starting advertiser and browser")
         serviceAdvertiser.startAdvertisingPeer()
         serviceBrowser.startBrowsingForPeers()
     }
@@ -76,12 +77,13 @@ class MultiPeerCommunicator : NSObject, Communicator {
     // Update the player list based on caller's view
     func updatePlayers(_ players: [Player]) {
         let registered = session.connectedPeers.map { $0.displayName }
-        let newlyArrived = players.map({ $0.name }).filter({ !registered.contains($0) }).map { MCPeerID(displayName: $0 )}
+        let newlyArrived = players.map({ String($0.order) }).filter { !registered.contains($0) }
         for arrived in newlyArrived {
-            session.nearbyConnectionData(forPeer: arrived) { (data, error) in
+            let peer = (arrived == peerId.displayName) ? peerId : MCPeerID(displayName: arrived)
+            session.nearbyConnectionData(forPeer: peer) { (data, error) in
                 if let data = data {
-                    Logger.log("Adding \(arrived.displayName) to session")
-                    self.session.connectPeer(arrived, withNearbyConnectionData: data)
+                    Logger.log("Adding \(arrived) to session")
+                    self.session.connectPeer(peer, withNearbyConnectionData: data)
                 }
             }
         }

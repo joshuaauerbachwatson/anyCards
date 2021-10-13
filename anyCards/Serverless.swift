@@ -28,18 +28,18 @@ class ServerlessError: LocalizedError {
 // To use a serverless model for what is, conceptually, a multi-cast group, requires overcoming an impedence mismatch.
 // We use a 2-second repeating timer to poll for what would otherwise be push notifications from the group.
 class ServerlessCommunicator : NSObject, Communicator {
-    let localID: String
+    let playerID: String
     let delegate: CommunicatorDelegate
     let encoder: JSONEncoder
     let decoder: JSONDecoder
     var gameToken: Data? = nil
     var timer: DispatchSourceTimer? = nil
     var lastGameState: GameState? = nil
-    var lastPlayerList: [Player] = []
+    var lastPlayerList: [String] = []
     var opRunning: Bool = false
 
-    convenience init(_ gameToken: String, _ localID: String, _ delegate: CommunicatorDelegate) {
-        self.init(localID, delegate)
+    convenience init(_ gameToken: String, _ player: Player, _ delegate: CommunicatorDelegate) {
+        self.init(player, delegate)
         guard let encoded = try? encoder.encode([ "gameToken": gameToken ]) else {
             Logger.logFatalError("Unexpected failure to encode gameToken")
         }
@@ -47,8 +47,8 @@ class ServerlessCommunicator : NSObject, Communicator {
         startListening(encoded)
     }
 
-    required init(_ localID: String, _ delegate: CommunicatorDelegate) {
-        self.localID = localID
+    required init(_ player: Player, _ delegate: CommunicatorDelegate) {
+        self.playerID = String(player.order)
         self.delegate = delegate
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()

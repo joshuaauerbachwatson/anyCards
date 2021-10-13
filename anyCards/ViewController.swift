@@ -94,6 +94,7 @@ class ViewController: UIViewController {
     // Buttons
     let showButton = UIButton()
     let yieldButton = UIButton()
+    let groupsButton = UIButton()
     let findPlayersButton = UIButton()
     let endGameButton = UIButton()
     let optionsButton = UIButton()
@@ -154,6 +155,7 @@ class ViewController: UIViewController {
         }
         configureButton(showButton, title: ShowTitle, target: self, action: #selector(showTouched), parent: self.view)
         showButton.isHidden = true
+        configureButton(groupsButton, title: GroupsTitle, target: self, action: #selector(groupsTouched), parent: self.view)
         configureButton(yieldButton, title: YieldTitle, target: self, action: #selector(yieldTouched), parent: self.view)
         yieldButton.isHidden = true
         configureButton(findPlayersButton, title: FindPlayersTitle, target: self, action: #selector(findPlayersTouched), parent: self.view)
@@ -260,6 +262,7 @@ class ViewController: UIViewController {
             nextY = nextY - controlHeight - border
         }
         showButton.frame = CGRect(x: bounds.minX, y: bounds.midY, width: x, height: controlHeight)
+        groupsButton.frame = showButton.frame
         yieldButton.frame = showButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
         findPlayersButton.frame = yieldButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
         endGameButton.frame = findPlayersButton.frame
@@ -283,6 +286,7 @@ class ViewController: UIViewController {
         }
         let buttonY = labelY + controlHeight + border
         showButton.frame = CGRect(x: bounds.minX, y: buttonY, width: ctlWidth, height: controlHeight)
+        groupsButton.frame = showButton.frame
         yieldButton.frame = showButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         findPlayersButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         endGameButton.frame = findPlayersButton.frame
@@ -354,14 +358,17 @@ class ViewController: UIViewController {
     // Also starts a timer for checking player list stability.
     @objc func findPlayersTouched() {
         Logger.log("Find Players Touched")
-        communicator = makeCommunicator(settings.communication, players[0].name, self)
+        guard let communicator = makeCommunicator(settings.communication, players[0], self, self) else { return }
+        self.communicator = communicator
         Timer.scheduledTimer(withTimeInterval: PlayerCheckSpacing, repeats: true, block: timerTick)
         findPlayersButton.isHidden = true
+        groupsButton.isHidden = true
         endGameButton.isHidden = false
     }
 
     // Respond to long press.  A long press within a GridBox is currently interpreted as a request to delete the GridBox.
-    // A long press that is not within any GridBox is interpreted as a request to create a new GridBox.  This might succeed or fail.
+    // A long press that is not within any GridBox is interpreted as a request to create a new GridBox.
+    // This might succeed or fail.
     @objc func longPressDetected(_ recognizer: UILongPressGestureRecognizer) {
         if recognizer.state == .ended {
             let location = recognizer.location(in: playingArea)
@@ -385,6 +392,13 @@ class ViewController: UIViewController {
     @objc func showTouched() {
         Logger.log("Show Touched")
         transmit(false)
+    }
+
+    // Respond to touch of the groups button.  Opens the dialog for creating, accepting, and deleting
+    // game tokens.
+    @objc func groupsTouched() {
+        Logger.log("Groups Touched")
+        // TODO
     }
 
     // Respond to touch of yield button.  Sends the GameState and advances the turn.
@@ -546,6 +560,7 @@ class ViewController: UIViewController {
         playerListChanged = false
         playerLabels.forEach { $0.textColor = NormalTextColor }
         showButton.isHidden = true
+        groupsButton.isHidden = false
         yieldButton.isHidden = true
         // Set up new game
         deck = DefaultDeck.deck

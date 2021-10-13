@@ -30,6 +30,7 @@
 		EE90292126DEE6A100F87FF8 /* Stepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292026DEE6A100F87FF8 /* Stepper.swift */; };
 		EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */; };
 		EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B6E270DCE9B005994FB /* Secrets.swift */; };
+		EEEF9B712716DFAE005994FB /* ServerlessGames.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* ServerlessGames.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,7 @@
 		EE90292026DEE6A100F87FF8 /* Stepper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stepper.swift; sourceTree = "<group>"; };
 		EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTapAndDragRecognizer.swift; sourceTree = "<group>"; };
 		EEEF9B6E270DCE9B005994FB /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
+		EEEF9B702716DFAE005994FB /* ServerlessGames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerlessGames.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +118,7 @@
 				EE9028F126DE962700F87FF8 /* Info.plist */,
 				EE8D1E2E270B013900958060 /* Serverless.swift */,
 				EEEF9B6E270DCE9B005994FB /* Secrets.swift */,
+				EEEF9B702716DFAE005994FB /* ServerlessGames.swift */,
 			);
 			path = anyCards;
 			sourceTree = "<group>";
@@ -207,6 +210,7 @@
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
 				EE90290926DEDF7A00F87FF8 /* OptionSettingDialog.swift in Sources */,
 				EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */,
+				EEEF9B712716DFAE005994FB /* ServerlessGames.swift in Sources */,
 				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
 				EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */,

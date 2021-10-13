@@ -41,6 +41,9 @@ let GridBoxExpansion = CGFloat(1.2)
 let SnapThreshhold = CGFloat(10)  // Number of points of overlap to initiate a "snap to grid"
 let GridBoxNamePortion = CGFloat(0.75) // Portion of the GridBox excess area occupied by the name (the rest holds the count)
 
+// Document names
+let ServerlessGameFile = "serverlessGames"
+
 // Colors
 let FillerColor = UIColor.darkGray
 let PlayingColor = UIColor(white: 0.875, alpha: 1.0)
@@ -57,6 +60,7 @@ let LostPlayerTemplate = "Lost contact with %@; game ending."
 let OptionsTitle = "Configure Game"
 let FindPlayersTitle = "Find Players"
 let ShowTitle = "Show"
+let GroupsTitle = "Groups"
 let YieldTitle = "Yield"
 let EndGameTitle = "End Game"
 let CommunicationsErrorTitle = "Communications problem"
@@ -67,7 +71,6 @@ let HandAreaYes = "Present"
 let HandAreaNo = "Absent"
 let PlayViaGameCenter = "Use Game Center"
 let LocalOnly = "Nearby Only"
-let PlayServerless = "Use AnyCards Service"
 let UserNameText = "Your User Name: "
 let MinPlayersText = "Min. # of players: "
 let MaxPlayersText = "Max. # of players: "
