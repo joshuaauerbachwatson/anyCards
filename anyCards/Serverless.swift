@@ -16,15 +16,6 @@
 
 import Foundation
 
-typealias HttpCompletionHandler = (Data?, URLResponse?, Error?) -> Void
-
-class ServerlessError: LocalizedError {
-    var localizedDescription: String
-    init(_ msg: String) {
-        localizedDescription = msg
-    }
-}
-
 // To use a serverless model for what is, conceptually, a multi-cast group, requires overcoming an impedence mismatch.
 // We use a 2-second repeating timer to poll for what would otherwise be push notifications from the group.
 class ServerlessCommunicator : NSObject, Communicator {
@@ -32,21 +23,22 @@ class ServerlessCommunicator : NSObject, Communicator {
     let delegate: CommunicatorDelegate
     let encoder: JSONEncoder
     let decoder: JSONDecoder
-    var gameToken: Data? = nil
+    var gameToken: String?
     var timer: DispatchSourceTimer? = nil
-    var lastGameState: GameState? = nil
+    var lastGameState: String? = nil
     var lastPlayerList: [String] = []
-    var opRunning: Bool = false
 
+    // The initializer to use for this Communicator.  Accepts a gameToken and starts listening
     convenience init(_ gameToken: String, _ player: Player, _ delegate: CommunicatorDelegate) {
         self.init(player, delegate)
+        self.gameToken = gameToken
         guard let encoded = try? encoder.encode([ "gameToken": gameToken ]) else {
             Logger.logFatalError("Unexpected failure to encode gameToken")
         }
-        self.gameToken = encoded
         startListening(encoded)
     }
 
+    // Standard initializer (not directly useful for this one)
     required init(_ player: Player, _ delegate: CommunicatorDelegate) {
         self.playerID = String(player.order)
         self.delegate = delegate
@@ -55,99 +47,149 @@ class ServerlessCommunicator : NSObject, Communicator {
         super.init()
     }
 
+    // Starts the "listening" process (invocations of 'poll' at 2 second intervals)
     func startListening(_ gameToken: Data) {
         let queue = DispatchQueue.global(qos: .background)
         let timer = DispatchSource.makeTimerSource(queue: queue)
         self.timer = timer
         timer.schedule(deadline: .now(), repeating: .seconds(2), leeway: .milliseconds(100))
         timer.setEventHandler {
-            self.postAnAction("getAllState", gameToken, self.newState)
+            postAnAction("getAllState", gameToken, self.newState)
         }
         timer.resume()
     }
 
-    // Subroutine for invoking actions
-    func postAnAction(_ action: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
-        if opRunning {
-            return
-        }
-        guard let url = URL(string: ActionRoot + action + ".json") else {
-            Logger.logFatalError("Unable to form request URL")
-        }
-        opRunning = true
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = input
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue("application/json", forHTTPHeaderField: "Accept")
-        let task = URLSession.shared.dataTask(with: request, completionHandler: handler)
-        task.resume()
-    }
-
-    // Subroutine used by all response handlers to validate the response and up-call an error if appropriate
-    // Returns data or nil.
-    func validateResponse(_ data: Data?, _ response: URLResponse?, _ err: Error?) -> Dictionary<String, String>? {
-        opRunning = false
-        if let err = err {
-            delegate.error(err)
-            return nil
-        }
-        guard let resp = response as? HTTPURLResponse else {
-            delegate.error(ServerlessError("Could not interpret response from backend"))
-            return nil
-        }
-        if resp.statusCode < 200 || resp.statusCode > 299 {
-            delegate.error(ServerlessError("Got status code \(resp.statusCode) communicating with backend"))
-            return nil
-        }
-        guard let body = data else {
-            delegate.error(ServerlessError("No response data provided"))
-            return nil
-        }
-        do {
-            return try decoder.decode(Dictionary.self, from: body)
-        } catch {
-            delegate.error(error)
-            return nil
-        }
-    }
-
     // Interpret a new state
     func newState(_ data: Data?, _ response: URLResponse?, _ err: Error?) {
-        guard let validData = validateResponse(data, response, err) else {
+        guard let validData = validateResponse(data, response, err, delegate.error) else {
             return
         }
         if let playerList = validData["players"] {
-            do {
-                let players = try decoder.decode([String].self, from: playerList.data(using: .utf8)!)
-                let report = players == self.lastPlayerList
-                // TODO process players
-            } catch {
-                delegate.error(error)
-                return
+            let players = playerList.split(separator: " ").map { String($0) }
+            if players != self.lastPlayerList {
+                delegate.connectedDevicesChanged(players.count)
+                self.lastPlayerList = players
             }
         }
         if let gameState = validData["gameState"] {
-            do {
-                let state = try decoder.decode(GameState.self, from: gameState.data(using: .utf8)!)
-                // TODO process state
-            } catch {
-                delegate.error(error)
-                return
+            if gameState != self.lastGameState {
+                do {
+                    let state = try decoder.decode(GameState.self, from: gameState.data(using: .utf8)!)
+                    self.lastGameState = gameState
+                    delegate.gameChanged(state)
+                } catch {
+                    delegate.error(error)
+                    return
+                }
             }
         }
 
     }
 
+    // Send a new game state
     func send(_ gameState: GameState) {
-        Logger.logFatalError("Serverless communicator is under construction")
+        var arg: Data
+        do {
+            let encodedGameState = String(data: try encoder.encode(gameState), encoding: .utf8)
+            arg = try encoder.encode([ "gameToken": self.gameToken, "gameState": encodedGameState ])
+        } catch {
+            delegate.error(error)
+            return
+        }
+        postAnAction("newGameState", arg) { (data, response, err) in
+            guard let result = validateResponse(data, response, err, self.delegate.error) else {
+                // Error already posted
+                return
+            }
+            if let err = result["problem"] {
+                self.delegate.error(ServerlessError("Remote error: \(err)"))
+            }
+        }
     }
 
+    // Shutdown this communicator.  First withdraw from the game, then stop the polling.
     func shutdown() {
-        Logger.logFatalError("Serverless communicator is under construction")
+        var arg: Data
+        do {
+            arg = try encoder.encode([ "gameToken": gameToken, "player": playerID ])
+        } catch {
+            delegate.error(error)
+            return
+        }
+        postAnAction("withdraw", arg) { (data, response, err) in
+            guard let result = validateResponse(data, response, err, self.delegate.error) else {
+                // Error already posted
+                return
+            }
+            if let err = result["problem"] {
+                self.delegate.error(ServerlessError("Remote error: \(err)"))
+            }
+            self.timer?.cancel()
+        }
     }
 
+    // Update the players list.  Not used for serverless.  The remote player list is maintained by
+    // means of the multiple users polling.
     func updatePlayers(_ players: [Player]) {
-        Logger.logFatalError("Serverless communicator is under construction")
+        // Do nothing
+    }
+}
+
+// Subroutines for invoking actions and checking results
+
+typealias HttpCompletionHandler = (Data?, URLResponse?, Error?) -> Void
+
+func postAnAction(_ action: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
+    guard let url = URL(string: ActionRoot + action + ".json") else {
+        Logger.logFatalError("Unable to form request URL")
+    }
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.httpBody = input
+    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.addValue("application/json", forHTTPHeaderField: "Accept")
+    let task = URLSession.shared.dataTask(with: request, completionHandler: handler)
+    Logger.log("Posting request: \(request)")
+    task.resume()
+}
+
+// A generic error for communications problems
+struct ServerlessError: Error, CustomDebugStringConvertible {
+    let debugDescription: String
+    let localizedDescription: String
+    init(_ msg: String) {
+        self.localizedDescription = msg
+        self.debugDescription = msg
+    }
+}
+
+// Subroutine used by response handlers to validate the response and up-call an error if appropriate
+// Returns the result dictionary or nil.
+func validateResponse(_ data: Data?, _ response: URLResponse?, _ err: Error?, _ errHandler: (Error)->Void) -> Dictionary<String, String>? {
+    if let err = err {
+        Logger.log("Got error return: \(err)")
+        errHandler(err)
+        return nil
+    }
+    guard let resp = response as? HTTPURLResponse else {
+        errHandler(ServerlessError("Could not interpret response from backend"))
+        return nil
+    }
+    Logger.log("Got response: \(resp)")
+    if resp.statusCode < 200 || resp.statusCode > 299 {
+        errHandler(ServerlessError("Got status code \(resp.statusCode) communicating with backend"))
+        return nil
+    }
+    guard let body = data else {
+        Logger.log("Response had no body")
+        errHandler(ServerlessError("No response data provided"))
+        return nil
+    }
+    do {
+        return try JSONDecoder().decode(Dictionary.self, from: body)
+    } catch {
+        Logger.log("Got decoding error: \(error)")
+        errHandler(error)
+        return nil
     }
 }

@@ -397,8 +397,8 @@ class ViewController: UIViewController {
     // Respond to touch of the groups button.  Opens the dialog for creating, accepting, and deleting
     // game tokens.
     @objc func groupsTouched() {
-        Logger.log("Groups Touched")
-        // TODO
+        let dialog = GroupManagementDialog()
+        Logger.logPresent(dialog, host: self, animated: false)
     }
 
     // Respond to touch of yield button.  Sends the GameState and advances the turn.
@@ -710,8 +710,11 @@ extension ViewController : CommunicatorDelegate {
     func error(_ error: Error) {
         Logger.log("Communications exception: \(error)")
         DispatchQueue.main.async {
-            // TODO: errors generally represent a tear-down of the game, either expected or unexpected and should be handled accordingly
-            bummer(title: CommunicationsErrorTitle, message: error.localizedDescription, host: self)
+            var host: UIViewController = self
+            while host.presentedViewController != nil {
+                host = host.presentedViewController!
+            }
+            bummer(title: CommunicationsErrorTitle, message: error.localizedDescription, host: host)
         }
     }
 

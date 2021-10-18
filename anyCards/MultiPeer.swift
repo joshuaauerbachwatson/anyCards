@@ -74,11 +74,17 @@ class MultiPeerCommunicator : NSObject, Communicator {
         session.disconnect()
     }
 
-    // Update the player list based on caller's view
+    // Update the player list based on caller's view.  The logic here avoids creating more than
+    // one MCPeerID for each displayName (Player.order) that is encountered.  There is hidden data in
+    // a MCPeerID that can cause errors when there is more than one instance.
     func updatePlayers(_ players: [Player]) {
+        // Get those players that are already in the session to avoid adding twice.
         let registered = session.connectedPeers.map { $0.displayName }
+        // Get only those that are newly "arrived" from local information
         let newlyArrived = players.map({ String($0.order) }).filter { !registered.contains($0) }
         for arrived in newlyArrived {
+            // Don't make a new peer ID for the local user, just ones that are "brand new" (presumeably
+            // found in a received GameState).
             let peer = (arrived == peerId.displayName) ? peerId : MCPeerID(displayName: arrived)
             session.nearbyConnectionData(forPeer: peer) { (data, error) in
                 if let data = data {
@@ -87,8 +93,6 @@ class MultiPeerCommunicator : NSObject, Communicator {
                 }
             }
         }
-
-
     }
 }
 

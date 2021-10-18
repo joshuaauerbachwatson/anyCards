@@ -23,27 +23,39 @@ class ServerlessGames : Codable {
 
     // Get the token for a given name
     func getToken(_ name: String) -> String? {
-        return dictionary[name]
+        let ans = dictionary[name]
+        Logger.log("getToken(\(name))=\(ans ?? "")")
+        return ans
     }
 
     // Get the name for a given token (slower in theory but we don't expect the dictionary to be large)
     func getName(_ token: String) -> String? {
-        return dictionary.first { $0.1 == token }?.0
+        let ans = dictionary.first { $0.1 == token }?.0
+        Logger.log("getName(\(token))=\(ans ?? "")")
+        return ans
     }
 
-    var names: [String] { dictionary.keys.sorted() }
+    var names: [String] {
+        let ans = dictionary.keys.sorted()
+        Logger.log("names=\(ans)")
+        return ans
+    }
 
     // Get the "next" name, given a name from the names list.  Slow in theory but we don't expect the dictionary
     // to be large
     func next(_ current: String) -> String? {
         guard let index = names.firstIndex(of: current), index < names.count - 1 else {
+            Logger.log("\(current) has no 'next'")
             return nil
         }
-        return names[index + 1]
+        let ans = names[index + 1]
+        Logger.log("next(\(current))=\(ans)")
+        return ans
     }
 
     // Remove an item by its name
     func remove(_ item: String) {
+        Logger.log("remove(\(item))")
         dictionary[item] = nil
         save()
     }
@@ -51,14 +63,18 @@ class ServerlessGames : Codable {
     // Save the dictionary to disk
     private func save() {
         let encoder = JSONEncoder()
-        guard let encoded = try? encoder.encode(self) else { return Logger.log("Failed to serverless game table") }
+        guard let encoded = try? encoder.encode(self) else {
+            return Logger.log("Failed to encode serverless group table")
+        }
         let dictionaryFile = getDocDirectory().appendingPathComponent(ServerlessGameFile).path
         FileManager.default.createFile(atPath: dictionaryFile, contents: encoded, attributes: nil)
+        Logger.log("Serverless group table successfully saved")
     }
 
     // Store a new pair (name, token) in the dictionary
     func storePair(_ name: String, _ token: String) {
         dictionary[name] = token
+        Logger.log("dictionary updated with \(name)=\(token)")
         save()
     }
 }
@@ -68,8 +84,11 @@ var serverlessGames: ServerlessGames = {
     do {
         let archived = try Data(contentsOf: dictionaryFile)
         let decoder = JSONDecoder()
-        return try decoder.decode(ServerlessGames.self, from: archived)
+        let ans = try decoder.decode(ServerlessGames.self, from: archived)
+        Logger.log("ServerlessGames instance loaded from disk with \(ans.names.count) entries")
+        return ans
     } catch {
+        Logger.log("Saved ServerlessGames not found, a new one was created")
         return ServerlessGames()
     }
 }()

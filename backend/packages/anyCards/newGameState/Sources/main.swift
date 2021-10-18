@@ -27,16 +27,16 @@ import Foundation
 // Outputs: a success indicator
 func main(args: [String:Any]) -> [String:Any] {
     guard let gameToken = args["gameToken"] as? String else {
-        return [ "error": "gameToken argument is required by this action" ]
+        return [ "problem": "gameToken argument is required by this action" ]
     }
     guard let gameState = args["gameState"] as? String else {
-        return [ "error": "gameState argument is required by this action" ]
+        return [ "problem": "gameState argument is required by this action" ]
     }
     do {
         let client = try redis()
         _ = try client.set(stateKey(gameToken), to: gameState).wait()
     } catch {
-        return [ "error": "\(error)"]
+        return [ "problem": "\(error)"]
     }
-    return [ "success": true ]
+    return [ "success": "true" ]
 }

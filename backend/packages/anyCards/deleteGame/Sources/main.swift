@@ -27,7 +27,7 @@ import Foundation
 // (possessing either a player list or game state).  This is overridden by the force flag.
 func main(args: [String:Any]) -> [String:Any] {
     guard let gameToken = args["gameToken"] as? String else {
-        return [ "error": "gameToken argument is required by this action" ]
+        return [ "problem": "gameToken argument is required by this action" ]
     }
     var force: Bool = false
     if let boolForce = args["force"] as? Bool {
@@ -39,15 +39,15 @@ func main(args: [String:Any]) -> [String:Any] {
         let client = try redis()
         let cleanupKey = cleanupKey(gameToken)
         guard let cleanup = try client.get(cleanupKey).wait()?.string else {
-            return [ "error": "Game \(gameToken) does not exist" ]
+            return [ "problem": "Game \(gameToken) does not exist" ]
         }
         if !cleanupNeeded(cleanup) && !force {
-            return [ "error": "Game \(gameToken) was in progress recently and 'force' was not specified" ]
+            return [ "problem": "Game \(gameToken) was in progress recently and 'force' was not specified" ]
         }
         _ = try client.delete([ cleanupKey, stateKey(gameToken), allPlayersKey(gameToken) ]).wait()
         // Actual deletion
     } catch {
-        return [ "error": "\(error)"]
+        return [ "problem": "\(error)"]
     }
-    return [ "success": true ]
+    return [ "success": "true" ]
 }

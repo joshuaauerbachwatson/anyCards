@@ -77,8 +77,8 @@ func configureButton(_ button: UIButton, title: String, target: AnyObject, actio
     parent.addSubview(button)
 }
 
-// Configure a label with a given a background color.  Text alignment is always centered and the initial text color is the ScoreNormal color
-// Adds the label to a view
+// Configure a label with a given a background color.  Text alignment is always centered and the initial text color
+// 'normal'.  Sdds the label to a view
 func configureLabel(_ label: UILabel, _ color: UIColor, parent: UIView) {
     label.backgroundColor = color
     label.textColor = NormalTextColor

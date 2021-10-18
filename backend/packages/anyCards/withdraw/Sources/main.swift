@@ -31,17 +31,17 @@ import Foundation
 // the token.
 func main(args: [String:Any]) -> [String:Any] {
     guard let gameToken = args["gameToken"] as? String else {
-        return [ "error": "gameToken argument is required by this action" ]
+        return [ "problem": "gameToken argument is required by this action" ]
     }
     guard let player = args["player"] as? String else {
-        return [ "error": "player argument is required by this action" ]
+        return [ "problem": "player argument is required by this action" ]
     }
     do {
         let allPlayersKey = allPlayersKey(gameToken)
         let client = try redis()
         let withdrawn = try client.send(RedisCommand<Int>.hdel(playerKey(player), from: allPlayersKey)).wait()
         if withdrawn == 0 {
-            return [ "error": "problem deleting player from game"]
+            return [ "problem": "problem deleting player from game"]
         }
         // Run cleanup if appropriate
         maybeRunCleanup(client, gameToken)
@@ -51,7 +51,7 @@ func main(args: [String:Any]) -> [String:Any] {
             _ = try client.delete(stateKey(gameToken)).wait()
         }
     } catch {
-        return [ "error": "\(error)"]
+        return [ "problem": "\(error)"]
     }
-    return [ "success": true ]
+    return [ "success": "true" ]
 }

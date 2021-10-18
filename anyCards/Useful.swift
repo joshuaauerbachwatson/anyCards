@@ -30,6 +30,13 @@ extension UIColor {
     }
 }
 
+/* Java-like String.trim() */
+extension String {
+    func trim() -> String {
+        return self.trimmingCharacters(in: NSCharacterSet.whitespaces)
+    }
+}
+
 // Simplify some common call sequences to CATransaction
 extension CATransaction {
     static func beginNoAnimation() {

@@ -28,13 +28,13 @@ import Foundation
 // This does not delete the game.  Only a deleteGame call can do that.
 func main(args: [String:Any]) -> [String:Any] {
     guard let expectedToken = ProcessInfo.processInfo.environment["ANYCARDS_APP_TOKEN"] else {
-        return [ "error": "Action mis-configured (ANYCARDS_APP_TOKEN is not in the environment)"]
+        return [ "problem": "Action mis-configured (ANYCARDS_APP_TOKEN is not in the environment)"]
     }
     guard let actualToken = args["appToken"] as? String else {
-        return [ "error": "appToken argument is required by this action" ]
+        return [ "problem": "appToken argument is required by this action" ]
     }
     if actualToken != expectedToken {
-        return [ "error": "createGame was invoked outside the expected context; no game created" ]
+        return [ "problem": "createGame was invoked outside the expected context; no game created" ]
     }
     let gameToken = random64CharString()
     let client: RedisClient
@@ -42,7 +42,7 @@ func main(args: [String:Any]) -> [String:Any] {
         client = try redis()
         _ = try client.set(cleanupKey(gameToken), to: String(Date().timeIntervalSinceReferenceDate)).wait()
     } catch {
-        return [ "error": "\(error)"]
+        return [ "problem": "\(error)"]
     }
     return [ "gameToken": gameToken ]
 }

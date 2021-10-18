@@ -31,6 +31,7 @@
 		EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */; };
 		EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B6E270DCE9B005994FB /* Secrets.swift */; };
 		EEEF9B712716DFAE005994FB /* ServerlessGames.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* ServerlessGames.swift */; };
+		EEEF9B73271868C8005994FB /* GroupManagementDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B72271868C8005994FB /* GroupManagementDialog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,6 +62,7 @@
 		EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTapAndDragRecognizer.swift; sourceTree = "<group>"; };
 		EEEF9B6E270DCE9B005994FB /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		EEEF9B702716DFAE005994FB /* ServerlessGames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerlessGames.swift; sourceTree = "<group>"; };
+		EEEF9B72271868C8005994FB /* GroupManagementDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupManagementDialog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,12 +105,16 @@
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
 				EE9028FC26DEDF7A00F87FF8 /* GameState.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
+				EEEF9B72271868C8005994FB /* GroupManagementDialog.swift */,
 				EE90291626DEE27500F87FF8 /* Logger.swift */,
 				EE90290626DEDF7A00F87FF8 /* MultiPeer.swift */,
 				EE9028FA26DEDF7A00F87FF8 /* OptionSettingDialog.swift */,
 				EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
 				EE90291B26DEE3B100F87FF8 /* Promotions.swift */,
+				EEEF9B6E270DCE9B005994FB /* Secrets.swift */,
+				EE8D1E2E270B013900958060 /* Serverless.swift */,
+				EEEF9B702716DFAE005994FB /* ServerlessGames.swift */,
 				EE90292026DEE6A100F87FF8 /* Stepper.swift */,
 				EE90291A26DEE3B100F87FF8 /* TouchableView.swift */,
 				EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */,
@@ -116,9 +122,6 @@
 				EE90290226DEDF7A00F87FF8 /* ViewController.swift */,
 				EE9028EC26DE962700F87FF8 /* Assets.xcassets */,
 				EE9028F126DE962700F87FF8 /* Info.plist */,
-				EE8D1E2E270B013900958060 /* Serverless.swift */,
-				EEEF9B6E270DCE9B005994FB /* Secrets.swift */,
-				EEEF9B702716DFAE005994FB /* ServerlessGames.swift */,
 			);
 			path = anyCards;
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 				EEEF9B712716DFAE005994FB /* ServerlessGames.swift in Sources */,
 				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
+				EEEF9B73271868C8005994FB /* GroupManagementDialog.swift in Sources */,
 				EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */,
 				EE90291026DEDF7A00F87FF8 /* Constants.swift in Sources */,
 			);

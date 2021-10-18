@@ -26,20 +26,20 @@ import Foundation
 //   by which the app's state is updated with the latest information.
 // Inputs: gameToken - a token giving access to the game
 //         player - the player's "order number" (an all-numeric String) which serves as a unique id
-// Outputs: players - the list of all active players as a blank separated string containing order numbers
+// Outputs: players - the list of all active players as a blank separated string containing order numbers,
+//            in ascending order
 //          gameState - the GameState structure as a JSON-encoded string
 // Note that the player list appears twice.  As part of the GameState, each player is represented by a
-// Player object (which pairs a human-oriented name with the order string).   Players are sorted by "order"
-// which gives the order of play in the game.  In the independent "players" string returned by this
-// action, players are represented only by their order number.   The string is not necessarily sorted by
+// Player object (which pairs a human-oriented name with the order string).  In the independent "players"
+// string returned by this action, players are represented only by their order number.  Both are in sorted
 // order.  The two views can differ but each executing app should strive to reconcile them such that they
 // are eventually consistent.
 func main(args: [String:Any]) -> [String:Any] {
     guard let gameToken = args["gameToken"] as? String else {
-        return [ "error": "gameToken argument is required by this action" ]
+        return [ "problem": "gameToken argument is required by this action" ]
     }
     guard let player = args["player"] as? String else {
-        return [ "error": "player argument is required by this action" ]
+        return [ "problem": "player argument is required by this action" ]
     }
     do {
         let client = try redis()
@@ -51,11 +51,11 @@ func main(args: [String:Any]) -> [String:Any] {
         // Get the players into the right form
         let playerKeys = try client.send(RedisCommand<[RedisHashFieldKey]>.hkeys(in: allPlayersKey(gameToken))).wait()
         let playerStrings: [String] = playerKeys.map { $0.rawValue }
-        let players = playerStrings.joined(separator: " ")
+        let players = playerStrings.sorted().joined(separator: " ")
         // Get the GameState as well
         let gameState = try client.get(stateKey(gameToken)).wait()?.string ?? ""
         return [ "players": players, "gameState": gameState ]
     } catch {
-        return [ "error": "\(error)"]
+        return [ "problem": "\(error)"]
     }
 }
