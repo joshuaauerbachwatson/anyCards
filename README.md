@@ -20,7 +20,7 @@ I also think the limitation to card games with no non-card elements is too narro
 
 Right now, the game is a peer distributed system.  Each instance of the app is its own model-view-controller engine and the backend (if any) is just acting as a multicast service.  What is multicast is a sequence of game states.  The only rule (whose turn it is) is enforced in the apps, not the backend.
 
-In fact, the only working embodiment of the game today uses Apple Multi-peer communication.  A version using a serverless backend hosted by Nimbella was implemented but I didn't quite get it working before Nimbella shut down.
+In fact, the only working embodiment of the game today uses Apple Multi-peer communication.  A version using a serverless backend hosted by Nimbella was implemented but I didn't quite get it working before I took a job at DigitalOcean, during which time Nimbella shut down.
 
 I could easily migrate the existing backend to DigitalOcean Functions but I don't actually think serverless is the right model for this.  It requires the apps to poll for new state constantly, since you can't hold a connection open with serverless.  It requires some sort of database (I used Redis in the Nimbella implementation) to hold the game state. If I ran a more conventional server, information could be "pushed" more like a pub-sub system.  I could keep game state in memory.  The occasional server crash would wipe out only the current ongoing games.
 
@@ -30,7 +30,7 @@ Once we standardize on a "real" backend server, it is possible to give it a grea
 
 ### Backend Implementation Language and Source Control
 
-The Nimbella serveress backend was written in Swift.  I thought it would be cool to write the frontend and backend in the same language.  I now see that there is little benefit from this language similarity.  Swift on Linux is not fully mature and I found it hard to maintain and evolve the backend when it was written in a language not well suited to the task.  I will write the new backend in either TypeScript or Go.
+The Nimbella serverless backend was written in Swift.  I thought it would be cool to write the frontend and backend in the same language.  I now see that there is little benefit from this language similarity.  Swift on Linux is not fully mature and I found it hard to maintain and evolve the backend when it was written in a language not well suited to the task.  I will write the new backend in either TypeScript or Go.
 
 The Nimbella backend is actually sourced from the this repository (in a distinct directory not covered by the top-level `xcode` project file).  I am not decided on whether to continue this "monorepo" approach or not for the new backend.
 
