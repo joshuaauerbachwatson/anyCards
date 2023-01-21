@@ -1,6 +1,7 @@
-name: sample-golang
+name: unigame
 services:
-- name: web
+- name: server
   github:
-    repo: digitalocean/sample-golang
+    repo: joshuaauerbachwatson/anyCards
     branch: main
+  source_dir: backend

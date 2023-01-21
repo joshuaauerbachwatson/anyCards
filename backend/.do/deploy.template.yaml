@@ -1,7 +1,7 @@
 spec:
-  name: sample-golang
+  name: unigame
   services:
-  - name: web
+  - name: server
     git:
       branch: main
-      repo_clone_url: https://github.com/digitalocean/sample-golang.git
+      repo_clone_url: https://github.com/joshuaauerbachwatson/anyCards
