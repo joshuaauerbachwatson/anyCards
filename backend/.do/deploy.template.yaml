@@ -1,7 +1,0 @@
-spec:
-  name: unigame
-  services:
-  - name: server
-    git:
-      branch: main
-      repo_clone_url: https://github.com/joshuaauerbachwatson/anyCards
