@@ -18,9 +18,35 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 )
 
-func createGame(w http.ResponseWriter, r *http.Request) {
-	// TODO
+// Source for the createGame Action.
+// Inputs:
+//
+//	appToken: the value of the appToken used by the app.  Must match the environment variable ANYCARDS_APP_TOKEN.
+//
+// Outputs:
+//
+//	status == StatusOK if the appToken was valid
+//	status == StatusUnauthorized if the appToken was not valid
+//	gameToken: a 16 character random string to be used for admission to the game (only if StatusOK)
+//
+// If successful, the game is marked as existing and further developments (such as starting actual game play)
+// are awaited.  The game can return to "merely existing" when all players of the game have withdrawn.
+// This does not delete the game.  Only a deleteGame call can do that.  It is up to the creator to distribute
+// the game token to potential players.
+func createGame(w http.ResponseWriter, body map[string]string) {
+	appToken := body[argAppToken]
+	if appToken != anycardsAppToken {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	gameToken := randomGameToken()
+	games[gameToken] = new(Game)
+	responseData := map[string]string{argGameToken: gameToken}
+	response, _ := json.Marshal(responseData) // are errors possible here? ... I think not
+	w.Write(response)                         // no error handling for now
+	w.WriteHeader(http.StatusOK)
 }

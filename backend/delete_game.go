@@ -21,6 +21,38 @@ import (
 	"net/http"
 )
 
-func deleteGame(w http.ResponseWriter, r *http.Request) {
-	// TODO
+// Source for the deleteGame Action.
+// It is an error to delete a non-existing game.  Normally it is an error to delete a game that is "in progress"
+// (possessing either a player list or game state).  This is overridden by the force flag.
+//
+// Inputs:
+//
+//		gameToken: the token for the game to be deleted
+//		    force: if present with a non-empty string value, the game is to deleted unconditionally
+//		           (even if it seems to be in progress)
+//
+//	 Other inputs are ignored.  The 'force' input is optional.
+//
+// Outputs:
+//
+//	    status == StatusOK if the game was found and deleted
+//		status == StatusBadRequest if the required 'gameToken' argument is missing or ill-formed
+//		status == StatusNotFound if the game was not found
+//		status == StatusForbidden if the game was found but is in progress and force was not specified
+func deleteGame(w http.ResponseWriter, body map[string]string) {
+	status := http.StatusOK
+	game, ok := getGameToken(w, body)
+	if !ok {
+		return
+	}
+	gameState := games[game]
+	if gameState == nil {
+		status = http.StatusNotFound
+	} else if len(gameState.players) > 0 && body[argForce] == "" {
+		status = http.StatusForbidden
+	} // else ok
+	if status == http.StatusOK {
+		delete(games, game)
+	}
+	w.WriteHeader(status)
 }

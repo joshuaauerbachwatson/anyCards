@@ -18,9 +18,35 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
-func newGameState(w http.ResponseWriter, r *http.Request) {
-	// TODO
+// Source for the newGameState Action.
+// Inputs:
+//
+//	gameToken: the token giving access to the game
+//	player: the player string (random number used as ordinal) (to be used by game rules (not yet))
+//	gameState - the new value for the game state as a JSON-encoded String
+//
+// Outputs:
+//
+//	status == StatusOK if the game exists and the player and gameState are admitted
+//	status == StatusBadRequest if any argument is ill-formed
+//	status == StatusNotFound if the game cannot be found
+//	status == StatusForbidden if the new state is rejected by the game rules (not used yet)
+func newGameState(w http.ResponseWriter, body map[string]string) {
+	_, _, game := getGameAndPlayer(w, body)
+	if game == nil {
+		return // error response already issued
+	}
+	gameState := body[argGameState]
+	if gameState == "" {
+		fmt.Println("missing gameState argument!")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	// TODO game rules should be applied here to check whether the new game state is acceptable
+	game.state = gameState
+	w.WriteHeader(http.StatusOK)
 }

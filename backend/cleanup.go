@@ -23,21 +23,17 @@ import (
 	"net/http"
 )
 
-const (
-	cleanupPeriod = 2  // approx interval between calls, in minutes
-	playerTimeout = 6  // number of minutes a player is allowed to be idle
-	gameTimeout   = 60 // number of minutes a game is allowed to be idle
-)
-
-func cleanup(w http.ResponseWriter, r *http.Request) {
-	gt := gameTimeout / cleanupPeriod
-	pt := playerTimeout / cleanupPeriod
+// Cleanup function, expected to be invoked every few minutes.  The constants
+// gameTimeout and playerTimeout express how many times a player or game can be
+// found idle by this function before they are removed.  This assumes that the idle counts
+// are zeroed every time a game is touched or a player is heard from.
+func cleanup(w http.ResponseWriter, _ map[string]string) {
 	for token, game := range games {
-		if game.idleCount > gt {
+		if game.idleCount > gameTimeout {
 			delete(games, token)
 		}
 		for player, idleCount := range game.players {
-			if idleCount > pt {
+			if idleCount > playerTimeout {
 				delete(game.players, player)
 			}
 		}

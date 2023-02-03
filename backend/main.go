@@ -26,65 +26,46 @@ import (
 	"os"
 )
 
-// Preliminary validator and logging support
-func screenRequest(w http.ResponseWriter, r *http.Request) bool {
-	uri := r.RequestURI
-	method := r.Method
-	fmt.Println("Got request", method, uri)
-	if method != http.MethodPost {
-		fmt.Println("Forbidden!")
-		w.WriteHeader(http.StatusForbidden)
-		return true
-	}
-	return false
-}
-
 // Main entry point
 func main() {
 	// Set up handlers.  Note: we are currently following the old passive multicast logic that we used in
 	// the serverless implementation.  Ultimately, the role of this server should increase to include knowledge
 	// of what game is being played and enforcement of the rules.
-	http.HandleFunc("/create", func(w http.ResponseWriter, r *http.Request) {
-		if screenRequest(w, r) {
-			return
+	http.HandleFunc(pathCreate, func(w http.ResponseWriter, r *http.Request) {
+		if body := screenRequest(w, r); body != nil {
+			createGame(w, *body)
 		}
-		createGame(w, r)
 	})
-	http.HandleFunc("/delete", func(w http.ResponseWriter, r *http.Request) {
-		if screenRequest(w, r) {
-			return
+	http.HandleFunc(pathDelete, func(w http.ResponseWriter, r *http.Request) {
+		if body := screenRequest(w, r); body != nil {
+			deleteGame(w, *body)
 		}
-		deleteGame(w, r)
 	})
-	http.HandleFunc("/newstate", func(w http.ResponseWriter, r *http.Request) {
-		if screenRequest(w, r) {
-			return
+	http.HandleFunc(pathNewState, func(w http.ResponseWriter, r *http.Request) {
+		if body := screenRequest(w, r); body != nil {
+			newGameState(w, *body)
 		}
-		newGameState(w, r)
 	})
-	http.HandleFunc("/poll", func(w http.ResponseWriter, r *http.Request) {
-		if screenRequest(w, r) {
-			return
+	http.HandleFunc(pathPoll, func(w http.ResponseWriter, r *http.Request) {
+		if body := screenRequest(w, r); body != nil {
+			poll(w, *body)
 		}
-		poll(w, r)
 	})
-	http.HandleFunc("/withdraw", func(w http.ResponseWriter, r *http.Request) {
-		if screenRequest(w, r) {
-			return
+	http.HandleFunc(pathWithdraw, func(w http.ResponseWriter, r *http.Request) {
+		if body := screenRequest(w, r); body != nil {
+			withdraw(w, *body)
 		}
-		poll(w, r)
 	})
-	http.HandleFunc("/cleanup", func(w http.ResponseWriter, r *http.Request) {
-		if screenRequest(w, r) {
-			return
+	http.HandleFunc(pathCleanup, func(w http.ResponseWriter, r *http.Request) {
+		if body := screenRequest(w, r); body != nil {
+			cleanup(w, *body)
 		}
-		cleanup(w, r)
 	})
 
 	// Permit port override (default 80)
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "80"
+		port = defaultPort
 	}
 
 	// Bind to port address

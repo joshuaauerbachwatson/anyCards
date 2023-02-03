@@ -21,6 +21,26 @@ import (
 	"net/http"
 )
 
-func withdraw(w http.ResponseWriter, r *http.Request) {
-	// TODO
+// Source for the withdraw Action.
+// Inputs:
+//
+//	gameToken: the secret token for the game provided by the game's creator (64 chars alphameric)
+//	player: the player's "order number" (a string parsable as int) which serves as a unique id
+//
+// Outputs:
+//
+//	status == StatusOK if the gameToken matches a game, from which the player is withdrawn (if present)
+//	status == StatusBadRequest if either argument is missing or ill-formed
+//	status == StatusNotFound if the arguments are superficially ok but the gameToken fails to match an active game
+//
+// If the gameToken is syntactically valid but fails to match any game, the "not found" response is used
+// rather than an auth failure.   We can't distinguish unauthorized access from a once-authorized token
+// whose game has expired.
+// If the player withdrawing is the last player of the game, the game is nevertheless left in place and could
+// be "played again" by presenting its game token.  Games that are idle for long enough are removed.
+// We do not use the "not found" response if the player is not in the game.  That is considered "success".
+func withdraw(w http.ResponseWriter, body map[string]string) {
+	_, player, game := getGameAndPlayer(w, body)
+	delete(game.players, player)
+	w.WriteHeader(http.StatusOK)
 }

@@ -19,10 +19,12 @@
 
 package main
 
+// The state of one game
 type Game struct {
 	players   map[string]int // key is the player's "order" string, value is the idleCount
 	idleCount int            // global idle count for the game as a whole
 	state     string         // the game state (encoded JSON but not interpreted here)
 }
 
-var games = make(map[string]Game) // Maps game tokens to Game structures
+// Map from game tokens to game states
+var games = make(map[string]*Game)
