@@ -17,9 +17,8 @@
 import UIKit
 
 // Dialog for managing groups in the AnyCards Game
-// Note: groups are associated with the serverless backend.  When using MultiPeer, there is implicitly
-// just one group, consisting of those who are "nearby."  When using GameCenter, the role of groups is unknown
-// since that Communicator remains unimplemented.
+// Note: groups are associated with the backend server.  When using MultiPeer, there is implicitly
+// just one group, consisting of those who are "nearby."
 class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     // Parent view controller
     var vc : ViewController {
@@ -29,7 +28,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         Logger.logFatalError("Could not retrieve ViewController within GroupManagementDialog")
     }
 
-    // Terser referene to settings
+    // Terser reference to settings
     var settings : OptionSettings {
         return OptionSettings.instance
     }
@@ -87,15 +86,15 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     // pressed when no group is showing.  Returns a tuple consisting of name and token.
     func getInitialGroup() -> (String, String)? {
         switch settings.communication {
-        case .MultiPeer, .GameCenter:
-            if let firstGroup = serverlessGames.names.first, let firstToken = serverlessGames.getToken(firstGroup) {
+        case .MultiPeer:
+            if let firstGroup = serverGames.names.first, let firstToken = serverGames.getToken(firstGroup) {
                 return (firstGroup, firstToken)
             } else {
                 return nil
             }
-        case .Serverless(let firstGroup):
+        case .ServerBased(let firstGroup):
             // Start with the current active group
-            if let firstToken = serverlessGames.getToken(firstGroup) {
+            if let firstToken = serverGames.getToken(firstGroup) {
                 return (firstGroup, firstToken)
             } else {
                 return nil
@@ -244,11 +243,11 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
 
     // Respond to touch of the next button.  When the dialog is set up for new group creation, the "next" group
     // is the initial group, if any, or else there is no "next" (the button is a no-op).  When the dialog is set
-    // up with an actual group, the next group is defined by the serverlessGames.next function, or, if there is
+    // up with an actual group, the next group is defined by the serverGames.next function, or, if there is
     // no "next" according to that function, we set up fo new group creation.
     @objc func nextButtonTouched() {
         if let current = groupName.text, current.count > 0 {
-            if let nextGroup = serverlessGames.next(current), let nextToken = serverlessGames.getToken(nextGroup) {
+            if let nextGroup = serverGames.next(current), let nextToken = serverGames.getToken(nextGroup) {
                 showGroup(nextGroup, nextToken)
             } else {
                 setupForNewGroup()
@@ -302,21 +301,21 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     // Respond to touch of the deleteGroup button
     @objc func deleteGroupTouched() {
         guard let groupName = self.groupName.text?.trim() else {
-            self.vc.error(ServerlessError("There is no group shown.  Deletion not possible."))
+            self.vc.error(ServerError("There is no group shown.  Deletion not possible."))
             return
         }
         let currentToken = token.text?.trim()
         showDeleteDialog(host: self) { (remote, force) in
-            serverlessGames.remove(groupName)
+            serverGames.remove(groupName)
             self.settings.communication = self.settings.communication.next
-            if let nextGroup = serverlessGames.next(groupName), let nextToken = serverlessGames.getToken(nextGroup) {
+            if let nextGroup = serverGames.next(groupName), let nextToken = serverGames.getToken(nextGroup) {
                 self.showGroup(nextGroup, nextToken)
             } else {
                 self.setupForNewGroup()
             }
             if remote {
                 guard let token = currentToken else {
-                    self.vc.error(ServerlessError("There is no token shown.  Only local deletion was performed."))
+                    self.vc.error(ServerError("There is no token shown.  Only local deletion was performed."))
                     return
                 }
                 let errHandler = self.vc.error
@@ -328,13 +327,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
                     return
                 }
                 postAnAction("deleteGame", arg) { (data, response, err ) in
-                    guard let result = validateResponse(data,response, err, errHandler) else {
-                        // Error already displayed by validator
-                        return
-                    }
-                    if let err = result["problem"] {
-                        errHandler(ServerlessError("Remote error: \(err)"))
-                    }
+                    _ = validateResponse(data,response, err, errHandler)
                 }
             }
         }
@@ -350,7 +343,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     // Respond to touch of the 'confirm' button
     @objc func confirmButtonTouched(_ button: UIButton) {
         func bail() {
-            let insufficient = ServerlessError("Insufficient information was given make the requested change")
+            let insufficient = ServerError("Insufficient information was given make the requested change")
             vc.error(insufficient)
             cancelButtonTouched(button)
         }
@@ -365,8 +358,8 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
                 bail()
                 return
             }
-            serverlessGames.storePair(name, token)
-            settings.communication = .Serverless(name)
+            serverGames.storePair(name, token)
+            settings.communication = .ServerBased(name)
             showGroup(name, token)
         }
     }
@@ -376,12 +369,12 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         let errHandler = self.vc.error
         var arg: Data
         do {
-            arg = try JSONEncoder().encode([ "appToken": AppToken ])
+            arg = try JSONEncoder().encode([ argAppToken: AppToken ])
         } catch {
             errHandler(error)
             return
         }
-        postAnAction("createGame", arg) { (data, response, err ) in
+        postAnAction(pathCreate, arg) { (data, response, err ) in
             guard let result = validateResponse(data,response, err, errHandler) else {
                 // Error already displayed by validator
                 DispatchQueue.main.async {
@@ -389,15 +382,15 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
                 }
                 return
             }
-            if let token = result["gameToken"] {
-                serverlessGames.storePair(groupName, token)
-                self.settings.communication = .Serverless(groupName)
+            if let token = result[argGameToken] {
+                serverGames.storePair(groupName, token)
+                self.settings.communication = .ServerBased(groupName)
                 DispatchQueue.main.async {
                     self.showGroup(groupName, token)
                 }
             } else {
                 DispatchQueue.main.async {
-                    errHandler(ServerlessError("No gameToken in response or response was invalid"))
+                    errHandler(ServerError("No gameToken in response or response was invalid"))
                     self.cancelButtonTouched(self.cancelButton)
                 }
             }

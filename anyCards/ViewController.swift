@@ -709,12 +709,12 @@ extension ViewController : CommunicatorDelegate {
     // Display communications-related error
     func error(_ error: Error) {
         Logger.log("Communications exception: \(error)")
+        var host: UIViewController = self
         DispatchQueue.main.async {
-            var host: UIViewController = self
             while host.presentedViewController != nil {
                 host = host.presentedViewController!
             }
-            bummer(title: CommunicationsErrorTitle, message: error.localizedDescription, host: host)
+            bummer(title: CommunicationsErrorTitle, message: "\(error)", host: host)
         }
     }
 

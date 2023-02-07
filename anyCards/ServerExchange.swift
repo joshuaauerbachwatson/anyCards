@@ -16,9 +16,24 @@
 
 import Foundation
 
-// To use a serverless model for what is, conceptually, a multi-cast group, requires overcoming an impedence mismatch.
-// We use a 2-second repeating timer to poll for what would otherwise be push notifications from the group.
-class ServerlessCommunicator : NSObject, Communicator {
+// Constants mimic those in the backend
+let pathCreate   = "/create"
+let pathDelete   = "/delete"
+let pathNewState = "/newstate"
+let pathPoll     = "/poll"
+let pathWithdraw = "/withdraw"
+let argAppToken  = "appToken"
+let argGameToken = "gameToken"
+let argForce     = "force"
+let argGameState = "gameState"
+let argPlayer    = "player"
+let argPlayers   = "players"
+
+// This communicator is temporarily using a strategy designed for a serverless implementation.   In that case there was an
+// impedence mismatch for what is, conceptually, a multi-cast group.  We use a 2-second repeating timer to poll for what
+// The plan is to stop using http and start using a connection based protocol in which we can do true push notifications
+// from the group.
+class ServerBasedCommunicator : NSObject, Communicator {
     let playerID: String
     let delegate: CommunicatorDelegate
     let encoder: JSONEncoder
@@ -38,7 +53,7 @@ class ServerlessCommunicator : NSObject, Communicator {
         startListening(encoded)
     }
 
-    // Standard initializer (not directly useful for this one)
+    // Standard initializer specified by protocol (not directly useful for this class)
     required init(_ player: Player, _ delegate: CommunicatorDelegate) {
         self.playerID = String(player.order)
         self.delegate = delegate
@@ -54,7 +69,7 @@ class ServerlessCommunicator : NSObject, Communicator {
         self.timer = timer
         timer.schedule(deadline: .now(), repeating: .seconds(2), leeway: .milliseconds(100))
         timer.setEventHandler {
-            postAnAction("getAllState", gameToken, self.newState)
+            postAnAction(pathPoll, gameToken, self.newState)
         }
         timer.resume()
     }
@@ -64,26 +79,27 @@ class ServerlessCommunicator : NSObject, Communicator {
         guard let validData = validateResponse(data, response, err, delegate.error) else {
             return
         }
-        if let playerList = validData["players"] {
+        if let playerList = validData[argPlayers] {
             let players = playerList.split(separator: " ").map { String($0) }
             if players != self.lastPlayerList {
                 delegate.connectedDevicesChanged(players.count)
                 self.lastPlayerList = players
             }
         }
-        if let gameState = validData["gameState"] {
-            if gameState != self.lastGameState {
-                do {
-                    let state = try decoder.decode(GameState.self, from: gameState.data(using: .utf8)!)
-                    self.lastGameState = gameState
-                    delegate.gameChanged(state)
-                } catch {
-                    delegate.error(error)
-                    return
-                }
-            }
+        guard let gameState = validData[argGameState] else {
+            delegate.error(ServerError("Invalid answer to poll"))
+            return
         }
-
+        if gameState != self.lastGameState {
+            do {
+                let state = try decoder.decode(GameState.self, from: gameState.data(using: .utf8)!)
+                self.lastGameState = gameState
+                delegate.gameChanged(state)
+            } catch {
+                delegate.error(error)
+                return
+            }
+        } // do nothing if no change
     }
 
     // Send a new game state
@@ -91,18 +107,15 @@ class ServerlessCommunicator : NSObject, Communicator {
         var arg: Data
         do {
             let encodedGameState = String(data: try encoder.encode(gameState), encoding: .utf8)
-            arg = try encoder.encode([ "gameToken": self.gameToken, "gameState": encodedGameState ])
+            arg = try encoder.encode([ argGameToken: self.gameToken, argGameState: encodedGameState ])
         } catch {
             delegate.error(error)
             return
         }
-        postAnAction("newGameState", arg) { (data, response, err) in
-            guard let result = validateResponse(data, response, err, self.delegate.error) else {
+        postAnAction(pathNewState, arg) { (data, response, err) in
+            if nil == validateResponse(data, response, err, self.delegate.error) {
                 // Error already posted
                 return
-            }
-            if let err = result["problem"] {
-                self.delegate.error(ServerlessError("Remote error: \(err)"))
             }
         }
     }
@@ -111,24 +124,21 @@ class ServerlessCommunicator : NSObject, Communicator {
     func shutdown() {
         var arg: Data
         do {
-            arg = try encoder.encode([ "gameToken": gameToken, "player": playerID ])
+            arg = try encoder.encode([ argGameToken: gameToken, argPlayer: playerID ])
         } catch {
             delegate.error(error)
             return
         }
-        postAnAction("withdraw", arg) { (data, response, err) in
-            guard let result = validateResponse(data, response, err, self.delegate.error) else {
+        postAnAction(pathWithdraw, arg) { (data, response, err) in
+            if nil == validateResponse(data, response, err, self.delegate.error) {
                 // Error already posted
                 return
-            }
-            if let err = result["problem"] {
-                self.delegate.error(ServerlessError("Remote error: \(err)"))
             }
             self.timer?.cancel()
         }
     }
 
-    // Update the players list.  Not used for serverless.  The remote player list is maintained by
+    // Update the players list.  Not used for server based.  The remote player list is maintained by
     // means of the multiple users polling.
     func updatePlayers(_ players: [Player]) {
         // Do nothing
@@ -140,7 +150,7 @@ class ServerlessCommunicator : NSObject, Communicator {
 typealias HttpCompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
 func postAnAction(_ action: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
-    guard let url = URL(string: ActionRoot + action + ".json") else {
+    guard let url = URL(string: ActionRoot + action) else {
         Logger.logFatalError("Unable to form request URL")
     }
     var request = URLRequest(url: url)
@@ -154,12 +164,15 @@ func postAnAction(_ action: String, _ input: Data?, _ handler: @escaping HttpCom
 }
 
 // A generic error for communications problems
-struct ServerlessError: Error, CustomDebugStringConvertible {
+struct ServerError: Error, CustomDebugStringConvertible {
     let debugDescription: String
     let localizedDescription: String
     init(_ msg: String) {
         self.localizedDescription = msg
         self.debugDescription = msg
+    }
+    init(_ statusCode: Int) {
+        self.init(HTTPURLResponse.localizedString(forStatusCode: statusCode))
     }
 }
 
@@ -172,24 +185,24 @@ func validateResponse(_ data: Data?, _ response: URLResponse?, _ err: Error?, _ 
         return nil
     }
     guard let resp = response as? HTTPURLResponse else {
-        errHandler(ServerlessError("Could not interpret response from backend"))
+        errHandler(ServerError("Could not interpret response from backend"))
         return nil
     }
     Logger.log("Got response: \(resp)")
     if resp.statusCode < 200 || resp.statusCode > 299 {
-        errHandler(ServerlessError("Got status code \(resp.statusCode) communicating with backend"))
+        errHandler(ServerError(resp.statusCode))
         return nil
     }
-    guard let body = data else {
-        Logger.log("Response had no body")
-        errHandler(ServerlessError("No response data provided"))
-        return nil
-    }
-    do {
-        return try JSONDecoder().decode(Dictionary.self, from: body)
-    } catch {
-        Logger.log("Got decoding error: \(error)")
-        errHandler(error)
-        return nil
+    if let body = data {
+        do {
+            return try JSONDecoder().decode(Dictionary.self, from: body)
+        } catch {
+            Logger.log("Got decoding error: \(error)")
+            errHandler(error)
+            return nil
+        }
+    } else {
+        // empty body is ok in some contexts
+        return Dictionary<String, String>()
     }
 }

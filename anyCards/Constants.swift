@@ -42,7 +42,7 @@ let SnapThreshhold = CGFloat(10)  // Number of points of overlap to initiate a "
 let GridBoxNamePortion = CGFloat(0.75) // Portion of the GridBox excess area occupied by the name (the rest holds the count)
 
 // Document names
-let ServerlessGameFile = "serverlessGames"
+let ServerGameFile = "serverGames"
 
 // Colors
 let FillerColor = UIColor.darkGray

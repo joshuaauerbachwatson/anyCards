@@ -16,13 +16,12 @@
 
 import UIKit
 
-// Basic support for game communication.  Three implementations are
+// Basic support for game communication.  Two implementations are
 // contemplated.
 // 1.  Multi-peer (proximity).  Implemented.
-// 2.  Apple Game center.  Maybe.  If it can be tested conveniently.
-// 3.  Serverless backend (using the Nimbella stack).
-// If (3) can be implemented and implementing (2) will be any kind of a
-//   problem, I will drop (2).
+// 2.  Backend with volatile state (using DigitalOcean App Platform).  In progress.
+// The long range plan is to drop (1) and retire the communicator abstraction,
+// then shift logic to the backend so we can better implement pluggable game rules.
 
 // The protocol implemented by all Communicator implementations
 protocol Communicator {
@@ -40,10 +39,10 @@ protocol CommunicatorDelegate {
     func lostPlayer(_ peer: String)
 }
 
-// Enumerate the kinds of communicators that exist.  We treat serverless communicators
+// Enumerate the kinds of communicators that exist.  We treat server-based communicators
 // with different game groups as different "kinds".
 enum CommunicatorKind {
-    case MultiPeer, GameCenter, Serverless(String)
+    case MultiPeer, ServerBased(String)
 
     // Construct CommunicatorKind from a tag value (e.g. one stored in UserDefaults).
     static func from(_ tag: String?) -> CommunicatorKind {
@@ -51,12 +50,10 @@ enum CommunicatorKind {
             return .MultiPeer
         }
         switch name {
-            // Serverless group names must not begin with blank
+            // ServerBased group names must not begin with blank
         case " MultiPeer":
             return .MultiPeer
-        case " GameCenter":
-            return .GameCenter
-        default: return .Serverless(name)
+        default: return .ServerBased(name)
         }
     }
 
@@ -65,9 +62,7 @@ enum CommunicatorKind {
         switch self {
         case .MultiPeer:
             return " MultiPeer"
-        case .GameCenter:
-            return " GameCenter"
-        case .Serverless (let gameName):
+        case .ServerBased (let gameName):
             return gameName
         }
     }
@@ -77,28 +72,24 @@ enum CommunicatorKind {
         switch self {
         case .MultiPeer:
             return LocalOnly
-        case .GameCenter:
-            return PlayViaGameCenter
-        case .Serverless (let gameName):
+        case .ServerBased (let gameName):
             return gameName
         }
     }
 
-    // Get the "next" kind.  This sequences through the fixed kinds and uses the serverless game
-    // table to sequence through perhaps multiple serverless game groups.
+    // Get the "next" kind.  This sequences through the fixed kind (MultiPeer) and uses the server based game
+    // table to sequence through perhaps multiple server based game groups.
     var next: CommunicatorKind {
         switch self {
         case .MultiPeer:
-            return .GameCenter
-        case .GameCenter:
-            if let name = serverlessGames.names.first {
-                return .Serverless(name)
+            if let name = serverGames.names.first {
+                return .ServerBased(name)
             } else {
                 return .MultiPeer
             }
-        case .Serverless (let name):
-            if let nextName = serverlessGames.next(name) {
-                return .Serverless(nextName)
+        case .ServerBased (let name):
+            if let nextName = serverGames.next(name) {
+                return .ServerBased(nextName)
             } else {
                 return .MultiPeer
             }
@@ -112,16 +103,13 @@ func makeCommunicator(_ kind: CommunicatorKind, _ player: Player, _ delegate: Co
     switch kind {
     case .MultiPeer:
         return MultiPeerCommunicator(player, delegate)
-    case .GameCenter:
-        bummer(title: "Not implemented", message: "Game Center communications are not yet implemented", host: host)
-        return nil
-    case .Serverless(let groupName):
-        guard let gameToken = serverlessGames.getToken(groupName) else {
+    case .ServerBased(let groupName):
+        guard let gameToken = serverGames.getToken(groupName) else {
             // This actually represents a loss of internal consistency since the group name was chosen from
             // a dialog and should have an associated token.  Not clear what else we can do about it though.
             bummer(title: "Not found", message: "Game group \(groupName) was not found", host: host)
             return nil
         }
-        return ServerlessCommunicator(gameToken, player, delegate)
+        return ServerBasedCommunicator(gameToken, player, delegate)
     }
 }

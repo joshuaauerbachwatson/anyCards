@@ -40,6 +40,7 @@ import (
 func createGame(w http.ResponseWriter, body map[string]string) {
 	appToken := body[argAppToken]
 	if appToken != anycardsAppToken {
+		fmt.Println("Unauthorized creation request!")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}

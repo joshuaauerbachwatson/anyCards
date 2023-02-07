@@ -16,8 +16,8 @@
 
 import Foundation
 
-// Stores associations between serverless game group names and game tokens
-class ServerlessGames : Codable {
+// Stores associations between server game group names and game tokens
+class ServerGames : Codable {
     // The dictionary keyed by the user-chosen game name string
     private var dictionary = [String: String]()
 
@@ -66,9 +66,9 @@ class ServerlessGames : Codable {
         guard let encoded = try? encoder.encode(self) else {
             return Logger.log("Failed to encode serverless group table")
         }
-        let dictionaryFile = getDocDirectory().appendingPathComponent(ServerlessGameFile).path
+        let dictionaryFile = getDocDirectory().appendingPathComponent(ServerGameFile).path
         FileManager.default.createFile(atPath: dictionaryFile, contents: encoded, attributes: nil)
-        Logger.log("Serverless group table successfully saved")
+        Logger.log("Server group table successfully saved")
     }
 
     // Store a new pair (name, token) in the dictionary
@@ -79,16 +79,16 @@ class ServerlessGames : Codable {
     }
 }
 
-var serverlessGames: ServerlessGames = {
-    let dictionaryFile = getDocDirectory().appendingPathComponent(ServerlessGameFile)
+var serverGames: ServerGames = {
+    let dictionaryFile = getDocDirectory().appendingPathComponent(ServerGameFile)
     do {
         let archived = try Data(contentsOf: dictionaryFile)
         let decoder = JSONDecoder()
-        let ans = try decoder.decode(ServerlessGames.self, from: archived)
-        Logger.log("ServerlessGames instance loaded from disk with \(ans.names.count) entries")
+        let ans = try decoder.decode(ServerGames.self, from: archived)
+        Logger.log("ServerGames instance loaded from disk with \(ans.names.count) entries")
         return ans
     } catch {
-        Logger.log("Saved ServerlessGames not found, a new one was created")
-        return ServerlessGames()
+        Logger.log("Saved ServerGames not found, a new one was created")
+        return ServerGames()
     }
 }()
