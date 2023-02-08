@@ -121,12 +121,12 @@ class ServerBasedCommunicator : NSObject, Communicator {
     }
 
     // Shutdown this communicator.  First stop the polling, then try to withdraw from the game (silently)
-		func shutdown() {
-    		 self.timer?.cancel()
-    		 guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
-                 // ignore error and stop trying to withdraw
-         		 return
-    		 }
+    func shutdown() {
+        self.timer?.cancel()
+        guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
+        // ignore error and stop trying to withdraw
+            return
+        }
         postAnAction(pathWithdraw, arg) { (data, response, err) in return } // ignore errors
     }
 
