@@ -47,8 +47,8 @@ class ServerBasedCommunicator : NSObject, Communicator {
     convenience init(_ gameToken: String, _ player: Player, _ delegate: CommunicatorDelegate) {
         self.init(player, delegate)
         self.gameToken = gameToken
-        guard let encoded = try? encoder.encode([ "gameToken": gameToken ]) else {
-            Logger.logFatalError("Unexpected failure to encode gameToken")
+        guard let encoded = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
+            Logger.logFatalError("Unexpected failure to encode gameToken and player")
         }
         startListening(encoded)
     }
@@ -63,13 +63,13 @@ class ServerBasedCommunicator : NSObject, Communicator {
     }
 
     // Starts the "listening" process (invocations of 'poll' at 2 second intervals)
-    func startListening(_ gameToken: Data) {
+    func startListening(_ args: Data) {
         let queue = DispatchQueue.global(qos: .background)
         let timer = DispatchSource.makeTimerSource(queue: queue)
         self.timer = timer
         timer.schedule(deadline: .now(), repeating: .seconds(2), leeway: .milliseconds(100))
         timer.setEventHandler {
-            postAnAction(pathPoll, gameToken, self.newState)
+            postAnAction(pathPoll, args, self.newState)
         }
         timer.resume()
     }
@@ -77,6 +77,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     // Interpret a new state
     func newState(_ data: Data?, _ response: URLResponse?, _ err: Error?) {
         guard let validData = validateResponse(data, response, err, delegate.error) else {
+            shutdown()
             return
         }
         if let playerList = validData[argPlayers] {
@@ -88,6 +89,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
         }
         guard let gameState = validData[argGameState] else {
             delegate.error(ServerError("Invalid answer to poll"))
+            shutdown()
             return
         }
         if gameState != self.lastGameState {
@@ -97,6 +99,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
                 delegate.gameChanged(state)
             } catch {
                 delegate.error(error)
+                shutdown()
                 return
             }
         } // do nothing if no change
@@ -107,35 +110,24 @@ class ServerBasedCommunicator : NSObject, Communicator {
         var arg: Data
         do {
             let encodedGameState = String(data: try encoder.encode(gameState), encoding: .utf8)
-            arg = try encoder.encode([ argGameToken: self.gameToken, argGameState: encodedGameState ])
+            arg = try encoder.encode([ argGameToken: self.gameToken, argPlayer: self.playerID, argGameState: encodedGameState ])
         } catch {
             delegate.error(error)
             return
         }
         postAnAction(pathNewState, arg) { (data, response, err) in
-            if nil == validateResponse(data, response, err, self.delegate.error) {
-                // Error already posted
-                return
-            }
+            _ = validateResponse(data, response, err, self.delegate.error)
         }
     }
 
-    // Shutdown this communicator.  First withdraw from the game, then stop the polling.
-    func shutdown() {
-        var arg: Data
-        do {
-            arg = try encoder.encode([ argGameToken: gameToken, argPlayer: playerID ])
-        } catch {
-            delegate.error(error)
-            return
-        }
-        postAnAction(pathWithdraw, arg) { (data, response, err) in
-            if nil == validateResponse(data, response, err, self.delegate.error) {
-                // Error already posted
-                return
-            }
-            self.timer?.cancel()
-        }
+    // Shutdown this communicator.  First stop the polling, then try to withdraw from the game (silently)
+		func shutdown() {
+    		 self.timer?.cancel()
+    		 guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
+                 // ignore error and stop trying to withdraw
+         		 return
+    		 }
+        postAnAction(pathWithdraw, arg) { (data, response, err) in return } // ignore errors
     }
 
     // Update the players list.  Not used for server based.  The remote player list is maintained by
