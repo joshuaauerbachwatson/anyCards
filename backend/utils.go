@@ -62,6 +62,7 @@ func getGameToken(w http.ResponseWriter, body map[string]string) (string, bool) 
 	}
 	fmt.Println("Erroneous gameToken!", gameToken)
 	w.WriteHeader(http.StatusBadRequest)
+	w.Write(errorDictionary("malformed game token"))
 	return "", false
 }
 
@@ -79,6 +80,7 @@ func getPlayer(w http.ResponseWriter, gameToken string, body map[string]string) 
 	}
 	fmt.Println("Erroneous player value!", player)
 	w.WriteHeader(http.StatusBadRequest)
+	w.Write(errorDictionary("malformed player value"))
 	return "", false
 }
 
@@ -100,6 +102,13 @@ func getGameAndPlayer(w http.ResponseWriter, body map[string]string) (string, st
 		w.WriteHeader(http.StatusNotFound)
 	}
 	return gameToken, player, game
+}
+
+// Convert an error message to an error dictionary using the key "error".
+func errorDictionary(msg string) []byte {
+	dict := map[string]string{"error": msg}
+	toSend, _ := json.Marshal(dict) // assume no error
+	return toSend
 }
 
 // Simple random generator for game tokens

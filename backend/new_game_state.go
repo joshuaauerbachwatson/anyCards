@@ -44,6 +44,7 @@ func newGameState(w http.ResponseWriter, body map[string]string) {
 	if gameState == "" {
 		fmt.Println("missing gameState argument!")
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write(errorDictionary("missing gameState"))
 		return
 	}
 	// TODO game rules should be applied here to check whether the new game state is acceptable
