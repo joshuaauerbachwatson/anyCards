@@ -41,6 +41,9 @@ import (
 // We do not use the "not found" response if the player is not in the game.  That is considered "success".
 func withdraw(w http.ResponseWriter, body map[string]string) {
 	_, player, game := getGameAndPlayer(w, body)
+	if game == nil {
+		return
+	}
 	delete(game.players, player)
 	w.WriteHeader(http.StatusOK)
 }
