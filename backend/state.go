@@ -20,6 +20,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -29,6 +30,11 @@ type Game struct {
 	players   map[string]int // key is the player's "order" string, value is the idleCount
 	idleCount int            // global idle count for the game as a whole
 	state     string         // the game state (encoded JSON but not interpreted here)
+}
+
+type DumpedState struct {
+	cleanupCounter int              `json:"cleanupCounter"`
+	games          map[string]*Game `json:"games"`
 }
 
 // Map from game tokens to game states
@@ -44,13 +50,20 @@ func dump(w http.ResponseWriter, body map[string]string) {
 	if !checkAppToken(w, body, "dump") {
 		return
 	}
-	fmt.Println("dump called:", games)
-	// TODO return the dump to the caller, not just display on the log
+	ans := DumpedState{cleanupCounter: cleanupCounter, games: games}
+	fmt.Println("dump called:", ans)
+	encoded, err := json.Marshal(ans)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(errorDictionary(err.Error()))
+		return
+	}
+	w.Write(encoded)
 }
 
 // Handler for an admin function to reset to the empty state
 func reset(w http.ResponseWriter, body map[string]string) {
-	if !checkAppToken(w, body, "dump") {
+	if !checkAppToken(w, body, "reset") {
 		return
 	}
 	fmt.Println("reset called")
