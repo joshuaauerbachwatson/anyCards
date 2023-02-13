@@ -20,22 +20,38 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
+	"time"
 )
 
-// Cleanup function, expected to be invoked every few minutes.  The constants
+// Cleanup function, expected to be invoked at regular intervals.  The constants
 // gameTimeout and playerTimeout express how many times a player or game can be
 // found idle by this function before they are removed.  This assumes that the idle counts
 // are zeroed every time a game is touched or a player is heard from.
-func cleanup(w http.ResponseWriter, _ map[string]string) {
+func cleanup() {
 	for token, game := range games {
 		if game.idleCount > gameTimeout {
+			fmt.Println("cleanup deleting idle game", token)
 			delete(games, token)
+			continue
 		}
 		for player, idleCount := range game.players {
 			if idleCount > playerTimeout {
+				fmt.Printf("cleanup deleting player %s from game %s\n", player, token)
 				delete(game.players, player)
 			}
 		}
 	}
+}
+
+// Start a ticker to do cleanup every 'cleanupPeriod' seconds
+func startCleanupTicker() {
+	ticker := time.NewTicker(cleanupPeriod * time.Second)
+	go func() {
+		for {
+			<-ticker.C
+			cleanupCounter++
+			cleanup()
+		}
+	}()
 }

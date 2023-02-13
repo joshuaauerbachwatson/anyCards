@@ -46,14 +46,29 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]string {
 	}
 	fmt.Println("Erroneous body!")
 	w.WriteHeader(http.StatusBadRequest)
+	w.Write(errorDictionary("Malformed request body (not JSON?)"))
 	return nil
+}
+
+// Secondary validator for post bodies containing the one true appToken.  For the moment, we require
+// this to create games and to perform the dump and reset admin functions.  This suffices for
+// development.  In production, we'd want easily obtained identity tokens for creating games and more
+// restricted ones for the admin functions.
+func checkAppToken(w http.ResponseWriter, body map[string]string, request string) bool {
+	appToken := body[argAppToken]
+	if appToken == anycardsAppToken {
+		return true
+	}
+	fmt.Printf("Unauthorized %s request!\n", request)
+	w.WriteHeader(http.StatusUnauthorized)
+	return false
 }
 
 // Secondary validator for post bodies containing gameToken.  Returns the gameToken (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
 func getGameToken(w http.ResponseWriter, body map[string]string) (string, bool) {
 	gameToken := body["gameToken"]
-	if len(gameToken) == 64 && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken) {
+	if len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken) {
 		game := games[gameToken]
 		if game != nil {
 			game.idleCount = 0
@@ -113,7 +128,7 @@ func errorDictionary(msg string) []byte {
 
 // Simple random generator for game tokens
 func randomGameToken() string {
-	b := make([]byte, 64)
+	b := make([]byte, gameTokenLen)
 	for i := range b {
 		b[i] = gameTokenChars[rand.Intn(numGameTokenChars)]
 	}

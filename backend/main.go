@@ -56,9 +56,14 @@ func main() {
 			withdraw(w, *body)
 		}
 	})
-	http.HandleFunc(pathCleanup, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(pathDump, func(w http.ResponseWriter, r *http.Request) {
 		if body := screenRequest(w, r); body != nil {
-			cleanup(w, *body)
+			dump(w, *body)
+		}
+	})
+	http.HandleFunc(pathReset, func(w http.ResponseWriter, r *http.Request) {
+		if body := screenRequest(w, r); body != nil {
+			reset(w, *body)
 		}
 	})
 
@@ -71,6 +76,9 @@ func main() {
 	// Bind to port address
 	bindAddr := fmt.Sprintf(":%s", port)
 	fmt.Printf("==> Server listening at %s\n", bindAddr)
+
+	// Start cleanup ticker
+	startCleanupTicker()
 
 	// Start serving requests
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)

@@ -19,7 +19,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -39,10 +38,7 @@ import (
 // This does not delete the game.  Only a deleteGame call can do that.  It is up to the creator to distribute
 // the game token to potential players.
 func createGame(w http.ResponseWriter, body map[string]string) {
-	appToken := body[argAppToken]
-	if appToken != anycardsAppToken {
-		fmt.Println("Unauthorized creation request!")
-		w.WriteHeader(http.StatusUnauthorized)
+	if !checkAppToken(w, body, "game creation") {
 		return
 	}
 	gameToken := randomGameToken()

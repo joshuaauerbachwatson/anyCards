@@ -19,6 +19,11 @@
 
 package main
 
+import (
+	"fmt"
+	"net/http"
+)
+
 // The state of one game
 type Game struct {
 	players   map[string]int // key is the player's "order" string, value is the idleCount
@@ -28,3 +33,27 @@ type Game struct {
 
 // Map from game tokens to game states
 var games = make(map[string]*Game)
+
+// Counter for the number of times cleanup has run
+var cleanupCounter int
+
+// Handler for an admin function to dump the entire state of the server.
+// This is an aid during development.  We might need something more sophisticated
+// for observability in the long run.
+func dump(w http.ResponseWriter, body map[string]string) {
+	if !checkAppToken(w, body, "dump") {
+		return
+	}
+	fmt.Println("dump called:", games)
+	// TODO return the dump to the caller, not just display on the log
+}
+
+// Handler for an admin function to reset to the empty state
+func reset(w http.ResponseWriter, body map[string]string) {
+	if !checkAppToken(w, body, "dump") {
+		return
+	}
+	fmt.Println("reset called")
+	games = make(map[string]*Game)
+	cleanupCounter = 0
+}

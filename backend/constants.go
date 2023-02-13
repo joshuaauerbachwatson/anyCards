@@ -33,23 +33,28 @@ const (
 	gameTokenChars    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	numGameTokenChars = len(gameTokenChars)
 
+	// Length of a game token in characters
+	gameTokenLen = 12
+
 	// URL paths representing verbs
 	pathCreate   = "/create"
 	pathDelete   = "/delete"
 	pathNewState = "/newstate"
 	pathPoll     = "/poll"
 	pathWithdraw = "/withdraw"
-	pathCleanup  = "/cleanup"
+	pathReset    = "/reset"
+	pathDump     = "/dump"
 
-	// Expected number of minutes between cleanup calls
-	cleanupPeriod = 2
+	// Period at which the cleanup function is called, in seconds
+	cleanupPeriod = 15
 
 	// Default port to listen on if a port is not specified via the environment
 	defaultPort = "80"
 
-	// Timeouts for idle players and games, as multiples of the cleanup interval
-	playerTimeout = 6 / cleanupPeriod  /* six minutes */
-	gameTimeout   = 60 / cleanupPeriod /* sixty minutes */
+	// Timeouts for idle players and games, as multiples of the cleanup period
+	// We use tight values as a development aid, but we need to make them looser eventually.
+	playerTimeout = 45 / cleanupPeriod
+	gameTimeout   = 300 / cleanupPeriod
 
 	// Dictionary keys used by the various functions for inputs and outputs
 	argAppToken  = "appToken"
@@ -57,4 +62,5 @@ const (
 	argForce     = "force"
 	argGameState = "gameState"
 	argPlayers   = "players"
+	argState     = "state"
 )
