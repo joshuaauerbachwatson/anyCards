@@ -51,13 +51,14 @@ func dump(w http.ResponseWriter, body map[string]string) {
 		return
 	}
 	ans := DumpedState{cleanupCounter: cleanupCounter, games: games}
-	fmt.Println("dump called:", ans)
-	encoded, err := json.Marshal(ans)
+	encoded, err := json.MarshalIndent(ans, "", "  ")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(errorDictionary(err.Error()))
 		return
 	}
+	fmt.Println("dump called")
+	fmt.Println(string(encoded))
 	w.Write(encoded)
 }
 
