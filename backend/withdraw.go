@@ -44,6 +44,6 @@ func withdraw(w http.ResponseWriter, body map[string]string) {
 	if game == nil {
 		return
 	}
-	delete(game.players, player)
+	delete(game.Players, player)
 	w.WriteHeader(http.StatusOK)
 }

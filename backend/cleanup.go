@@ -30,15 +30,15 @@ import (
 // are zeroed every time a game is touched or a player is heard from.
 func cleanup() {
 	for token, game := range games {
-		if game.idleCount > gameTimeout {
+		if game.IdleCount > gameTimeout {
 			fmt.Println("cleanup deleting idle game", token)
 			delete(games, token)
 			continue
 		}
-		for player, idleCount := range game.players {
+		for player, idleCount := range game.Players {
 			if idleCount > playerTimeout {
 				fmt.Printf("cleanup deleting player %s from game %s\n", player, token)
-				delete(game.players, player)
+				delete(game.Players, player)
 			}
 		}
 	}

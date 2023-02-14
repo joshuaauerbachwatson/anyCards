@@ -41,18 +41,18 @@ import (
 //		status == StatusForbidden if the game was found but is in progress and force was not specified
 func deleteGame(w http.ResponseWriter, body map[string]string) {
 	status := http.StatusOK
-	game, ok := getGameToken(w, body)
+	gameToken, ok := getGameToken(w, body)
 	if !ok {
 		return
 	}
-	gameState := games[game]
-	if gameState == nil {
+	game := games[gameToken]
+	if game == nil {
 		status = http.StatusNotFound
-	} else if len(gameState.players) > 0 && body[argForce] == "" {
+	} else if len(game.Players) > 0 && body[argForce] == "" {
 		status = http.StatusForbidden
 	} // else ok
 	if status == http.StatusOK {
-		delete(games, game)
+		delete(games, gameToken)
 	}
 	w.WriteHeader(status)
 }

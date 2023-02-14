@@ -48,6 +48,6 @@ func newGameState(w http.ResponseWriter, body map[string]string) {
 		return
 	}
 	// TODO game rules should be applied here to check whether the new game state is acceptable
-	game.state = gameState
+	game.State = gameState
 	w.WriteHeader(http.StatusOK)
 }

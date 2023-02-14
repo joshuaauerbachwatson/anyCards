@@ -71,7 +71,7 @@ func getGameToken(w http.ResponseWriter, body map[string]string) (string, bool) 
 	if len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken) {
 		game := games[gameToken]
 		if game != nil {
-			game.idleCount = 0
+			game.IdleCount = 0
 		}
 		return gameToken, true
 	}
@@ -89,7 +89,7 @@ func getPlayer(w http.ResponseWriter, gameToken string, body map[string]string) 
 	if err == nil && maybe >= 0 {
 		game := games[gameToken]
 		if game != nil {
-			game.players[player] = 0
+			game.Players[player] = 0
 		}
 		return player, true
 	}

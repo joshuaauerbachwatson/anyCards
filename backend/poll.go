@@ -48,8 +48,8 @@ func poll(w http.ResponseWriter, body map[string]string) {
 	if game == nil {
 		return
 	}
-	players := sortAndEncode(game.players)
-	responseData := map[string]string{argGameState: game.state, argPlayers: players}
+	players := sortAndEncode(game.Players)
+	responseData := map[string]string{argGameState: game.State, argPlayers: players}
 	response, _ := json.Marshal(responseData) // are errors possible here? ... I think not
 	w.Write(response)                         // no error handling for now
 }

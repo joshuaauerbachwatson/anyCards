@@ -27,14 +27,14 @@ import (
 
 // The state of one game
 type Game struct {
-	players   map[string]int // key is the player's "order" string, value is the idleCount
-	idleCount int            // global idle count for the game as a whole
-	state     string         // the game state (encoded JSON but not interpreted here)
+	Players   map[string]int `json:"players"`   // key is the player's "order" string, value is the idleCount
+	IdleCount int            `json:"idleCount"` // global idle count for the game as a whole
+	State     string         `json:"state"`     // the game state (encoded JSON but not interpreted here)
 }
 
 type DumpedState struct {
-	cleanupCounter int              `json:"cleanupCounter"`
-	games          map[string]*Game `json:"games"`
+	CleanupCounter int              `json:"cleanupCounter"`
+	Games          map[string]*Game `json:"games"`
 }
 
 // Map from game tokens to game states
@@ -50,7 +50,7 @@ func dump(w http.ResponseWriter, body map[string]string) {
 	if !checkAppToken(w, body, "dump") {
 		return
 	}
-	ans := DumpedState{cleanupCounter: cleanupCounter, games: games}
+	ans := DumpedState{CleanupCounter: cleanupCounter, Games: games}
 	encoded, err := json.MarshalIndent(ans, "", "  ")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
