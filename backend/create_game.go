@@ -19,6 +19,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -47,4 +48,5 @@ func createGame(w http.ResponseWriter, body map[string]string) {
 	responseData := map[string]string{argGameToken: gameToken}
 	response, _ := json.Marshal(responseData) // are errors possible here? ... I think not
 	w.Write(response)                         // no error handling for now
+	fmt.Printf("game %s created; there are now %d games\n", gameToken, len(games))
 }

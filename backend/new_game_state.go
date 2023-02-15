@@ -27,7 +27,7 @@ import (
 // Inputs:
 //
 //	gameToken: the token giving access to the game
-//	player: the player string (random number used as ordinal) (to be used by game rules (not yet))
+//	player: the player string (random number used as ordinal)
 //	gameState - the new value for the game state as a JSON-encoded String
 //
 // Outputs:
@@ -37,7 +37,7 @@ import (
 //	status == StatusNotFound if the game cannot be found
 //	status == StatusForbidden if the new state is rejected by the game rules (not used yet)
 func newGameState(w http.ResponseWriter, body map[string]string) {
-	_, _, game := getGameAndPlayer(w, body)
+	gameToken, player, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return // error response already issued
 	}
@@ -54,6 +54,11 @@ func newGameState(w http.ResponseWriter, body map[string]string) {
 	}
 	// TODO game rules should be applied here to check whether the new game state is acceptable
 	game.State = gameState
-	fmt.Println("New gamestate recorded")
+	if game.Players[player] == nil {
+		fmt.Printf("Recording new player %s\n", player)
+		idle := 0
+		game.Players[player] = &idle
+	}
+	fmt.Printf("New gamestate recorded for game %s\n", gameToken)
 	w.WriteHeader(http.StatusOK)
 }
