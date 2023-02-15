@@ -18,6 +18,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -40,19 +41,21 @@ import (
 //		status == StatusNotFound if the game was not found
 //		status == StatusForbidden if the game was found but is in progress and force was not specified
 func deleteGame(w http.ResponseWriter, body map[string]string) {
-	status := http.StatusOK
 	gameToken, ok := getGameToken(w, body)
 	if !ok {
 		return
 	}
 	game := games[gameToken]
 	if game == nil {
-		status = http.StatusNotFound
+		indicateError(http.StatusNotFound, "gameToken does not designate a game", w)
+		return
 	} else if len(game.Players) > 0 && body[argForce] == "" {
-		status = http.StatusForbidden
+		indicateError(http.StatusForbidden, "there are still players and 'force' was not specified", w)
+		return
 	} // else ok
-	if status == http.StatusOK {
-		delete(games, gameToken)
-	}
-	w.WriteHeader(status)
+	fmt.Printf("deleting game %s\n", gameToken)
+	fmt.Printf("%d games prior to deletion\n", len(games))
+	delete(games, gameToken)
+	fmt.Printf("%d games after deletion\n", len(games))
+	w.WriteHeader(http.StatusOK)
 }

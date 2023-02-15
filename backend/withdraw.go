@@ -18,6 +18,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -40,10 +41,19 @@ import (
 // be "played again" by presenting its game token.  Games that are idle for long enough are removed.
 // We do not use the "not found" response if the player is not in the game.  That is considered "success".
 func withdraw(w http.ResponseWriter, body map[string]string) {
-	_, player, game := getGameAndPlayer(w, body)
+	gameToken, player, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return
 	}
+	fmt.Printf("request to withdraw player %s from game %s\n", player, gameToken)
+	if game.Players[player] == nil {
+		fmt.Printf("player %s is not in the game (already withdrawn?)\n", player)
+		return
+	}
 	delete(game.Players, player)
-	w.WriteHeader(http.StatusOK)
+	if game.Players[player] == nil {
+		fmt.Printf("player %s was successfully withdrawn\n", player)
+		return
+	}
+	indicateError(http.StatusInternalServerError, "player failed to be withdrawn", w)
 }

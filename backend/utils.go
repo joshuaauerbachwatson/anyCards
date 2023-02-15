@@ -35,8 +35,7 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]string {
 	method := r.Method
 	fmt.Println("Got request", method, uri)
 	if method != http.MethodPost {
-		fmt.Println("Forbidden method!", method)
-		w.WriteHeader(http.StatusMethodNotAllowed)
+		indicateError(http.StatusMethodNotAllowed, "forbidden method", w)
 		return nil
 	}
 	body := new(map[string]string)
@@ -45,8 +44,7 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]string {
 		return body
 	}
 	fmt.Println("Erroneous body!")
-	w.WriteHeader(http.StatusBadRequest)
-	w.Write(errorDictionary("Malformed request body (not JSON?)"))
+	indicateError(http.StatusBadRequest, "malformed request body (not JSON?)", w)
 	return nil
 }
 
@@ -59,8 +57,8 @@ func checkAppToken(w http.ResponseWriter, body map[string]string, request string
 	if appToken == anycardsAppToken {
 		return true
 	}
-	fmt.Printf("Unauthorized %s request!\n", request)
-	w.WriteHeader(http.StatusUnauthorized)
+	msg := fmt.Sprintf("unauthorized %s request", request)
+	indicateError(http.StatusUnauthorized, msg, w)
 	return false
 }
 
@@ -75,9 +73,7 @@ func getGameToken(w http.ResponseWriter, body map[string]string) (string, bool) 
 		}
 		return gameToken, true
 	}
-	fmt.Println("Erroneous gameToken!", gameToken)
-	w.WriteHeader(http.StatusBadRequest)
-	w.Write(errorDictionary("malformed game token"))
+	indicateError(http.StatusBadRequest, "malformed game token", w)
 	return "", false
 }
 
@@ -88,15 +84,21 @@ func getPlayer(w http.ResponseWriter, gameToken string, body map[string]string) 
 	maybe, err := strconv.Atoi(player)
 	if err == nil && maybe >= 0 {
 		game := games[gameToken]
-		if game != nil {
-			game.Players[player] = 0
+		if game != nil && game.Players[player] != nil {
+			*game.Players[player] = 0
 		}
 		return player, true
 	}
-	fmt.Println("Erroneous player value!", player)
-	w.WriteHeader(http.StatusBadRequest)
-	w.Write(errorDictionary("malformed player value"))
+	indicateError(http.StatusBadRequest, "malformed player value", w)
 	return "", false
+}
+
+// Function to indicate an error, both logging it to the server console and reflecting it back to
+// the client.
+func indicateError(status int, msg string, w http.ResponseWriter) {
+	fmt.Println(msg + "!")
+	w.WriteHeader(status)
+	w.Write(errorDictionary(msg))
 }
 
 // Convenience wrapper for getting the game and player, validating args in the process, and
@@ -113,10 +115,9 @@ func getGameAndPlayer(w http.ResponseWriter, body map[string]string) (string, st
 	}
 	game := games[gameToken]
 	if game == nil {
-		fmt.Println("gameToken doesn't designate a game!", gameToken)
-		w.WriteHeader(http.StatusNotFound)
+		indicateError(http.StatusNotFound, "gameToken doesn't designate a game", w)
 	}
-	return gameToken, player, game
+	return gameToken, player, game // game will be nil on error
 }
 
 // Convert an error message to an error dictionary using the key "error".

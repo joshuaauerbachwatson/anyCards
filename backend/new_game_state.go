@@ -18,6 +18,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -40,14 +41,19 @@ func newGameState(w http.ResponseWriter, body map[string]string) {
 	if game == nil {
 		return // error response already issued
 	}
-	gameState := body[argGameState]
-	if gameState == "" {
-		fmt.Println("missing gameState argument!")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(errorDictionary("missing gameState"))
+	gameStateString := body[argGameState]
+	if gameStateString == "" {
+		indicateError(http.StatusBadRequest, "missing gameState argument", w)
+		return
+	}
+	gameState := map[string]interface{}{}
+	err := json.Unmarshal([]byte(gameStateString), &gameState)
+	if err != nil {
+		indicateError(http.StatusBadRequest, "invalid gameState argument", w)
 		return
 	}
 	// TODO game rules should be applied here to check whether the new game state is acceptable
 	game.State = gameState
+	fmt.Println("New gamestate recorded")
 	w.WriteHeader(http.StatusOK)
 }

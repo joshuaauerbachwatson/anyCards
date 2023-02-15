@@ -49,13 +49,13 @@ func poll(w http.ResponseWriter, body map[string]string) {
 		return
 	}
 	players := sortAndEncode(game.Players)
-	responseData := map[string]string{argGameState: game.State, argPlayers: players}
+	responseData := map[string]interface{}{argGameState: game.State, argPlayers: players}
 	response, _ := json.Marshal(responseData) // are errors possible here? ... I think not
 	w.Write(response)                         // no error handling for now
 }
 
 // Subroutine to sort and encode the player numbers
-func sortAndEncode(players map[string]int) string {
+func sortAndEncode(players map[string]*int) string {
 	keys := maps.Keys(players)
 	sort.Strings(keys)
 	return strings.Join(keys, " ")

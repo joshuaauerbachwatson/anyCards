@@ -42,7 +42,7 @@ func createGame(w http.ResponseWriter, body map[string]string) {
 		return
 	}
 	gameToken := randomGameToken()
-	game := &Game{Players: make(map[string]int), State: "{}"}
+	game := &Game{Players: make(map[string]*int), State: map[string]interface{}{}}
 	games[gameToken] = game
 	responseData := map[string]string{argGameToken: gameToken}
 	response, _ := json.Marshal(responseData) // are errors possible here? ... I think not

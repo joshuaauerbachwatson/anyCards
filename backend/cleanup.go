@@ -29,14 +29,21 @@ import (
 // found idle by this function before they are removed.  This assumes that the idle counts
 // are zeroed every time a game is touched or a player is heard from.
 func cleanup() {
+	// Note: deletion from a map in the scope of a 'range' is said to be safe:
+	// https://stackoverflow.com/questions/23229975/is-it-safe-to-remove-selected-keys-from-map-within-a-range-loop
 	for token, game := range games {
+		game.IdleCount++
 		if game.IdleCount > gameTimeout {
 			fmt.Println("cleanup deleting idle game", token)
 			delete(games, token)
 			continue
 		}
 		for player, idleCount := range game.Players {
-			if idleCount > playerTimeout {
+			if idleCount == nil {
+				continue
+			}
+			*idleCount++
+			if *idleCount > playerTimeout {
 				fmt.Printf("cleanup deleting player %s from game %s\n", player, token)
 				delete(game.Players, player)
 			}
