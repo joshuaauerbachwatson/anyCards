@@ -91,9 +91,10 @@ class ViewController: UIViewController {
     // Label subviews for the (up to) maxPlayers players in the game
     var playerLabels = [UILabel]()
 
-    // Buttons
+    // Buttons and button-sized labels
     let showButton = UIButton()
     let yieldButton = UIButton()
+    let groupLabel = UILabel()
     let groupsButton = UIButton()
     let findPlayersButton = UIButton()
     let endGameButton = UIButton()
@@ -143,7 +144,9 @@ class ViewController: UIViewController {
         handAreaMarker.isHidden = !settings.hasHands
 
         // Record first player
+        assert(players.count == 0)
         players.append(Player(settings.userName))
+        Logger.log("After loading view, player list is \(players)")
 
         // Initialize Labels and buttons
         for i in 0..<4 {
@@ -158,6 +161,10 @@ class ViewController: UIViewController {
         configureButton(groupsButton, title: GroupsTitle, target: self, action: #selector(groupsTouched), parent: self.view)
         configureButton(yieldButton, title: YieldTitle, target: self, action: #selector(yieldTouched), parent: self.view)
         yieldButton.isHidden = true
+        configureLabel(groupLabel, UIColor.white, parent: self.view)
+        groupLabel.isHidden = false
+        groupLabel.font = UIFont.italicSystemFont(ofSize: groupLabel.font.pointSize)
+        groupLabel.textColor = .blue
         configureButton(findPlayersButton, title: FindPlayersTitle, target: self, action: #selector(findPlayersTouched), parent: self.view)
         configureButton(endGameButton, title: EndGameTitle, target: self, action: #selector(endGameTouched), parent: self.view)
         endGameButton.isHidden = true
@@ -187,6 +194,7 @@ class ViewController: UIViewController {
         removeAllCardsAndBoxes()
         doLayout(gameState)
         configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
+        groupLabel.text = settings.communication.displayName
         Logger.log("Game initialized")
     }
 
@@ -264,6 +272,7 @@ class ViewController: UIViewController {
         showButton.frame = CGRect(x: bounds.minX, y: bounds.midY, width: x, height: controlHeight)
         groupsButton.frame = showButton.frame
         yieldButton.frame = showButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
+        groupLabel.frame = yieldButton.frame
         findPlayersButton.frame = yieldButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
         endGameButton.frame = findPlayersButton.frame
         optionsButton.frame = findPlayersButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
@@ -288,6 +297,7 @@ class ViewController: UIViewController {
         showButton.frame = CGRect(x: bounds.minX, y: buttonY, width: ctlWidth, height: controlHeight)
         groupsButton.frame = showButton.frame
         yieldButton.frame = showButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        groupLabel.frame = yieldButton.frame
         findPlayersButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         endGameButton.frame = findPlayersButton.frame
         optionsButton.frame = findPlayersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
@@ -457,8 +467,15 @@ class ViewController: UIViewController {
 
     // Check whether this player is the the player whose turn it is and enable the End Turn button if so
     private func checkTurnToPlay() {
-        showButton.isHidden = !thisPlayersTurn
-        yieldButton.isHidden = !thisPlayersTurn
+        if thisPlayersTurn {
+            showButton.isHidden = false
+            yieldButton.isHidden = false
+            groupLabel.isHidden = true
+        } else {
+            showButton.isHidden = true
+            yieldButton.isHidden = true
+            groupLabel.isHidden = false
+        }
     }
 
     // Display a player in its label using the appropriate text color and attributes
@@ -562,6 +579,8 @@ class ViewController: UIViewController {
         showButton.isHidden = true
         groupsButton.isHidden = false
         yieldButton.isHidden = true
+        groupLabel.isHidden = false
+        groupLabel.text = settings.communication.displayName
         // Set up new game
         deck = DefaultDeck.deck
         cards = makePlayingDeck(deck, settings.deckType)
@@ -604,6 +623,7 @@ class ViewController: UIViewController {
         // a nil communicator implies a false setting for that flag.
         if communicator == nil {
             // Player name
+            assert(players.count < 2)
             players[0] = Player(settings.userName)
             // Min and max players
             configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
@@ -707,14 +727,35 @@ extension ViewController : CommunicatorDelegate {
     }
 
     // Display communications-related error
-    func error(_ error: Error) {
-        Logger.log("Communications exception: \(error)")
+    func error(_ error: Error, _ mustDeleteGame: Bool) {
+        Logger.log("Communications error \(error)")
         var host: UIViewController = self
         DispatchQueue.main.async {
             while host.presentedViewController != nil {
                 host = host.presentedViewController!
             }
-            bummer(title: CommunicationsErrorTitle, message: "\(error)", host: host)
+            let alert = UIAlertController(title: CommunicationsErrorTitle, message: "\(error)", preferredStyle: .alert)
+            var stopTitle = EndGameTitle
+            if mustDeleteGame {
+                stopTitle = OkButtonTitle
+            } else {
+                let keepPlaying = UIAlertAction(title: ContinueTitle, style: .default, handler: nil)
+                alert.addAction(keepPlaying)
+            }
+            let stopPlaying = UIAlertAction(title: stopTitle, style: .cancel) { _ in
+                self.communicator?.shutdown()
+                let communication = self.settings.communication
+                switch communication {
+                case .ServerBased(let groupName):
+                    serverGames.remove(groupName)
+                    self.settings.communication = communication.next
+                default:
+                    break
+                }
+                self.prepareNewGame()
+            }
+            alert.addAction(stopPlaying)
+            Logger.logPresent(alert, host: self, animated: false)
         }
     }
 
@@ -743,8 +784,11 @@ extension ViewController : CommunicatorDelegate {
             // Then, if the incoming list differs from the local list, merge the lists, and ensure that all players in the list are
             // also in the session.
             if players != gameState.players {
+                Logger.log("Former players list was \(players)")
+                Logger.log("New players list is \(gameState.players)")
                 changed = true
                 let merged = (players + gameState.players.filter({ !players.contains($0)})).sorted { $0.order < $1.order }
+                Logger.log("Merged players list is \(merged)")
                 players = merged
                 // Reset thisPlayer since something may have merged in front of its previous location
                 guard let thisPlayer = merged.firstIndex(where: {$0.name == OptionSettings.instance.userName})

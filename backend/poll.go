@@ -42,14 +42,18 @@ import (
 //	players: the list of all active players as a blank separated string containing order numbers in ascending
 //	  order.  Note we provide this only so that clients can enforce play order.  Eventually the server should be
 //	  enforcing this.
-//	gameState: the GameState structure as a JSON-encoded string
+//	gameState: the GameState structure represented as a dictionary (only the clients know the semantics)
 func poll(w http.ResponseWriter, body map[string]string) {
 	_, _, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return
 	}
 	players := sortAndEncode(game.Players)
-	responseData := map[string]interface{}{argGameState: game.State, argPlayers: players}
+	type PollResponse struct {
+		GameState map[string]interface{} `json:"gameState,omitempty"`
+		Players   string                 `json:"players"`
+	}
+	responseData := PollResponse{GameState: game.State, Players: players}
 	response, _ := json.Marshal(responseData) // are errors possible here? ... I think not
 	w.Write(response)                         // no error handling for now
 }

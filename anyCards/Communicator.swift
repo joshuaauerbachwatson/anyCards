@@ -35,7 +35,7 @@ protocol Communicator {
 protocol CommunicatorDelegate {
     func connectedDevicesChanged(_ numDevices: Int)
     func gameChanged(_ gameState: GameState)
-    func error(_ error: Error)
+    func error(_ error: Error, _ deleteGame: Bool)
     func lostPlayer(_ peer: String)
 }
 

@@ -17,7 +17,7 @@
 import UIKit
 
 // Represents the state of a game.  Transmitted between devices.   Also used to facilitate layout within a single device.
-class GameState : Codable {
+class GameState : Codable, Equatable {
     // In initial setup, only the player list is transmitted, along with max and min players
     let players : [Player]   // The list of players, ordered by 'order' fields (ascending).  Eventually, all players must agree on the list
     let maxPlayers : Int     // Maximum number of players that can play (must be agreed upon)
@@ -32,7 +32,7 @@ class GameState : Codable {
 
     // Initializer from current playing area view used when simply performing layout (initially or in response to a size change).  Only the
     // playingArea is important and everything in the playing area is processed (even if there is a hand area).  This is indicated by passing
-    // nil as the maxPublicY.
+    // a nil publicArea
     convenience init(_ playingArea: UIView) {
         self.init([], -1, -1, nil, false, false, playingArea, nil)
     }
@@ -51,9 +51,20 @@ class GameState : Codable {
     convenience init(yielding: Bool, playingArea: UIView, publicArea: CGRect) {
         self.init([], -1, -1, nil, OptionSettings.instance.hasHands, yielding, playingArea, publicArea)
     }
+    // Initializer from Dictionary (accept new game state sent from the server)
+    convenience init(_ newState: Dictionary<String,Any>) {
+        let players = newState["players"] as? [Player] ?? []
+        let minPlayers = newState["minPlayers"] as? Int ?? -1
+        let maxPlayers = newState["maxPlayers"] as? Int ?? -1
+        let deckType = newState["deckType"] as? PlayingDeckTemplate
+        let handArea = newState["handArea"] as? Bool ?? false
+        let yielding = newState["yielding"] as? Bool ?? false
+        let playingArea = newState["playingArea"] as? UIView
+        let publicArea = newState["publicArea"] as? CGRect
+        self.init(players, minPlayers, maxPlayers, deckType, handArea, yielding, playingArea, publicArea)
+    }
 
-    // General initializer, not publically visible.  Note that the handArea argument is not just initialized, it also governs
-    // how the playingArea is processed to find relevant subviews.
+    // General initializer, not publicly visible.
     private init(_ players: [Player], _ minPlayers: Int, _ maxPlayers: Int, _ deckType: PlayingDeckTemplate?, _ handArea: Bool,
                  _ yielding: Bool, _ playingArea: UIView?, _ publicArea:  CGRect?) {
         let cards = playingArea?.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ CardState($0) } ?? []
@@ -66,8 +77,19 @@ class GameState : Codable {
         self.yielding = yielding
         self.areaSize = playingArea?.bounds.size ?? CGSize.zero
     }
-
     // decoding initializer is auto-generated
+
+    // Conform to Equatable protocol
+    static func == (lhs: GameState, rhs: GameState) -> Bool {
+        return lhs.players == rhs.players
+        && lhs.maxPlayers == rhs.maxPlayers
+        && lhs.minPlayers == rhs.minPlayers
+        && lhs.deckType?.displayName == rhs.deckType?.displayName
+        && lhs.handArea == rhs.handArea
+        && lhs.cards == rhs.cards
+        && lhs.yielding == rhs.yielding
+        && lhs.areaSize == rhs.areaSize
+    }
 }
 
 // Determine if a view is a card and its center Y is in the public area
@@ -80,7 +102,7 @@ fileprivate func isEligibleCard(_ maybe: UIView, _ publicArea: CGRect?) -> Bool 
 }
 
 // Represents the state of an individual Card or GridBox
-class CardState : Codable {
+class CardState : Codable, Equatable {
     let origin : CGPoint  // The origin of the SnapFrame for a GridBox
     let index : Int       // Or -1 for a GridBox
     let faceUp : Bool     // Ignored for a GridBox
@@ -104,4 +126,12 @@ class CardState : Codable {
     }
 
     // Decoding initializer is auto-generated
+
+    // Conform to Equatable protocol
+    static func == (lhs: CardState, rhs: CardState) -> Bool {
+        lhs.origin == rhs.origin
+        && lhs.index == rhs.index
+        && lhs.faceUp == rhs.faceUp
+        && lhs.name == rhs.name
+    }
 }

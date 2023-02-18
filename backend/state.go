@@ -58,7 +58,7 @@ func dump(w http.ResponseWriter, body map[string]string) {
 	}
 	fmt.Println("dump called")
 	fmt.Println(string(encoded))
-	w.Write(encoded)
+	w.Write(append(encoded, byte('\n')))
 }
 
 // Handler for an admin function to reset to the empty state

@@ -62,7 +62,7 @@ class MultiPeerCommunicator : NSObject, Communicator {
                 let encoded = try encoder.encode(gameState)
                 try session.send(encoded, toPeers: session.connectedPeers, with: .reliable)
             } catch let error {
-                delegate?.error(error)
+                delegate?.error(error, false)
             }
         }
     }
@@ -100,7 +100,7 @@ class MultiPeerCommunicator : NSObject, Communicator {
 extension MultiPeerCommunicator : MCNearbyServiceAdvertiserDelegate {
     // React to error in advertising
     func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didNotStartAdvertisingPeer error: Error) {
-        delegate?.error(error)
+        delegate?.error(error, false)
     }
 
     // React to invitation from peer
@@ -118,7 +118,7 @@ extension MultiPeerCommunicator : MCNearbyServiceAdvertiserDelegate {
 extension MultiPeerCommunicator : MCNearbyServiceBrowserDelegate {
     // React to error in browsing
     func browser(_ browser: MCNearbyServiceBrowser, didNotStartBrowsingForPeers error: Error) {
-        delegate?.error(error)
+        delegate?.error(error, false)
     }
 
     // React to found peer

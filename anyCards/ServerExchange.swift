@@ -24,13 +24,14 @@ let pathPoll     = "/poll"
 let pathWithdraw = "/withdraw"
 let argAppToken  = "appToken"
 let argGameToken = "gameToken"
-let argForce     = "force"
-let argGameState = "gameState"
 let argPlayer    = "player"
 let argPlayers   = "players"
+let argGameState = "gameState"
+let argError     = "argError"
 
 // This communicator is temporarily using a strategy designed for a serverless implementation.   In that case there was an
-// impedence mismatch for what is, conceptually, a multi-cast group.  We use a 2-second repeating timer to poll for what
+// impedence mismatch for what is, conceptually, a multi-cast group.  We use a 2-second repeating timer to poll for any
+// changes that would otherwise be pushed out upon occurance.
 // The plan is to stop using http and start using a connection based protocol in which we can do true push notifications
 // from the group.
 class ServerBasedCommunicator : NSObject, Communicator {
@@ -40,14 +41,15 @@ class ServerBasedCommunicator : NSObject, Communicator {
     let decoder: JSONDecoder
     var gameToken: String?
     var timer: DispatchSourceTimer? = nil
-    var lastGameState: String? = nil
-    var lastPlayerList: [String] = []
+    var lastGameState = GameState(players: [], minPlayers: -1, maxPlayers: -1)
+    var lastPlayerList: Set<String> = Set<String>()
 
-    // The initializer to use for this Communicator.  Accepts a gameToken and starts listening
+    // The initializer to use for this Communicator.  Accepts a gameToken and player and starts listening
     convenience init(_ gameToken: String, _ player: Player, _ delegate: CommunicatorDelegate) {
         self.init(player, delegate)
         self.gameToken = gameToken
-        guard let encoded = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
+        let poll = Poll(gameToken: gameToken, player: playerID)
+        guard let encoded = try? encoder.encode(poll) else {
             Logger.logFatalError("Unexpected failure to encode gameToken and player")
         }
         startListening(encoded)
@@ -76,47 +78,50 @@ class ServerBasedCommunicator : NSObject, Communicator {
 
     // Interpret a new state
     func newState(_ data: Data?, _ response: URLResponse?, _ err: Error?) {
-        guard let validData = validateResponse(data, response, err, delegate.error) else {
-            shutdown()
+        guard let newState = validateResponse(data, response, err, ReceivedState.self, delegate.error) else {
+            timer?.cancel()
             return
         }
-        if let playerList = validData[argPlayers] {
-            let players = playerList.split(separator: " ").map { String($0) }
+        if let playerList = newState.players {
+            let players = Set<String>(playerList.split(separator: " ").map { String($0) })
             if players != self.lastPlayerList {
                 delegate.connectedDevicesChanged(players.count)
+                findMissingPlayers(players)
                 self.lastPlayerList = players
             }
         }
-        guard let gameState = validData[argGameState] else {
-            delegate.error(ServerError("Invalid answer to poll"))
-            shutdown()
+        guard let gameState = newState.gameState else {
+            delegate.error(ServerError("No game state included in answer to poll"), false)
+            timer?.cancel()
             return
         }
         if gameState != self.lastGameState {
-            do {
-                let state = try decoder.decode(GameState.self, from: gameState.data(using: .utf8)!)
-                self.lastGameState = gameState
-                delegate.gameChanged(state)
-            } catch {
-                delegate.error(error)
-                shutdown()
-                return
-            }
+             self.lastGameState = gameState
+             delegate.gameChanged(gameState)
         } // do nothing if no change
+    }
+
+    // Find a player that was missing on a poll and notify so game can be terminated.  Only one lost player is reported because
+    // that report will end the game anyway.   The argument is the new player set; the old one is in self.lastPlayerList
+    func findMissingPlayers(_ players: Set<String>) {
+        let missing = self.lastPlayerList.subtracting(players)
+        if let toReport = missing.first {
+            self.delegate.lostPlayer(toReport)
+        }
     }
 
     // Send a new game state
     func send(_ gameState: GameState) {
         var arg: Data
         do {
-            let encodedGameState = String(data: try encoder.encode(gameState), encoding: .utf8)
-            arg = try encoder.encode([ argGameToken: self.gameToken, argPlayer: self.playerID, argGameState: encodedGameState ])
+            let msg = SentState(gameToken: self.gameToken!, player: self.playerID, gameState: gameState)
+            arg = try encoder.encode(msg)
         } catch {
-            delegate.error(error)
+            delegate.error(error, false)
             return
         }
         postAnAction(pathNewState, arg) { (data, response, err) in
-            _ = validateResponse(data, response, err, self.delegate.error)
+            _ = validateResponse(data, response, err, Dictionary<String,String>.self, self.delegate.error)
         }
     }
 
@@ -163,38 +168,71 @@ struct ServerError: Error, CustomDebugStringConvertible {
         self.localizedDescription = msg
         self.debugDescription = msg
     }
-    init(_ statusCode: Int) {
-        self.init(HTTPURLResponse.localizedString(forStatusCode: statusCode))
+    init(_ statusCode: Int, withMessage: String? = nil) {
+        var msg = HTTPURLResponse.localizedString(forStatusCode: statusCode)
+        if let detail = withMessage {
+            msg = "\(msg) (\(detail))"
+        }
+        self.init(msg)
     }
 }
 
+// The value sent in a newstate exchange
+struct SentState: Encodable {
+    let gameToken: String
+    let player: String
+    let gameState: GameState
+}
+
+// The value sent when polling
+struct Poll: Encodable {
+    let gameToken: String
+    let player: String
+}
+
+// The value received in response to a poll
+struct ReceivedState: Decodable {
+    let players: String?
+    let gameState: GameState?
+}
+
 // Subroutine used by response handlers to validate the response and up-call an error if appropriate
-// Returns the result dictionary or nil.
-func validateResponse(_ data: Data?, _ response: URLResponse?, _ err: Error?, _ errHandler: (Error)->Void) -> Dictionary<String, String>? {
+// Returns the result dictionary if valid or nil if error.
+func validateResponse<T: Decodable>(_ data: Data?, _ response: URLResponse?, _ err: Error?, _ type: T.Type, _ errHandler: (Error, Bool)->Void) -> T? {
     if let err = err {
         Logger.log("Got error return: \(err)")
-        errHandler(err)
+        errHandler(err, false)
         return nil
     }
     guard let resp = response as? HTTPURLResponse else {
-        errHandler(ServerError("Could not interpret response from backend"))
+        errHandler(ServerError("Could not interpret response from backend"), false)
         return nil
     }
     Logger.log("Got response: \(resp)")
     if resp.statusCode < 200 || resp.statusCode > 299 {
-        errHandler(ServerError(resp.statusCode))
+        // By convention, in any error case, the body will not conform to T but rather will be a one-element string->string Dictionary
+        // whose element is "error" (or else there is no body).
+        var errMsg: String? = nil
+        if let data = data, data.count > 0  {
+            if let errBody = try? JSONDecoder().decode(Dictionary<String,String>.self, from: data) {
+                errMsg = errBody[argError]
+            }
+        }
+        errHandler(ServerError(resp.statusCode, withMessage: errMsg), resp.statusCode == 404)
         return nil
     }
-    if let body = data {
+    var body: T? = nil
+    if let data = data, data.count > 0 {
+        let showData = String(decoding: data, as: UTF8.self)
+        Logger.log("Got data: \(showData)")
+        Logger.log("Decoding message with type \(type)")
         do {
-            return try JSONDecoder().decode(Dictionary.self, from: body)
+            body = try JSONDecoder().decode(T.self, from: data)
         } catch {
             Logger.log("Got decoding error: \(error)")
-            errHandler(error)
+            errHandler(error, false)
             return nil
         }
-    } else {
-        // empty body is ok in some contexts
-        return Dictionary<String, String>()
     }
+    return body
 }

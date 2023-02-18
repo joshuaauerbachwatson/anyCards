@@ -37,7 +37,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     var savedGroupName: String = ""
 
     // Controls
-    let header = UILabel()
+    let currentGroup = UILabel()
     let nextButton = UIButton()
     let groupNameLabel = UILabel()
     let groupName = UITextField()
@@ -117,6 +117,8 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         createGroup.isHidden = true
         nextButton.isHidden = false
         doneButton.isHidden = false
+        vc.groupLabel.text = name
+        currentGroup.text = CurrentGroupPrefix + name
     }
 
     // Setup the dialog for creating groups or joining groups
@@ -136,6 +138,8 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         createGroup.isHidden = false
         nextButton.isHidden = false
         doneButton.isHidden = false
+        vc.groupLabel.text = LocalOnly
+        currentGroup.text = CurrentGroupPrefix + LocalOnly
     }
 
     // Enumerate the operations that use the confirm/cancel state
@@ -162,9 +166,8 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         view.backgroundColor = SettingsDialogBackground // borrowed
 
-        // Header
-        configureLabel(header, SettingsDialogBackground, parent: view)
-        header.text = GroupManagementHeaderText
+        // Current group
+        configureLabel(currentGroup, SettingsDialogBackground, parent: view)
 
         // group name and label (excepting the name itself)
         configureLabel(groupNameLabel, SettingsDialogBackground, parent: view)
@@ -220,9 +223,9 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         let fullWidth = view.bounds.width - 2 * margin
         let quarterWidth = (fullWidth - 3 * spacer) / 4
         let threeQuarterWidth = 3 * quarterWidth + 2 * spacer
-        header.frame = CGRect(x: view.bounds.minX + margin, y: view.bounds.minY + margin, width: fullWidth,
+        currentGroup.frame = CGRect(x: view.bounds.minX + margin, y: view.bounds.minY + margin, width: fullWidth,
                               height: ctlHeight)
-        nextButton.frame = header.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
+        nextButton.frame = currentGroup.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
         groupNameLabel.frame = CGRect(x: view.bounds.minX + margin, y: nextButton.frame.maxY + spacer, width: quarterWidth, height: ctlHeight)
         groupName.frame = CGRect(x: groupNameLabel.frame.maxX + spacer, y: nextButton.frame.maxY + spacer,
                                  width: threeQuarterWidth, height: ctlHeight)
@@ -301,7 +304,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     // Respond to touch of the deleteGroup button
     @objc func deleteGroupTouched() {
         guard let groupName = self.groupName.text?.trim() else {
-            self.vc.error(ServerError("There is no group shown.  Deletion not possible."))
+            self.vc.error(ServerError("There is no group shown.  Deletion not possible."), false)
             return
         }
         let currentToken = token.text?.trim()
@@ -315,7 +318,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
             }
             if remote {
                 guard let token = currentToken else {
-                    self.vc.error(ServerError("There is no token shown.  Only local deletion was performed."))
+                    self.vc.error(ServerError("There is no token shown.  Only local deletion was performed."), false)
                     return
                 }
                 let errHandler = self.vc.error
@@ -323,11 +326,11 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
                 do {
                     arg = try JSONEncoder().encode([ "gameToken": token, "force": String(force) ])
                 } catch {
-                    errHandler(error)
+                    errHandler(error, false)
                     return
                 }
-                postAnAction("deleteGame", arg) { (data, response, err ) in
-                    _ = validateResponse(data,response, err, errHandler)
+                postAnAction(pathDelete, arg) { (data, response, err ) in
+                    _ = validateResponse(data,response, err, Dictionary<String,String>.self, errHandler)
                 }
             }
         }
@@ -344,7 +347,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     @objc func confirmButtonTouched(_ button: UIButton) {
         func bail() {
             let insufficient = ServerError("Insufficient information was given make the requested change")
-            vc.error(insufficient)
+            vc.error(insufficient, false)
             cancelButtonTouched(button)
         }
         guard let name = groupName.text?.trim() else {
@@ -371,11 +374,11 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         do {
             arg = try JSONEncoder().encode([ argAppToken: AppToken ])
         } catch {
-            errHandler(error)
+            errHandler(error, false)
             return
         }
         postAnAction(pathCreate, arg) { (data, response, err ) in
-            guard let result = validateResponse(data,response, err, errHandler) else {
+            guard let result = validateResponse(data,response, err, Dictionary<String,String>.self, errHandler) else {
                 // Error already displayed by validator
                 DispatchQueue.main.async {
                     self.cancelButtonTouched(self.cancelButton)
@@ -390,7 +393,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
                 }
             } else {
                 DispatchQueue.main.async {
-                    errHandler(ServerError("No gameToken in response or response was invalid"))
+                    errHandler(ServerError("No gameToken in response or response was invalid"), false)
                     self.cancelButtonTouched(self.cancelButton)
                 }
             }
