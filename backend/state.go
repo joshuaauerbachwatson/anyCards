@@ -46,7 +46,7 @@ var cleanupCounter int
 // Handler for an admin function to dump the entire state of the server.
 // This is an aid during development.  We might need something more sophisticated
 // for observability in the long run.
-func dump(w http.ResponseWriter, body map[string]string) {
+func dump(w http.ResponseWriter, body map[string]interface{}) {
 	if !checkAppToken(w, body, "dump") {
 		return
 	}
@@ -62,7 +62,7 @@ func dump(w http.ResponseWriter, body map[string]string) {
 }
 
 // Handler for an admin function to reset to the empty state
-func reset(w http.ResponseWriter, body map[string]string) {
+func reset(w http.ResponseWriter, body map[string]interface{}) {
 	if !checkAppToken(w, body, "reset") {
 		return
 	}

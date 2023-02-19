@@ -30,7 +30,7 @@ import (
 
 // Preliminary validator and request logging support.  If valid, returns the POST body as a (possibly empty)
 // map.  If invalid, returns nil (having already sent the error response).
-func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]string {
+func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]interface{} {
 	uri := r.RequestURI
 	method := r.Method
 	fmt.Println("Got request", method, uri)
@@ -38,12 +38,11 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]string {
 		indicateError(http.StatusMethodNotAllowed, "forbidden method", w)
 		return nil
 	}
-	body := new(map[string]string)
+	body := new(map[string]interface{})
 	err := json.NewDecoder(r.Body).Decode(body)
 	if err == nil {
 		return body
 	}
-	fmt.Println("Erroneous body!")
 	indicateError(http.StatusBadRequest, "malformed request body (not JSON?)", w)
 	return nil
 }
@@ -52,7 +51,7 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]string {
 // this to create games and to perform the dump and reset admin functions.  This suffices for
 // development.  In production, we'd want easily obtained identity tokens for creating games and more
 // restricted ones for the admin functions.
-func checkAppToken(w http.ResponseWriter, body map[string]string, request string) bool {
+func checkAppToken(w http.ResponseWriter, body map[string]interface{}, request string) bool {
 	appToken := body[argAppToken]
 	if appToken == anycardsAppToken {
 		return true
@@ -64,32 +63,36 @@ func checkAppToken(w http.ResponseWriter, body map[string]string, request string
 
 // Secondary validator for post bodies containing gameToken.  Returns the gameToken (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
-func getGameToken(w http.ResponseWriter, body map[string]string) (string, bool) {
-	gameToken := body["gameToken"]
-	if len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken) {
-		game := games[gameToken]
-		if game != nil {
-			game.IdleCount = 0
+func getGameToken(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
+	gameToken, ok := body["gameToken"].(string)
+	if ok {
+		if len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken) {
+			game := games[gameToken]
+			if game != nil {
+				game.IdleCount = 0
+			}
+			return gameToken, true
 		}
-		return gameToken, true
 	}
-	indicateError(http.StatusBadRequest, "malformed game token", w)
+	indicateError(http.StatusBadRequest, "missing or malformed game token", w)
 	return "", false
 }
 
 // Secondary validator for post bodies containing player.  Returns the player (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
-func getPlayer(w http.ResponseWriter, gameToken string, body map[string]string) (string, bool) {
-	player := body["player"]
-	maybe, err := strconv.Atoi(player)
-	if err == nil && maybe >= 0 {
-		game := games[gameToken]
-		if game != nil && game.Players[player] != nil {
-			*game.Players[player] = 0
+func getPlayer(w http.ResponseWriter, gameToken string, body map[string]interface{}) (string, bool) {
+	player, ok := body["player"].(string)
+	if ok {
+		maybe, err := strconv.Atoi(player)
+		if err == nil && maybe >= 0 {
+			game := games[gameToken]
+			if game != nil && game.Players[player] != nil {
+				*game.Players[player] = 0
+			}
+			return player, true
 		}
-		return player, true
 	}
-	indicateError(http.StatusBadRequest, "malformed player value", w)
+	indicateError(http.StatusBadRequest, "missing or malformed player value", w)
 	return "", false
 }
 
@@ -104,7 +107,7 @@ func indicateError(status int, msg string, w http.ResponseWriter) {
 // Convenience wrapper for getting the game and player, validating args in the process, and
 // determining whether the game exists.  All errors result in an error response being sent
 // and a return with a nil Game.
-func getGameAndPlayer(w http.ResponseWriter, body map[string]string) (string, string, *Game) {
+func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (string, string, *Game) {
 	gameToken, ok := getGameToken(w, body)
 	if !ok {
 		return "", "", nil

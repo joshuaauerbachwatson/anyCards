@@ -40,7 +40,7 @@ import (
 // If the player withdrawing is the last player of the game, the game is nevertheless left in place and could
 // be "played again" by presenting its game token.  Games that are idle for long enough are removed.
 // We do not use the "not found" response if the player is not in the game.  That is considered "success".
-func withdraw(w http.ResponseWriter, body map[string]string) {
+func withdraw(w http.ResponseWriter, body map[string]interface{}) {
 	gameToken, player, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return

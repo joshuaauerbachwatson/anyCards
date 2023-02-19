@@ -18,7 +18,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
@@ -36,20 +35,14 @@ import (
 //	status == StatusBadRequest if any argument is ill-formed
 //	status == StatusNotFound if the game cannot be found
 //	status == StatusForbidden if the new state is rejected by the game rules (not used yet)
-func newGameState(w http.ResponseWriter, body map[string]string) {
+func newGameState(w http.ResponseWriter, body map[string]interface{}) {
 	gameToken, player, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return // error response already issued
 	}
-	gameStateString := body[argGameState]
-	if gameStateString == "" {
-		indicateError(http.StatusBadRequest, "missing gameState argument", w)
-		return
-	}
-	gameState := map[string]interface{}{}
-	err := json.Unmarshal([]byte(gameStateString), &gameState)
-	if err != nil {
-		indicateError(http.StatusBadRequest, "invalid gameState argument", w)
+	gameState, ok := body[argGameState].(map[string]interface{})
+	if !ok {
+		indicateError(http.StatusBadRequest, "missing or malformed gameState argument", w)
 		return
 	}
 	// TODO game rules should be applied here to check whether the new game state is acceptable

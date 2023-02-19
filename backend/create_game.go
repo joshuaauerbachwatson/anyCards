@@ -38,7 +38,7 @@ import (
 // are awaited.  The game can return to "merely existing" when all players of the game have withdrawn.
 // This does not delete the game.  Only a deleteGame call can do that.  It is up to the creator to distribute
 // the game token to potential players.
-func createGame(w http.ResponseWriter, body map[string]string) {
+func createGame(w http.ResponseWriter, body map[string]interface{}) {
 	if !checkAppToken(w, body, "game creation") {
 		return
 	}

@@ -40,7 +40,7 @@ import (
 //		status == StatusBadRequest if the required 'gameToken' argument is missing or ill-formed
 //		status == StatusNotFound if the game was not found
 //		status == StatusForbidden if the game was found but is in progress and force was not specified
-func deleteGame(w http.ResponseWriter, body map[string]string) {
+func deleteGame(w http.ResponseWriter, body map[string]interface{}) {
 	gameToken, ok := getGameToken(w, body)
 	if !ok {
 		return

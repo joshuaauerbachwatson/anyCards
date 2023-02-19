@@ -43,7 +43,7 @@ import (
 //	  order.  Note we provide this only so that clients can enforce play order.  Eventually the server should be
 //	  enforcing this.
 //	gameState: the GameState structure represented as a dictionary (only the clients know the semantics)
-func poll(w http.ResponseWriter, body map[string]string) {
+func poll(w http.ResponseWriter, body map[string]interface{}) {
 	_, player, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return
