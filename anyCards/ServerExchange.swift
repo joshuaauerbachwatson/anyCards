@@ -97,8 +97,8 @@ class ServerBasedCommunicator : NSObject, Communicator {
             } // do nothing if no change
         } else if self.lastGameState != nil {
             // Once some GameState has been established, all polls should be returning one
-            delegate.error(ServerError("No game state included in answer to poll"), false)
             timer?.cancel()
+            delegate.error(ServerError("No game state included in answer to poll"), false)
         } // but if a GameState was never sent, we can assume that none exists on the server yet either
     }
 
@@ -124,7 +124,6 @@ class ServerBasedCommunicator : NSObject, Communicator {
         postAnAction(pathNewState, arg) { (data, response, err) in
             _ = validateResponse(data, response, err, Dictionary<String,String>.self, self.delegate.error)
         }
-        self.lastGameState = gameState
     }
 
     // Shutdown this communicator.  First stop the polling, then try to withdraw from the game (silently)
