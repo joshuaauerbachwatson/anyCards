@@ -41,7 +41,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     let decoder: JSONDecoder
     var gameToken: String?
     var timer: DispatchSourceTimer? = nil
-    var lastGameState = GameState(players: [], minPlayers: -1, maxPlayers: -1)
+    var lastGameState: GameState? = nil
     var lastPlayerList: Set<String> = Set<String>()
 
     // The initializer to use for this Communicator.  Accepts a gameToken and player and starts listening
@@ -90,15 +90,16 @@ class ServerBasedCommunicator : NSObject, Communicator {
                 self.lastPlayerList = players
             }
         }
-        guard let gameState = newState.gameState else {
+        if let gameState = newState.gameState {
+            if gameState != self.lastGameState {
+                 self.lastGameState = gameState
+                 delegate.gameChanged(gameState)
+            } // do nothing if no change
+        } else if self.lastGameState != nil {
+            // Once some GameState has been established, all polls should be returning one
             delegate.error(ServerError("No game state included in answer to poll"), false)
             timer?.cancel()
-            return
-        }
-        if gameState != self.lastGameState {
-             self.lastGameState = gameState
-             delegate.gameChanged(gameState)
-        } // do nothing if no change
+        } // but if a GameState was never sent, we can assume that none exists on the server yet either
     }
 
     // Find a player that was missing on a poll and notify so game can be terminated.  Only one lost player is reported because
@@ -123,6 +124,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
         postAnAction(pathNewState, arg) { (data, response, err) in
             _ = validateResponse(data, response, err, Dictionary<String,String>.self, self.delegate.error)
         }
+        self.lastGameState = gameState
     }
 
     // Shutdown this communicator.  First stop the polling, then try to withdraw from the game (silently)
