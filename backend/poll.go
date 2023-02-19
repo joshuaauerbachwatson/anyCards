@@ -44,9 +44,14 @@ import (
 //	  enforcing this.
 //	gameState: the GameState structure represented as a dictionary (only the clients know the semantics)
 func poll(w http.ResponseWriter, body map[string]string) {
-	_, _, game := getGameAndPlayer(w, body)
+	_, player, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return
+	}
+	if game.Players[player] == nil {
+		// Generally only true on the first poll.  TODO when we eliminate poll we will still need a way
+		// to register a new player.
+		game.Players[player] = new(int)
 	}
 	players := sortAndEncode(game.Players)
 	type PollResponse struct {
