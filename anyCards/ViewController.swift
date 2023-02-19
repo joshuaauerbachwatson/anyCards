@@ -546,10 +546,13 @@ class ViewController: UIViewController {
         Logger.logFatalError("Card that should be a subview is not found in subviews")
     }
 
-    // Front for Deck.makePlayingDeck, ensures that every card gets a gesture recognizer
+    // Front for Deck.makePlayingDeck, ensures that every card gets a gesture recognizer, but only once.
     private func makePlayingDeck(_ deck: Deck, _ instructions: PlayingDeckTemplate) -> [Card] {
         let cards = deck.makePlayingDeck(instructions)
         for card in cards {
+            if let recognizers = card.gestureRecognizers, recognizers.count > 0 {
+                continue
+            }
             let gestureRecognizer = TouchTapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTouch: cardTouched, onTap: cardTapped)
             card.addGestureRecognizer(gestureRecognizer)
         }
