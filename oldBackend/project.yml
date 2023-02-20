@@ -1,4 +1,0 @@
-packages:
-  - name: anyCards
-    environment:
-      $(ANYCARDS_APP_TOKEN)
