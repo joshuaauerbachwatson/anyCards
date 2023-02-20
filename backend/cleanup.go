@@ -29,7 +29,7 @@ import (
 // found idle by this function before they are removed.  This assumes that the idle counts
 // are zeroed every time a game is touched or a player is heard from.
 func cleanup() {
-	// Note: deletion from a map in the scope of a 'range' is said to be safe:
+	// Note: deletion from a map in the scope of a 'range' loop is said to be safe:
 	// https://stackoverflow.com/questions/23229975/is-it-safe-to-remove-selected-keys-from-map-within-a-range-loop
 	for token, game := range games {
 		game.IdleCount++
@@ -38,6 +38,7 @@ func cleanup() {
 			delete(games, token)
 			continue
 		}
+		oldPlayerCount := len(game.Players)
 		for player, idleCount := range game.Players {
 			if idleCount == nil {
 				continue
@@ -47,6 +48,13 @@ func cleanup() {
 				fmt.Printf("cleanup deleting player %s from game %s\n", player, token)
 				delete(game.Players, player)
 			}
+		}
+		newPlayerCount := len(game.Players)
+		if newPlayerCount == 0 && oldPlayerCount > 0 {
+			// Game went from having players to having none.  If the game restarts, its old state
+			// is irrelevant and will only cause confusion
+			fmt.Printf("cleanup discarding stale game state from game%s\n", token)
+			game.State = nil
 		}
 	}
 }

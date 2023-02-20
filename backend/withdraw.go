@@ -53,6 +53,10 @@ func withdraw(w http.ResponseWriter, body map[string]interface{}) {
 	delete(game.Players, player)
 	if game.Players[player] == nil {
 		fmt.Printf("player %s was successfully withdrawn\n", player)
+		if len(game.Players) == 0 {
+			game.State = nil
+			fmt.Println("No players left; old game state removed")
+		}
 		return
 	}
 	indicateError(http.StatusInternalServerError, "player failed to be withdrawn", w)
