@@ -832,11 +832,18 @@ extension ViewController : CommunicatorDelegate {
 
     // React to lost peer by ending the game with a short dialog
     func lostPlayer(_ player: String) {
-        let action = UIAlertAction(title: OkButtonTitle, style: .cancel, handler: nil)
-        let lostPlayerMessage = String(format: LostPlayerTemplate, player)
-        let alert = UIAlertController(title: title, message: lostPlayerMessage, preferredStyle: .alert)
-        alert.addAction(action)
-        Logger.logPresent(alert, host: self, animated: false)
-        prepareNewGame()
+        Logger.log("Lost player \(player)")
+        var host: UIViewController = self
+        DispatchQueue.main.async {
+            while host.presentedViewController != nil {
+                host = host.presentedViewController!
+            }
+            let action = UIAlertAction(title: OkButtonTitle, style: .cancel, handler: nil)
+            let lostPlayerMessage = String(format: LostPlayerTemplate, player)
+            let alert = UIAlertController(title: LostPlayerTitle, message: lostPlayerMessage, preferredStyle: .alert)
+            alert.addAction(action)
+            Logger.logPresent(alert, host: self, animated: false)
+            self.prepareNewGame()
+        }
     }
 }

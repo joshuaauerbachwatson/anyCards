@@ -57,6 +57,7 @@ let CountLabelColor = UIColor.red
 // Texts
 let DefaultDeckName = "DefaultCardDeck.png"
 let MultiPeerServiceName = "anyoldcardgame"
+let LostPlayerTitle = "Lost Player"
 let LostPlayerTemplate = "Lost contact with %@; game ending."
 let OptionsTitle = "Configure Game"
 let FindPlayersTitle = "Find Players"
