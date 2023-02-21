@@ -46,7 +46,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>Communicate with other players nearby</string>
-</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Communicate with other players nearby</string>
+    <key>NSBonjourServices</key>
+    <array>
+        <string>_anyoldcardgame._tcp</string>
+        <string>_anyoldcardgame._udp</string>
+    </array></dict>
 </plist>
