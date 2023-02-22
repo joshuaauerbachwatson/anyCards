@@ -831,19 +831,34 @@ extension ViewController : CommunicatorDelegate {
     }
 
     // React to lost peer by ending the game with a short dialog
-    func lostPlayer(_ player: String) {
-        Logger.log("Lost player \(player)")
+    func lostPlayer(_ playerID: String) {
+        var player = getPlayer(playerID)
+        if player == nil {
+            Logger.log("Lost player \(playerID)")
+            player = playerID
+        } else {
+            Logger.log("Lost player \(player!)(\(playerID))")
+        }
         var host: UIViewController = self
         DispatchQueue.main.async {
             while host.presentedViewController != nil {
                 host = host.presentedViewController!
             }
             let action = UIAlertAction(title: OkButtonTitle, style: .cancel, handler: nil)
-            let lostPlayerMessage = String(format: LostPlayerTemplate, player)
+            let lostPlayerMessage = String(format: LostPlayerTemplate, player!)
             let alert = UIAlertController(title: LostPlayerTitle, message: lostPlayerMessage, preferredStyle: .alert)
             alert.addAction(action)
             Logger.logPresent(alert, host: self, animated: false)
             self.prepareNewGame()
         }
+    }
+
+    // Get the player name for a playerID, assuming the playerID is found in the 'players' list
+    func getPlayer(_ playerID: String) -> String? {
+        let possibles = players.filter { String($0.order) == playerID}
+        if possibles.count == 1 {
+            return possibles[0].name
+        }
+        return nil
     }
 }
