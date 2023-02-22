@@ -33,19 +33,20 @@ class OptionSettingsDialog : UIViewController {
 
     // Controls
     let header = UILabel()                    // First Row
-    let userNameLabel = UILabel()             // Second row, left
-    let userName = UITextField()              // Second row, right
-    let communicationLabel = UILabel()        // Third row, left
-    let communicationStyle = TouchableLabel() // Third row, right
-    let deckTypeLabel = UILabel()             // Fourth row, left
-    let deckType = TouchableLabel()           // Fourth row, right
-    let handAreaLabel = UILabel()             // Fifth row, left
-    let handArea = TouchableLabel()           // Fifth row, right
-    let minPlayersLabel = UILabel()           // Sixth row, left
-    let minPlayers = Stepper()                // Sixth row, right
-    let maxPlayersLabel = UILabel()           // Seventh row, left
-    let maxPlayers = Stepper()                // Seventh row, right
-    let doneButton = UIButton()               // Eighth row
+    let versionLabel = UILabel()              // Second Row
+    let userNameLabel = UILabel()             // Third row, left
+    let userName = UITextField()              // Third row, right
+    let communicationLabel = UILabel()        // Fourth row, left
+    let communicationStyle = TouchableLabel() // Fourth row, right
+    let deckTypeLabel = UILabel()             // Fifth row, left
+    let deckType = TouchableLabel()           // Fifth row, right
+    let handAreaLabel = UILabel()             // Sixth row, left
+    let handArea = TouchableLabel()           // Sixth row, right
+    let minPlayersLabel = UILabel()           // Seventh row, left
+    let minPlayers = Stepper()                // Seventh row, right
+    let maxPlayersLabel = UILabel()           // Eighth row, left
+    let maxPlayers = Stepper()                // Eighth row, right
+    let doneButton = UIButton()               // Nineth row
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -61,9 +62,11 @@ class OptionSettingsDialog : UIViewController {
     override func viewDidLoad() {
         view.backgroundColor = SettingsDialogBackground
 
-        // Header
+        // Header and version
         configureLabel(header, SettingsDialogBackground, parent: view)
         header.text = SettingsHeaderText
+        configureLabel(versionLabel, SettingsDialogBackground, parent: view)
+        versionLabel.text = generateVersionText()
 
         // userName and label
         configureLabel(userNameLabel, SettingsDialogBackground, parent: view)
@@ -120,12 +123,13 @@ class OptionSettingsDialog : UIViewController {
     // When view appears, we do layout
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let ctlHeight = (view.bounds.height - 7 * OptionSettingsSpacer - 2 * OptionSettingsEdgeMargin) / 8
+        let ctlHeight = (view.bounds.height - 8 * OptionSettingsSpacer - 2 * OptionSettingsEdgeMargin) / 9
         let fullWidth = view.bounds.width - 2 * OptionSettingsEdgeMargin
         let ctlWidth = (fullWidth - OptionSettingsSpacer) / 2
         header.frame = CGRect(x: view.bounds.minX + OptionSettingsEdgeMargin, y: view.bounds.minY + OptionSettingsEdgeMargin, width: fullWidth,
                               height: ctlHeight)
-        userNameLabel.frame = CGRect(x: view.bounds.minX + OptionSettingsEdgeMargin, y: header.frame.maxY + OptionSettingsSpacer,                             width: ctlWidth, height: ctlHeight)
+        versionLabel.frame = header.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
+        userNameLabel.frame = CGRect(x: view.bounds.minX + OptionSettingsEdgeMargin, y: versionLabel.frame.maxY + OptionSettingsSpacer,                             width: ctlWidth, height: ctlHeight)
         userName.frame = userNameLabel.frame.offsetBy(dx: ctlWidth + OptionSettingsSpacer, dy: 0)
         communicationLabel.frame = userNameLabel.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
         communicationStyle.frame = userName.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
@@ -174,6 +178,19 @@ class OptionSettingsDialog : UIViewController {
     }
 
     // Subroutines
+
+    // Generates the content of the version label based information baked into the app at build time.
+    private func generateVersionText() -> String {
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
+        if appVersion == nil {
+            return MissingVersionMessage
+        } else if buildNumber == nil {
+            return VersionPrefix + appVersion!
+        } else {
+            return "\(VersionPrefix)\(appVersion!)(\(buildNumber!))"
+        }
+    }
 
     // Finish initializing one of the two steppers
     private func configureStepper(_ label: UILabel, _ stepper: Stepper, _ labelText: String, _ stepperValue: Int) {
