@@ -29,6 +29,7 @@
 		EE90291F26DEE69200F87FF8 /* AuerbachLook.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */; };
 		EE90292126DEE6A100F87FF8 /* Stepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292026DEE6A100F87FF8 /* Stepper.swift */; };
 		EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */; };
+		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
 		EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B6E270DCE9B005994FB /* Secrets.swift */; };
 		EEEF9B712716DFAE005994FB /* ServerGames.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* ServerGames.swift */; };
 		EEEF9B73271868C8005994FB /* GroupManagementDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B72271868C8005994FB /* GroupManagementDialog.swift */; };
@@ -60,6 +61,7 @@
 		EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuerbachLook.swift; sourceTree = "<group>"; };
 		EE90292026DEE6A100F87FF8 /* Stepper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stepper.swift; sourceTree = "<group>"; };
 		EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTapAndDragRecognizer.swift; sourceTree = "<group>"; };
+		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
 		EEEF9B6E270DCE9B005994FB /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		EEEF9B702716DFAE005994FB /* ServerGames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerGames.swift; sourceTree = "<group>"; };
 		EEEF9B72271868C8005994FB /* GroupManagementDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupManagementDialog.swift; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 				EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */,
 				EE90290526DEDF7A00F87FF8 /* Communicator.swift */,
 				EE90290126DEDF7A00F87FF8 /* Constants.swift */,
+				EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */,
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
 				EE9028FC26DEDF7A00F87FF8 /* GameState.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
@@ -198,6 +201,7 @@
 			files = (
 				EE90291C26DEE3B100F87FF8 /* TouchableView.swift in Sources */,
 				EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */,
+				EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */,
 				EE90291426DEDF7A00F87FF8 /* Communicator.swift in Sources */,
 				EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */,
 				EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */,

@@ -109,6 +109,13 @@ func configureTouchableLabel(_ ans: TouchableLabel, target: AnyObject, action: S
     parent.addSubview(ans)
 }
 
+// Configure a stepper
+func configureStepper(_ stepper: Stepper, delegate: StepperDelegate, value: Int, parent: UIView) {
+    stepper.delegate = delegate
+    stepper.value = value
+    parent.addSubview(stepper)
+}
+
 // Get the appropriate font to use in a label, based on a base font size which is good for iPads.  Phones use a reduced font based on the
 // ratio of their shortest dimension to the iPad's shortest dimension.
 func getTextFont() -> UIFont {

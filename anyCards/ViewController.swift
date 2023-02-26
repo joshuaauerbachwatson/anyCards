@@ -99,6 +99,8 @@ class ViewController: UIViewController {
     let findPlayersButton = UIButton()
     let endGameButton = UIButton()
     let optionsButton = UIButton()
+    let dealButton = UIButton()
+    let helpButton = UIButton()
 
     // The subset of the playingArea subviews that are cards.  Normally, the contents of this array is the same as that of the cards
     // array but the order is the subview order rather than index order.
@@ -169,6 +171,8 @@ class ViewController: UIViewController {
         configureButton(endGameButton, title: EndGameTitle, target: self, action: #selector(endGameTouched), parent: self.view)
         endGameButton.isHidden = true
         configureButton(optionsButton, title: OptionsTitle, target: self, action: #selector(optionsTouched), parent: self.view)
+        configureButton(dealButton, title: DealTitle, target: self, action: #selector(dealTouched), parent: self.view)
+        configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
 
         // Add GridBox-making and destroying recognizer to the playingArea view
         let gridBoxRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressDetected))
@@ -269,6 +273,7 @@ class ViewController: UIViewController {
             playerLabel.frame = CGRect(x: bounds.minX, y: nextY, width: x, height: controlHeight)
             nextY = nextY - controlHeight - border
         }
+        helpButton.frame = CGRect(x: bounds.minX, y:nextY, width: x, height: controlHeight)
         showButton.frame = CGRect(x: bounds.minX, y: bounds.midY, width: x, height: controlHeight)
         groupsButton.frame = showButton.frame
         yieldButton.frame = showButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
@@ -276,6 +281,7 @@ class ViewController: UIViewController {
         findPlayersButton.frame = yieldButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
         endGameButton.frame = findPlayersButton.frame
         optionsButton.frame = findPlayersButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
+        dealButton.frame = optionsButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
     }
 
     // Layout the immediate children of the main view for portrait
@@ -284,15 +290,17 @@ class ViewController: UIViewController {
         let playingHeight = bounds.width / PlayingAreaAspectRatio
         let playingY = bounds.minY + bounds.height - playingHeight
         playingArea.frame = CGRect(x: bounds.minX, y: playingY, width: bounds.width, height: playingHeight)
-        // The labels and buttons are above the playing area, each forming a row.  Sizes are computed to fit the available space
+        // The labels and buttons are above the playing area, organized into two rows of five.  Sizes are computed to fit the available space
         let controlHeight = (playingY - bounds.minY) / 2 - border
-        let ctlWidth = (bounds.width - 3 * border) / 4
+        let ctlWidth = (bounds.width - 4 * border) / 5
         var labelX = bounds.minX
         let labelY = bounds.minY + border
         for playerLabel in playerLabels {
             playerLabel.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
             labelX += ctlWidth + border
         }
+        // The help button shares a row with the player labels
+        helpButton.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
         let buttonY = labelY + controlHeight + border
         showButton.frame = CGRect(x: bounds.minX, y: buttonY, width: ctlWidth, height: controlHeight)
         groupsButton.frame = showButton.frame
@@ -301,6 +309,7 @@ class ViewController: UIViewController {
         findPlayersButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         endGameButton.frame = findPlayersButton.frame
         optionsButton.frame = findPlayersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        dealButton.frame = optionsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
     }
 
 
@@ -418,6 +427,22 @@ class ViewController: UIViewController {
         activePlayer = (thisPlayer + 1) % players.count
         configurePlayerLabels(minPlayers, maxPlayers)
         checkTurnToPlay()
+    }
+
+    // Respond to touch of deal button.  Opens the dialog for dividing the contents of a gridbox (default "deck") into other gridboxes.
+    @objc func dealTouched() {
+        let dealSources = findDealSources()
+        if dealSources.isEmpty {
+            bummer(title: NoDealTitle, message: NoDealPossible, host: self)
+            return
+        }
+        let dialog = DealingDialog(dealSources)
+        Logger.logPresent(dialog, host: self, animated: false)
+    }
+
+    // Respond to touch of help button.   Display help html file.
+    @objc func helpTouched() {
+        notImplemented("helpTouched", host: self)
     }
 
     // Other functions
@@ -715,6 +740,17 @@ class ViewController: UIViewController {
             gameState = GameState(yielding: yielding, playingArea: playingArea, publicArea: publicArea)
         }
         communicator?.send(gameState)
+    }
+
+    // Find all the named grid boxes (which are potential "deal" sources)
+    func findDealSources() -> Dictionary<String,GridBox> {
+        var result = Dictionary<String,GridBox>()
+        for subview in playingArea.subviews {
+            if let box = subview as? GridBox, let name = box.name {
+                result[name] = box
+            }
+        }
+        return result
     }
 }
 

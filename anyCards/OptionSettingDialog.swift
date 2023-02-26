@@ -104,8 +104,8 @@ class OptionSettingsDialog : UIViewController {
         handArea.view.backgroundColor = LabelBackground
 
         // Min and max players and their labels
-        configureStepper(minPlayersLabel, minPlayers, MinPlayersText, settings.minPlayers)
-        configureStepper(maxPlayersLabel, maxPlayers, MaxPlayersText, settings.maxPlayers)
+        configureStepperAndLabel(minPlayersLabel, minPlayers, MinPlayersText, settings.minPlayers)
+        configureStepperAndLabel(maxPlayersLabel, maxPlayers, MaxPlayersText, settings.maxPlayers)
         setSteppersMinMax()
 
         // Done button
@@ -193,13 +193,11 @@ class OptionSettingsDialog : UIViewController {
     }
 
     // Finish initializing one of the two steppers
-    private func configureStepper(_ label: UILabel, _ stepper: Stepper, _ labelText: String, _ stepperValue: Int) {
+    private func configureStepperAndLabel(_ label: UILabel, _ stepper: Stepper, _ labelText: String, _ stepperValue: Int) {
         configureLabel(label, SettingsDialogBackground, parent: view)
         label.text = labelText
         label.textAlignment = .right
-        stepper.delegate = self
-        stepper.value = stepperValue
-        view.addSubview(stepper)
+        configureStepper(stepper, delegate: self, value: stepperValue, parent: view)
     }
 
     // Set the limits of both steppers taking into account the value of the other (so that always min <= max)

@@ -173,3 +173,17 @@ func shuffle<T>(_ array : [T]) -> [T] {
     }
     return ans
 }
+
+// Special packaging of bummer for noting holes in the implementation during development (shouldn't be called in production).
+// To allow it to be called in tight places, it will present on the console if no host is given to present the dialog.
+// If a host is given, the dialog is always attempted but does not always work since the host could be busy with another dialog or
+// may not be fully initialized.  We don't test for these conditions because there isn't a solidly reliable test.   If the dialog
+// fails, it will result in a message on the console, but a less informative one.
+func notImplemented(_ function: String, host maybeHost: UIViewController?) {
+    if let host = maybeHost {
+        bummer(title: "Not Implemented", message: "You need to write the code for \(function)", host: host)
+    } else {
+        print("Not implemented: you need to write the code for \(function)")
+    }
+}
+
