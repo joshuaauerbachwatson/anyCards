@@ -145,11 +145,6 @@ class ViewController: UIViewController {
         handAreaMarker.backgroundColor = UIColor.black
         handAreaMarker.isHidden = !settings.hasHands
 
-        // Record first player
-        assert(players.count == 0)
-        players.append(Player(settings.userName))
-        Logger.log("After loading view, player list is \(players)")
-
         // Initialize Labels and buttons
         for i in 0..<4 {
             let player = makeLabel(LabelBackground, parent: self.view)
@@ -377,6 +372,9 @@ class ViewController: UIViewController {
     // Also starts a timer for checking player list stability.
     @objc func findPlayersTouched() {
         Logger.log("Find Players Touched")
+        if players.count == 0 {
+            players.append(makePlayer(settings))
+        }
         guard let communicator = makeCommunicator(settings.communication, players[0], self, self) else { return }
         self.communicator = communicator
         Timer.scheduledTimer(withTimeInterval: PlayerCheckSpacing, repeats: true, block: timerTick)
@@ -609,10 +607,10 @@ class ViewController: UIViewController {
         yieldButton.isHidden = true
         groupLabel.isHidden = false
         groupLabel.text = settings.communication.displayName
+        players = []
         // Set up new game
         deck = DefaultDeck.deck
         cards = makePlayingDeck(deck, settings.deckType)
-        players = [ Player(settings.userName) ]
         configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
         removeAllCardsAndBoxes()
         shuffleAndPlace(playingArea.bounds.width)
@@ -650,9 +648,6 @@ class ViewController: UIViewController {
         // the latest value will be read when the communicator starts.   Changes guarded by firstYieldOccurred can be handled below because
         // a nil communicator implies a false setting for that flag.
         if communicator == nil {
-            // Player name
-            assert(players.count < 2)
-            players[0] = Player(settings.userName)
             // Min and max players
             configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
         }
@@ -896,5 +891,16 @@ extension ViewController : CommunicatorDelegate {
             return possibles[0].name
         }
         return nil
+    }
+
+    // Make a Player object for the current player
+    func makePlayer(_ settings: OptionSettings) -> Player {
+        let name = settings.userName
+        switch settings.communication {
+        case .MultiPeer:
+            return Player(name, false)
+        case .ServerBased(let group):
+            return Player(name, serverGames.isCreator(group))
+        }
     }
 }

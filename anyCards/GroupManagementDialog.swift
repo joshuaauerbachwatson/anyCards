@@ -339,7 +339,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     // Respond to touch of the 'done' button
     @objc func doneButtonTouched() {
         if let vc = presentingViewController {
-            Logger.logDismiss(self, host: vc, animated: false)
+            Logger.logDismiss(self, host: vc, animated: true)
         }
     }
 
@@ -347,7 +347,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
     @objc func confirmButtonTouched(_ button: UIButton) {
         func bail() {
             let insufficient = ServerError("Insufficient information was given make the requested change")
-            vc.error(insufficient, false)
+            vc.error(insufficient, true)
             cancelButtonTouched(button)
         }
         guard let name = groupName.text?.trim() else {
@@ -361,7 +361,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
                 bail()
                 return
             }
-            serverGames.storePair(name, token)
+            serverGames.storeEntry(name, token, false)
             settings.communication = .ServerBased(name)
             showGroup(name, token)
         }
@@ -386,7 +386,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
                 return
             }
             if let token = result[argGameToken] {
-                serverGames.storePair(groupName, token)
+                serverGames.storeEntry(groupName, token, true)
                 self.settings.communication = .ServerBased(groupName)
                 DispatchQueue.main.async {
                     self.showGroup(groupName, token)

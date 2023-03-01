@@ -16,8 +16,11 @@
 
 import Foundation
 
-// Represents a Player.  The player is known by a name and has an "order" field (each player generates this field randomly; once generated,
-// it determines the order that players appear in the player list.
+// Represents a Player.  The player is known by a name and has an "order" field.
+// The player who generated token for a server-based game will have order 1.
+// All other players have randomly generated orders in the range 2...UInt32.max
+// The order determines the order in which players appear in the player list and governs the succession of
+// play.  The player with the lowest order number always plays first.
 struct Player : Codable, Equatable {
     let name : String
     let order : UInt32
@@ -29,7 +32,9 @@ struct Player : Codable, Equatable {
     }
 
     // Initialzer used to generate your own Player struct (once)
-    init(_ name: String) {
-        self.init(name: name, order: arc4random())
+    init(_ name: String, _ mustPlayFirst: Bool) {
+        Logger.log("Player \(name) created with mustPlayFirst=\(mustPlayFirst)")
+        let order = mustPlayFirst ? 1 : arc4random_uniform(UInt32.max - 2) + 2
+        self.init(name: name, order: order)
     }
 }
