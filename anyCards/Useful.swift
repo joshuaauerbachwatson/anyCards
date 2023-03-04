@@ -50,6 +50,15 @@ extension CATransaction {
     }
 }
 
+// Allow a size to be chararactized as landscape-y or portrait-y
+extension CGSize {
+var landscape: Bool {
+        get {
+            return width > height
+        }
+    }
+}
+
 //
 // Operators
 //

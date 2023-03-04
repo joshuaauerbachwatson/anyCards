@@ -32,8 +32,11 @@ let DefaultDeckFrontRows = 4
 let DefaultDeckAllRows = 5
 let DefaultDeckFrontColumns = 13
 let CardDisplayWidthRatio = CGFloat(1) / CGFloat(8)     // Ratio of card width to standard view width
-let PlayingAreaAspectRatio = CGFloat(768) / CGFloat(944)  // Aspect ratio of the playing view
-let ControlHeightRatio = CGFloat(1) / CGFloat(16) // Ratio of label or button height to safe area height in landscape
+let PlayingAreaRatioPortrait = CGFloat(59) / CGFloat(48)  // Aspect ratio of the playing area in portrait
+let PlayingAreaRatioLandscape = CGFloat(48) / CGFloat(59)  // Aspect ratio of the playing area in landscape
+let LayoutAreaRatioPortrait = CGFloat(1322) / CGFloat(1024) // Aspect ratio to use for layout area (== iPad 12.9" safe area shape)
+let LayoutAreaRatioLandscape = CGFloat(1366) / CGFloat(980) // Aspect ratio to use for layout area (== iPad 12.9" safe area shape, inverted)
+let ControlHeightRatio = CGFloat(1) / CGFloat(20) // Ratio of label or button height to safe area height
 let OptionSettingsSize = CGSize(width: 480, height: 300)
 let GroupManagementSize = CGSize(width:480, height: 600)
 let OptionSettingsEdgeMargin = CGFloat(10)

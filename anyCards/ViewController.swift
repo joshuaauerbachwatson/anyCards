@@ -79,6 +79,14 @@ class ViewController: UIViewController {
 
     // View-related fields
 
+    // Indicates that any new layout must be landscape
+    let lockedToLandcape = false
+
+    // Indicates that any new layout must be portrait
+    // This an lockedtoLandscape must not both be true.  They may both be false during the
+    // early phase of play before the first yield, when the orientation is yet to be fixed.
+    let lockedToPortrait = false
+
     // The playing area subview
     let playingArea = UIView()
 
@@ -136,6 +144,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
 
         // Make the playing area be a subview of the main view and assign its color
+        view.backgroundColor = FillerColor
         view.addSubview(playingArea)
         playingArea.backgroundColor = PlayingColor
 
@@ -178,17 +187,17 @@ class ViewController: UIViewController {
     }
 
     // When the view appears (hence its size is known):
-    // 1.  Regardless of the orientation, use the shorter dimension of the view as a "good width" for this device (it would be
-    //     the width in portrait).
-    // 2.  Use that width and the PlayingAreaAspectRatio to assign a temporary frame to the playingArea
-    // 3.  Shuffle and place the cards in a deck.
-    // 4.  Do a layout step to get the remaining controls laid out and to correct the playingArea frame.  Some redundant work
+    // 1.  Assign a temporary frame to the playingArea based on lock flags and current orientation.  It will be the right
+    //     shape but probably the wrong size and placement.
+    // 2.  Shuffle and place the cards in a deck.
+    // 3.  Do a layout step to get the remaining controls laid out and to correct the playingArea frame.  Some redundant work
     //     may be done but this factoring works in practice.
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let areaWidth = view.bounds.width < view.bounds.height ? view.bounds.width : view.bounds.height
-        playingArea.frame = CGRect(x: 0, y: 0, width: areaWidth, height: areaWidth / PlayingAreaAspectRatio)
-        shuffleAndPlace(areaWidth)
+        let isLandscape = lockedToLandcape || (!lockedToPortrait && view.bounds.size.landscape)
+        let aspectRatio = isLandscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
+        playingArea.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.width / aspectRatio)
+        shuffleAndPlace(view.bounds.width)
         let gameState = GameState(playingArea)
         removeAllCardsAndBoxes()
         doLayout(gameState)
@@ -204,9 +213,15 @@ class ViewController: UIViewController {
         }
     }
 
-    // Support all orientations.   Can layout for portrait or landscape (but tablet aspect ratio is assumed; no phone support)
+    // Support orientations according the "lock" flags.  If not locks, all orientations are accepted.
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         get {
+            if lockedToLandcape {
+                return .landscape
+            }
+            if lockedToPortrait {
+                return .portrait
+            }
             return .all
         }
     }
@@ -225,14 +240,54 @@ class ViewController: UIViewController {
 
     // Perform layout.
     private func doLayout(_ gameState: GameState) {
-        // First ensure that the playingArea is properly located in the main view and that buttons and player labels are in place
-        let bounds = safeAreaOf(view)
-        if bounds.width < bounds.height {
-            doPortaitLayout(bounds)
+        // First establish a layout area within the safe area.  This area has a fixed "tablet like" aspect ratio regardless of
+        // whether the device is a tablet or a phone.  Even on some tablets (that are not 12.9 iPad pros) this may not exactly
+        // match the safe area.
+        let safeArea = safeAreaOf(view)
+        var layoutWidth: CGFloat, layoutHeight: CGFloat
+        if safeArea.size.landscape {
+            layoutHeight = safeArea.height
+            layoutWidth = safeArea.height * LayoutAreaRatioLandscape
         } else {
-            doLandscapeLayout(bounds)
+            layoutWidth = safeArea.width
+            layoutHeight = safeArea.width * LayoutAreaRatioPortrait
         }
-        // The publicArea can now be calculated since the playingArea.bounds have been calculated
+        let layoutX = safeArea.midX - layoutWidth / 2
+        let layoutY = safeArea.midY - layoutHeight / 2
+        let bounds = CGRect(x: layoutX, y: layoutY, width: layoutWidth, height: layoutHeight)
+        // Calculate some values needed to layout buttons and labels
+        let controlHeight = ControlHeightRatio * bounds.height
+        let ctlWidth = (bounds.width - 4 * border) / 5
+        var labelX = bounds.minX
+        let labelY = bounds.minY + border
+        // Layout the buttons and labels
+        for playerLabel in playerLabels {
+            playerLabel.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
+            labelX += ctlWidth + border
+        }
+        // The help button shares a row with the player labels
+        helpButton.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
+        let buttonY = labelY + controlHeight + border
+        // Remaning buttons form a new row
+        showButton.frame = CGRect(x: bounds.minX, y: buttonY, width: ctlWidth, height: controlHeight)
+        groupsButton.frame = showButton.frame
+        yieldButton.frame = showButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        groupLabel.frame = yieldButton.frame
+        findPlayersButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        endGameButton.frame = findPlayersButton.frame
+        optionsButton.frame = findPlayersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        dealButton.frame = optionsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        // The playingArea frame is positioned below the buttons and labels with the fixed aspect ratio determined by the
+        // orientation but limited by the available space (in landscape the natural height might not quite fit).
+        let aspectRatio = gameState.areaSize.landscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
+        let height = bounds.width/aspectRatio
+        let areaY = dealButton.frame.maxY + border
+        let maxHeight = bounds.maxY - areaY
+        playingArea.frame = CGRect(x: bounds.minX, y: areaY, width: bounds.width, height: min(height, maxHeight))
+        Logger.log("Safe area is \(safeArea)")
+        Logger.log("Layout area is \(bounds)")
+        Logger.log("Playing area frame is \(playingArea.frame)")
+        // We can now set up details in the playingArea
         setupPublicArea(settings.hasHands)
         // Now place the cards and GridBoxes, with possible rescaling
         let rescale = playingArea.bounds.width / gameState.areaSize.width
@@ -241,7 +296,7 @@ class ViewController: UIViewController {
             if cardState.index >= 0 {
                 newView = findAndFixCard(from: cardState, rescale: rescale)
             } else {
-                let box = GridBox(origin: cardState.origin * rescale, size: cards[0].frame.size, host: self)
+                let box = GridBox(origin: cardState.origin * rescale, size: cards[0].frame.size * rescale, host: self)
                 newView = box
                 box.name = cardState.name
             }
@@ -253,60 +308,6 @@ class ViewController: UIViewController {
         refreshBoxCounts()
         Logger.log("Layout performed")
     }
-
-    // Layout the immediate children of the main view for landscape
-    private func doLandscapeLayout(_ bounds: CGRect) {
-        // In landscape, the playing area is maximum height and abuts the right edge
-        let width = bounds.height * PlayingAreaAspectRatio
-        let x = bounds.width - width
-        playingArea.frame = CGRect(x: x, y: bounds.minY, width: width, height: bounds.height)
-        // The labels and buttons are to the left of the playing area, labels above the midline, buttons below, each having a height computed
-        // from the ControlHeightRatio
-        let controlHeight = bounds.height * ControlHeightRatio
-        var nextY = bounds.midY - controlHeight - border
-        for playerLabel in playerLabels.reversed() {
-            playerLabel.frame = CGRect(x: bounds.minX, y: nextY, width: x, height: controlHeight)
-            nextY = nextY - controlHeight - border
-        }
-        helpButton.frame = CGRect(x: bounds.minX, y:nextY, width: x, height: controlHeight)
-        showButton.frame = CGRect(x: bounds.minX, y: bounds.midY, width: x, height: controlHeight)
-        groupsButton.frame = showButton.frame
-        yieldButton.frame = showButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
-        groupLabel.frame = yieldButton.frame
-        findPlayersButton.frame = yieldButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
-        endGameButton.frame = findPlayersButton.frame
-        optionsButton.frame = findPlayersButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
-        dealButton.frame = optionsButton.frame.offsetBy(dx: 0, dy: controlHeight + border)
-    }
-
-    // Layout the immediate children of the main view for portrait
-    private func doPortaitLayout(_ bounds: CGRect) {
-        // In portrait, the playingArea abuts the bottom of the view
-        let playingHeight = bounds.width / PlayingAreaAspectRatio
-        let playingY = bounds.minY + bounds.height - playingHeight
-        playingArea.frame = CGRect(x: bounds.minX, y: playingY, width: bounds.width, height: playingHeight)
-        // The labels and buttons are above the playing area, organized into two rows of five.  Sizes are computed to fit the available space
-        let controlHeight = (playingY - bounds.minY) / 2 - border
-        let ctlWidth = (bounds.width - 4 * border) / 5
-        var labelX = bounds.minX
-        let labelY = bounds.minY + border
-        for playerLabel in playerLabels {
-            playerLabel.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
-            labelX += ctlWidth + border
-        }
-        // The help button shares a row with the player labels
-        helpButton.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
-        let buttonY = labelY + controlHeight + border
-        showButton.frame = CGRect(x: bounds.minX, y: buttonY, width: ctlWidth, height: controlHeight)
-        groupsButton.frame = showButton.frame
-        yieldButton.frame = showButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        groupLabel.frame = yieldButton.frame
-        findPlayersButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        endGameButton.frame = findPlayersButton.frame
-        optionsButton.frame = findPlayersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        dealButton.frame = optionsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-    }
-
 
     // Actions
 
@@ -339,7 +340,7 @@ class ViewController: UIViewController {
         }
     }
 
-    // Respond to dragging of a a card
+    // Respond to dragging of a card
     @objc func dragging(recognizer: UIPanGestureRecognizer) {
         if recognizer.state == .possible || !thisPlayersTurn {
             return
@@ -549,6 +550,7 @@ class ViewController: UIViewController {
             card.turnFaceDown()
         }
         card.frame.origin = from.origin * rescale
+        card.frame.size = card.frame.size * rescale
         return card
     }
 
@@ -675,9 +677,14 @@ class ViewController: UIViewController {
         }
     }
 
+    // Provides the shorter dimension of the playing area (used to scale the cards and deck)
+    private func minWidthHeight() -> CGFloat {
+        return min(playingArea.frame.width, playingArea.frame.height)
+    }
+
     // Shuffle cards and form deck.  Add a GridBox to hold the deck and place everything on the playingArea
-    private func shuffleAndPlace(_ areaWidth: CGFloat) {
-        let cardWidth = areaWidth * CardDisplayWidthRatio
+    private func shuffleAndPlace(_ : CGFloat) {
+        let cardWidth = minWidthHeight() * CardDisplayWidthRatio
         let cardHeight = cardWidth / deck.aspectRatio
         let cardSize = CGSize(width: cardWidth, height: cardHeight)
         let cards = shuffle(self.cards)
