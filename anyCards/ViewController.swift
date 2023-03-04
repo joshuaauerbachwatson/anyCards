@@ -522,6 +522,9 @@ class ViewController: UIViewController {
             label.isHidden = false
             if i < players.count {
                 configurePlayer(label, players[i].name, i)
+            } else if i == 0 {
+                // Implies player.count == 0, meaning the game has not started.  Just fill in current player
+                configurePlayer(label, settings.userName, i)
             } else if i < min {
                 label.text = communicator == nil ? MustFind : Searching
             } else if i < max {
