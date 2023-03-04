@@ -80,12 +80,10 @@ class ViewController: UIViewController {
     // View-related fields
 
     // Indicates that any new layout must be landscape
-    let lockedToLandcape = false
+    var lockedToLandscape = false
 
     // Indicates that any new layout must be portrait
-    // This an lockedtoLandscape must not both be true.  They may both be false during the
-    // early phase of play before the first yield, when the orientation is yet to be fixed.
-    let lockedToPortrait = false
+    var lockedToPortrait = false
 
     // The playing area subview
     let playingArea = UIView()
@@ -194,7 +192,7 @@ class ViewController: UIViewController {
     //     may be done but this factoring works in practice.
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let isLandscape = lockedToLandcape || (!lockedToPortrait && view.bounds.size.landscape)
+        let isLandscape = lockedToLandscape || (!lockedToPortrait && view.bounds.size.landscape)
         let aspectRatio = isLandscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
         playingArea.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.width / aspectRatio)
         shuffleAndPlace(view.bounds.width)
@@ -216,7 +214,7 @@ class ViewController: UIViewController {
     // Support orientations according the "lock" flags.  If not locks, all orientations are accepted.
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         get {
-            if lockedToLandcape {
+            if lockedToLandscape {
                 return .landscape
             }
             if lockedToPortrait {
@@ -290,7 +288,7 @@ class ViewController: UIViewController {
         // We can now set up details in the playingArea
         setupPublicArea(settings.hasHands)
         // Now place the cards and GridBoxes, with possible rescaling
-        let rescale = playingArea.bounds.width / gameState.areaSize.width
+        let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
         for cardState in gameState.cards {
             let newView : UIView
             if cardState.index >= 0 {
@@ -592,13 +590,25 @@ class ViewController: UIViewController {
         gridBox.refreshCount()
     }
 
+    // Set the firstYieldOccurred field and the associated orientation lock fields
+    private func setFirstYieldOccurred(_ value: Bool, _ landscape: Bool) {
+        firstYieldOccurred = value
+        if value {
+            lockedToLandscape = landscape
+            lockedToPortrait = !landscape
+        } else {
+            lockedToLandscape = false
+            lockedToPortrait = false
+        }
+    }
+
     // End current game and prepare a new one (responds to EndGame button and also to lost peer condition)
     private func prepareNewGame() {
         // Clean up former game
         communicator?.shutdown()
         communicator = nil
         playBegun = false
-        firstYieldOccurred = false
+        setFirstYieldOccurred(false, false)
         thisPlayer = 0
         activePlayer = 0
         playerListStable = 0
@@ -677,14 +687,9 @@ class ViewController: UIViewController {
         }
     }
 
-    // Provides the shorter dimension of the playing area (used to scale the cards and deck)
-    private func minWidthHeight() -> CGFloat {
-        return min(playingArea.frame.width, playingArea.frame.height)
-    }
-
     // Shuffle cards and form deck.  Add a GridBox to hold the deck and place everything on the playingArea
     private func shuffleAndPlace(_ : CGFloat) {
-        let cardWidth = minWidthHeight() * CardDisplayWidthRatio
+        let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
         let cardHeight = cardWidth / deck.aspectRatio
         let cardSize = CGSize(width: cardWidth, height: cardHeight)
         let cards = shuffle(self.cards)
@@ -737,7 +742,7 @@ class ViewController: UIViewController {
         if !firstYieldOccurred && thisPlayer == 0 {
             gameState = GameState(deckType: settings.deckType, handArea: settings.hasHands, yielding: yielding,
                                   playingArea: playingArea, publicArea: publicArea)
-            firstYieldOccurred = true
+            setFirstYieldOccurred(true, gameState.areaSize.landscape)
         } else {
             gameState = GameState(yielding: yielding, playingArea: playingArea, publicArea: publicArea)
         }
@@ -852,7 +857,7 @@ extension ViewController : CommunicatorDelegate {
                     optionsButton.isHidden = true
                 }
                 setupPublicArea(gameState.handArea)
-                firstYieldOccurred = true
+                setFirstYieldOccurred(true, gameState.areaSize.landscape)
             }
             Logger.log("Received GameState contains \(gameState.cards.count) cards")
             removePublicCardsAndBoxes()

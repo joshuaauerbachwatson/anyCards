@@ -50,11 +50,28 @@ extension CATransaction {
     }
 }
 
-// Allow a size to be chararactized as landscape-y or portrait-y
+// Allow a CGSize or CGRect to be chararactized as landscape (vs portrait) and retrieve the min of height and width
 extension CGSize {
-var landscape: Bool {
+    var landscape: Bool {
         get {
             return width > height
+        }
+    }
+    var minDimension: CGFloat {
+        get {
+            return landscape ? height : width
+        }
+    }
+}
+extension CGRect {
+    var landscape: Bool {
+        get {
+            return width > height
+        }
+    }
+    var minDimension: CGFloat {
+        get {
+            return landscape ? height : width
         }
     }
 }
