@@ -83,7 +83,6 @@ class DealingDialog : UIViewController {
 
         // Source information
         configureLabel(fromLabel, LabelBackground, parent: view)
-        fromLabel.textAlignment = .right
         fromLabel.text = FromLabelText
         configureTouchableLabel(sourceLabel, target: self, action: #selector(sourceLabelTouched), parent: view)
         sourceLabel.text = sourceOrder[0]
@@ -104,17 +103,20 @@ class DealingDialog : UIViewController {
         super.viewDidAppear(animated)
         let spacer = OptionSettingsSpacer // borrowed
         let margin = OptionSettingsEdgeMargin // borrowed
-        let ctlHeight = (view.bounds.height - 5 * spacer - 2 * margin) / 6
-        let fullWidth = view.bounds.width - 2 * margin
+        let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * margin
+        let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * margin
+        let ctlHeight = (fullHeight - 5 * spacer - 2 * margin) / 6
         let ctlWidth = (fullWidth - spacer) / 2
-        header.frame = CGRect(x: view.bounds.minX + margin, y: view.bounds.minY + margin, width: fullWidth, height: ctlHeight)
-        handsStepper.frame = CGRect(x: view.bounds.minX + margin, y: header.frame.maxY + spacer, width: ctlWidth, height: ctlHeight)
+        let startX = (view.bounds.width / 2) - (fullWidth / 2)
+        let startY = (view.bounds.height / 2) - (fullHeight / 2)
+        header.frame = CGRect(x: startX, y: startY, width: fullWidth, height: ctlHeight)
+        handsStepper.frame = CGRect(x: startX, y: header.frame.maxY + spacer, width: ctlWidth, height: ctlHeight)
         handsLabel.frame = handsStepper.frame.offsetBy(dx: ctlWidth + spacer, dy: 0)
         cardsStepper.frame = handsStepper.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
         cardsLabel.frame = cardsStepper.frame.offsetBy(dx: ctlWidth + spacer, dy: 0)
         fromLabel.frame = cardsStepper.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
         sourceLabel.frame = cardsLabel.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        errorLabel.frame = CGRect(x: view.bounds.minX + margin, y: fromLabel.frame.maxY + spacer, width: fullWidth, height: ctlHeight)
+        errorLabel.frame = CGRect(x: startX, y: fromLabel.frame.maxY + spacer, width: fullWidth, height: ctlHeight)
         confirmButton.frame = errorLabel.frame
         cancelButton.frame = confirmButton.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
         validate()

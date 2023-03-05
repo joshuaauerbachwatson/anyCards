@@ -219,20 +219,21 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         super.viewDidAppear(animated)
         let spacer = OptionSettingsSpacer // borrowed
         let margin = OptionSettingsEdgeMargin // borrowed
-        let ctlHeight = (view.bounds.height - 7 * spacer - 2 * margin) / 8
-        let fullWidth = view.bounds.width - 2 * margin
+        let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * margin
+        let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * margin
+        let ctlHeight = (fullHeight - 7 * spacer - 2 * margin) / 8
+        let startX = (view.bounds.width / 2) - (fullWidth / 2)
+        let startY = (view.bounds.height / 2) - (fullHeight / 2)
         let quarterWidth = (fullWidth - 3 * spacer) / 4
         let threeQuarterWidth = 3 * quarterWidth + 2 * spacer
-        currentGroup.frame = CGRect(x: view.bounds.minX + margin, y: view.bounds.minY + margin, width: fullWidth,
-                              height: ctlHeight)
+        currentGroup.frame = CGRect(x: startX, y: startY, width: fullWidth, height: ctlHeight)
         nextButton.frame = currentGroup.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        groupNameLabel.frame = CGRect(x: view.bounds.minX + margin, y: nextButton.frame.maxY + spacer, width: quarterWidth, height: ctlHeight)
+        groupNameLabel.frame = CGRect(x: startX, y: nextButton.frame.maxY + spacer, width: quarterWidth, height: ctlHeight)
         groupName.frame = CGRect(x: groupNameLabel.frame.maxX + spacer, y: nextButton.frame.maxY + spacer,
                                  width: threeQuarterWidth, height: ctlHeight)
         tokenLabel.frame = groupNameLabel.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
         token.frame = groupName.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        copyToken.frame = CGRect(x: view.bounds.minX + margin, y: tokenLabel.frame.maxY + spacer, width: fullWidth,
-                                 height: ctlHeight)
+        copyToken.frame = CGRect(x: startX + margin, y: tokenLabel.frame.maxY + spacer, width: fullWidth, height: ctlHeight)
         renameGroup.frame = copyToken.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
         deleteGroup.frame = renameGroup.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
         doneButton.frame = deleteGroup.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)

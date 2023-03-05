@@ -123,13 +123,15 @@ class OptionSettingsDialog : UIViewController {
     // When view appears, we do layout
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let ctlHeight = (view.bounds.height - 8 * OptionSettingsSpacer - 2 * OptionSettingsEdgeMargin) / 9
-        let fullWidth = view.bounds.width - 2 * OptionSettingsEdgeMargin
+        let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * OptionSettingsEdgeMargin
+        let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * OptionSettingsEdgeMargin
+        let ctlHeight = (fullHeight - 8 * OptionSettingsSpacer - 2 * OptionSettingsEdgeMargin) / 9
         let ctlWidth = (fullWidth - OptionSettingsSpacer) / 2
-        header.frame = CGRect(x: view.bounds.minX + OptionSettingsEdgeMargin, y: view.bounds.minY + OptionSettingsEdgeMargin, width: fullWidth,
-                              height: ctlHeight)
+        let startX = (view.bounds.width / 2) - (fullWidth / 2)
+        let startY = (view.bounds.height / 2) - (fullHeight / 2)
+        header.frame = CGRect(x: startX, y: startY, width: fullWidth, height: ctlHeight)
         versionLabel.frame = header.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
-        userNameLabel.frame = CGRect(x: view.bounds.minX + OptionSettingsEdgeMargin, y: versionLabel.frame.maxY + OptionSettingsSpacer,                             width: ctlWidth, height: ctlHeight)
+        userNameLabel.frame = CGRect(x: startX, y: versionLabel.frame.maxY + OptionSettingsSpacer, width: ctlWidth, height: ctlHeight)
         userName.frame = userNameLabel.frame.offsetBy(dx: ctlWidth + OptionSettingsSpacer, dy: 0)
         communicationLabel.frame = userNameLabel.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
         communicationStyle.frame = userName.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
@@ -141,7 +143,7 @@ class OptionSettingsDialog : UIViewController {
         minPlayers.frame = handArea.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
         maxPlayersLabel.frame = minPlayersLabel.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
         maxPlayers.frame = minPlayers.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
-        doneButton.frame = CGRect(x: view.bounds.minX + OptionSettingsEdgeMargin, y: maxPlayers.frame.maxY + OptionSettingsSpacer, width: fullWidth, height: ctlHeight)
+        doneButton.frame = CGRect(x: startX, y: maxPlayers.frame.maxY + OptionSettingsSpacer, width: fullWidth, height: ctlHeight)
     }
 
     // Actions
