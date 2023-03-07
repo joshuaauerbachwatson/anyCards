@@ -1,10 +1,16 @@
 # AnyCards -- A multi-person card game with no built-in rules
 
-This repository contains the Swift language source for an iOS (iPad-preferred) multi-person game.
+This repository contains the Swift language source for an iOS (iPad-preferred) multi-person game.  It also contains the Go language source for an optional backend, allowing the game to be played by geographically dispersed players.  At the moment, the game remains playable for players in proximity using Apple multi-peer communication.  This capability may eventually be dropped as the server gains a greater role in brokering games.
 
 ## The Game
 
-The game will provide a deck of cards (not necessarily a standard one, the selection to be made by the initiating user).  The players use their separate iPads to play a card game with the cards.  The players have a common view of a playing surface and each player may optionally have a private hand.  The game provides for an orderly succession of turns but does not otherwise build in the rules of any particular card game.  It will support the playing of a wide variety of games (those that don't require non-card accessories such as chips, or non-card-based moves such as bidding).
+The game provides a deck of cards (not necessarily a standard one, the selection to be made by the user who is first to play).  The players use their separate iPads to play a card game with the cards.  The players have a common view of a playing surface and each player may optionally have a private hand.  The game provides for an orderly succession of turns but does not otherwise build in the rules of any particular card game.  It will support the playing of a wide variety of games (those that don't require non-card accessories such as chips, or non-card-based moves such as bidding).
+
+## Building the Game App from Source
+
+It is possible to build both the iOS and the backend portions of the game from source but you are then on your own figuring out where to deploy the server and how to distribute the iOS portion.  Authentication between the app and the backend involves a secret that is not committed to this repo.  It must be compiled into the app and be present in the environment of the server when the server is started.   You can use a random string for your secret but that ties the app you build to the server you deploy.
+
+To build the app, you will need XCode.  The folder called `anyCards` contains an XCode project file.  You will see that there is a file, `Secrets.swift` that is defined to the project but not present in the repo.    
 
 ## Evolutionary Thoughts
 
