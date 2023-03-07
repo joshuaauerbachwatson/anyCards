@@ -298,6 +298,24 @@ class ViewController: UIViewController {
                 newView = box
                 box.name = cardState.name
             }
+            // Ensure that newView has sufficient pixels overlapping the playing area so as to be easily seen
+            let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
+            let legal = playingArea.bounds.inset(by: insets)
+            let actual = newView.frame
+            if !actual.intersects(legal) {
+                var (newX, newY) = (actual.minX, actual.minY)
+                if actual.maxX <= legal.minX {
+                    newX = legal.minX - (actual.width / 2)
+                } else if actual.minX >= legal.maxX {
+                    newX = legal.maxX - (actual.width / 2)
+                }
+                if actual.maxY <= legal.minY {
+                    newY = legal.minY - (actual.height / 2)
+                } else if actual.minY >= legal.maxY {
+                    newY = legal.maxY - (actual.height / 2)
+                }
+                newView.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: newView.frame.size)
+            }
             playingArea.addSubview(newView)
         }
         for card in cardViews {

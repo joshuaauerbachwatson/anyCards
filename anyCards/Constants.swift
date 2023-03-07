@@ -50,6 +50,7 @@ let DealingHandsMax = 5
 let DealingCardsDefault = 7
 let DealingCardsMin = 1
 let DealingCardsMax = 52
+let MinCardPixels = CGFloat(5) // Minimum number of pixels of a card's width or height that must be within the playing area
 
 // Document names
 let ServerGameFile = "serverGames"
