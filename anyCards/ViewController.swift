@@ -79,6 +79,10 @@ class ViewController: UIViewController {
 
     // View-related fields
 
+    // Flag for ensuring that the "initial" layout only happens once and isn't repeated when an overlaying view is dismissed.
+    // Layout should only be redone when the device orientation or shape is changed or when a new game state is received.
+    var notYetInitialized = true
+
     // Indicates that any new layout must be landscape
     var lockedToLandscape = false
 
@@ -192,16 +196,19 @@ class ViewController: UIViewController {
     //     may be done but this factoring works in practice.
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let isLandscape = lockedToLandscape || (!lockedToPortrait && view.bounds.size.landscape)
-        let aspectRatio = isLandscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
-        playingArea.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.width / aspectRatio)
-        shuffleAndPlace(view.bounds.width)
-        let gameState = GameState(playingArea)
-        removeAllCardsAndBoxes()
-        doLayout(gameState)
-        configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
-        groupLabel.text = settings.communication.displayName
-        Logger.log("Game initialized")
+        if notYetInitialized {
+            notYetInitialized = false // don't repeat this sequence
+            let isLandscape = lockedToLandscape || (!lockedToPortrait && view.bounds.size.landscape)
+            let aspectRatio = isLandscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
+            playingArea.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.width / aspectRatio)
+            shuffleAndPlace(view.bounds.width)
+            let gameState = GameState(playingArea)
+            removeAllCardsAndBoxes()
+            doLayout(gameState)
+            configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
+            groupLabel.text = settings.communication.displayName
+            Logger.log("Game initialized")
+        }
     }
 
     // Allow view to be rotated.   We will redo the layout each time while preserving all controller state.
@@ -457,7 +464,8 @@ class ViewController: UIViewController {
 
     // Respond to touch of help button.   Display help html file.
     @objc func helpTouched() {
-        notImplemented("helpTouched", host: self)
+        let helpControl = HelpController(HelpFile, ReturnText)
+        Logger.logPresent(helpControl, host: self, animated: true)
     }
 
     // Other functions

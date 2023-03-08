@@ -43,14 +43,15 @@ class Logger {
     private static let formatter = makeDateFormatter()
     private static var logHandle : FileHandle? = nil
     private static var noImplicitLogging = false
+    private static var debugged = amIBeingDebugged()
 
     // Public API
 
     // Log a message of any kind to the implicit log location
     static func log(_ message: String) {
-        #if targetEnvironment(simulator)
+        if debugged {
             print(message)
-        #endif
+        }
         if let logHandle = self.logHandle {
             // Typical case
             log(logHandle, message)
@@ -178,5 +179,20 @@ class Logger {
                 }
             }
         }
+    }
+
+    // https://stackoverflow.com/questions/33177182/detect-if-swift-app-is-being-run-from-xcode
+    private static func amIBeingDebugged() -> Bool {
+        // Buffer for "sysctl(...)" call's result.
+        var info = kinfo_proc()
+        // Counts buffer's size in bytes (like C/C++'s `sizeof`).
+        var size = MemoryLayout.stride(ofValue: info)
+        // Tells we want info about own process.
+        var mib : [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        // Call the API (and assert success).
+        let junk = sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0)
+        assert(junk == 0, "sysctl failed")
+        // Finally, checks if debugger's flag is present yet.
+        return (info.kp_proc.p_flag & P_TRACED) != 0
     }
 }

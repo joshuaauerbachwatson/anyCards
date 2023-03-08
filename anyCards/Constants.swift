@@ -51,6 +51,8 @@ let DealingCardsDefault = 7
 let DealingCardsMin = 1
 let DealingCardsMax = 52
 let MinCardPixels = CGFloat(5) // Minimum number of pixels of a card's width or height that must be within the playing area
+let FixedLabelHeight = CGFloat(25)
+let ReturnLabelWidth = CGFloat(150)
 
 // Document names
 let ServerGameFile = "serverGames"
@@ -63,6 +65,8 @@ let ActivePlayerColor = UIColor(60, 180, 75)
 let SettingsDialogBackground = UIColor.lightGray
 let GridBackgroundColor = UIColor.black
 let CountLabelColor = UIColor.red
+let HelpViewBackground = UIColor(170, 110, 40)
+let HelpTextBackground = UIColor.white
 
 // Texts
 let DefaultDeckName = "DefaultCardDeck.png"
@@ -131,3 +135,18 @@ let NoDealPossible = "There are no decks to deal from"
 let InternalDealingError = "Internal error in dealing function"
 let NotEnoughCards = "Not enough cards"
 let TooManyHands = "Too many hands (won't fit)"
+let HelpFile = "AnyCardsHelp" /* Excludes extension */
+let ReturnText = "Return to Game"
+let SendFeedback = "sendFeedback" /* Internal script name */
+
+// Bug reporting
+let FeedbackEmail = "anycardsreports@gmail.com"
+let FeedbackText = "Report a Problem"
+let NoEmailTitle = "No Email"
+let NoEmailMessage = "Cannot send problem report because email is not configured on this device or is not available to this app"
+let FeedbackMessageSubject = "AnyCards Game Feedback"
+let FeedbackMessageBody = """
+Replace this text with your specific feedback.   If you are reporting a problem, it is best to leave any log attachments
+in place; they are transcripts of events that occurred in AnyCards games and will help in diagnosing the problem.  If you
+prefer to delete the logs it is your call.
+"""
