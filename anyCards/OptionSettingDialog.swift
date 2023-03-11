@@ -73,6 +73,7 @@ class OptionSettingsDialog : UIViewController {
         userNameLabel.text = UserNameText
         userNameLabel.textAlignment = .right
         configureTextField(userName, LabelBackground, parent: view)
+        userName.textColor = NormalTextColor
         userName.text = settings.userName
         userName.delegate = self
 

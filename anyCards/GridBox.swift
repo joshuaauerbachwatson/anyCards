@@ -74,6 +74,7 @@ class GridBox : UIView {
         countLabel.textColor = CountLabelColor
         configureTextField(nameField, LabelBackground, parent: self)
         nameField.delegate = self
+        nameField.textColor = NormalTextColor
         // Add drag support to the view as a whole
         let recognizer = UIPanGestureRecognizer(target: self, action: #selector(boxDragged))
         addGestureRecognizer(recognizer)

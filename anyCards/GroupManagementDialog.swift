@@ -174,6 +174,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         groupNameLabel.text = GroupNameLabelText
         groupNameLabel.textAlignment = .right
         configureTextField(groupName, LabelBackground, parent: view)
+        groupName.textColor = NormalTextColor
         groupName.font = getTextFont()
         groupName.tag = 0
         groupName.delegate = self
@@ -183,6 +184,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         tokenLabel.text = TokenLabelText
         tokenLabel.textAlignment = .right
         configureTextField(token, LabelBackground, parent: view)
+        token.textColor = NormalTextColor
         token.font = getTextFont()
         token.tag = 1
         token.delegate = self
