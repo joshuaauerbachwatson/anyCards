@@ -628,9 +628,10 @@ class ViewController: UIViewController {
         gridBox.refreshCount()
     }
 
-    // Set the firstYieldOccurred field and the associated orientation lock fields
+    // Set the firstYieldOccurred field and the associated orientation lock fields.  Hide the options button once first yield occurs.
     private func setFirstYieldOccurred(_ value: Bool, _ landscape: Bool) {
         self.firstYieldOccurred = value
+        self.optionsButton.isHidden = value
         if value {
             Logger.log("firstYieldOccurred has been set to true, orientation locked to \(landscape ? "landscape" : "portrait")")
             self.lockedToLandscape = landscape
@@ -896,7 +897,6 @@ extension ViewController : CommunicatorDelegate {
             if !firstYieldOccurred {
                 if let deckType = gameState.deckType {
                     cards = makePlayingDeck(deck, deckType)
-                    optionsButton.isHidden = true
                 }
                 setupPublicArea(gameState.handArea)
                 setFirstYieldOccurred(true, gameState.areaSize.landscape)
