@@ -386,7 +386,7 @@
 				DEVELOPMENT_TEAM = 5A8RHYSHFN;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = anyCards/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -415,7 +415,7 @@
 				DEVELOPMENT_TEAM = 5A8RHYSHFN;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = anyCards/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
