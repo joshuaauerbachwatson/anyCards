@@ -217,6 +217,7 @@ class ViewController: UIViewController {
     // Support orientations according the "lock" flags.  If not locks, all orientations are accepted.
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         get {
+            Logger.log("supportedInterfaceOrientations interrogated")
             if lockedToLandscape {
                 return .landscape
             }
@@ -230,6 +231,11 @@ class ViewController: UIViewController {
     // Respond to rotation or other size-changing event by redoing layout.
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
+        // Hopefully temporary:
+        if size.landscape && lockedToPortrait || !size.landscape && lockedToLandscape {
+            bummer(title: "Rotation error", message: "Rotation should have been forbidden", host: self)
+            return
+        }
         let gameState = GameState(playingArea)
         coordinator.animate(alongsideTransition: nil) {_ in
             self.removeAllCardsAndBoxes()
@@ -624,14 +630,17 @@ class ViewController: UIViewController {
 
     // Set the firstYieldOccurred field and the associated orientation lock fields
     private func setFirstYieldOccurred(_ value: Bool, _ landscape: Bool) {
-        firstYieldOccurred = value
+        self.firstYieldOccurred = value
         if value {
-            lockedToLandscape = landscape
-            lockedToPortrait = !landscape
+            Logger.log("firstYieldOccurred has been set to true, orientation locked to \(landscape ? "landscape" : "portrait")")
+            self.lockedToLandscape = landscape
+            self.lockedToPortrait = !landscape
         } else {
-            lockedToLandscape = false
-            lockedToPortrait = false
+            Logger.log("firstYieldOccurred has been set to false")
+            self.lockedToLandscape = false
+            self.lockedToPortrait = false
         }
+        self.setNeedsUpdateOfSupportedInterfaceOrientations()
     }
 
     // End current game and prepare a new one (responds to EndGame button and also to lost peer condition)
