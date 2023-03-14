@@ -89,6 +89,12 @@ class ViewController: UIViewController {
     // Indicates that any new layout must be portrait
     var lockedToPortrait = false
 
+    // Indicates that the current layout is or should be landscape (negated means portrait)
+    var isLandscape: Bool {
+        get {
+            return lockedToLandscape || (!lockedToPortrait && view.bounds.size.landscape)
+        }
+    }
     // The playing area subview
     let playingArea = UIView()
 
@@ -188,23 +194,13 @@ class ViewController: UIViewController {
         playingArea.addGestureRecognizer(gridBoxRecognizer)
     }
 
-    // When the view appears (hence its size is known):
-    // 1.  Assign a temporary frame to the playingArea based on lock flags and current orientation.  It will be the right
-    //     shape but probably the wrong size and placement.
-    // 2.  Shuffle and place the cards in a deck.
-    // 3.  Do a layout step to get the remaining controls laid out and to correct the playingArea frame.  Some redundant work
-    //     may be done but this factoring works in practice.
+    // When the view appears (hence its size is known), check whether an initial layout has been done.  If
+    // not, do one.  Also configure the labels.
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if notYetInitialized {
             notYetInitialized = false // don't repeat this sequence
-            let isLandscape = lockedToLandscape || (!lockedToPortrait && view.bounds.size.landscape)
-            let aspectRatio = isLandscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
-            playingArea.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: view.bounds.width / aspectRatio)
-            shuffleAndPlace(view.bounds.width)
-            let gameState = GameState(playingArea)
-            removeAllCardsAndBoxes()
-            doLayout(gameState)
+            doLayout(nil)
             configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
             groupLabel.text = settings.communication.displayName
             Logger.log("Game initialized")
@@ -244,7 +240,7 @@ class ViewController: UIViewController {
     // Layout section
 
     // Perform layout.
-    private func doLayout(_ gameState: GameState) {
+    private func doLayout(_ gs: GameState?) {
         // First establish a layout area within the safe area.  This area has a fixed "tablet like" aspect ratio regardless of
         // whether the device is a tablet or a phone.  Even on some tablets (that are not 12.9 iPad pros) this may not exactly
         // match the safe area.
@@ -259,12 +255,11 @@ class ViewController: UIViewController {
         }
         let layoutX = safeArea.midX - layoutWidth / 2
         let layoutY = safeArea.midY - layoutHeight / 2
-        let bounds = CGRect(x: layoutX, y: layoutY, width: layoutWidth, height: layoutHeight)
         // Calculate some values needed to layout buttons and labels
-        let controlHeight = ControlHeightRatio * bounds.height
-        let ctlWidth = (bounds.width - 4 * border) / 5
-        var labelX = bounds.minX
-        let labelY = bounds.minY + border
+        let controlHeight = ControlHeightRatio * layoutHeight
+        let ctlWidth = (layoutWidth - 4 * border) / 5
+        var labelX = layoutX
+        let labelY = layoutY + border
         // Layout the buttons and labels
         for playerLabel in playerLabels {
             playerLabel.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
@@ -274,7 +269,7 @@ class ViewController: UIViewController {
         helpButton.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
         let buttonY = labelY + controlHeight + border
         // Remaning buttons form a new row
-        showButton.frame = CGRect(x: bounds.minX, y: buttonY, width: ctlWidth, height: controlHeight)
+        showButton.frame = CGRect(x: layoutX, y: buttonY, width: ctlWidth, height: controlHeight)
         groupsButton.frame = showButton.frame
         yieldButton.frame = showButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         groupLabel.frame = yieldButton.frame
@@ -284,51 +279,58 @@ class ViewController: UIViewController {
         dealButton.frame = optionsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         // The playingArea frame is positioned below the buttons and labels with the fixed aspect ratio determined by the
         // orientation but limited by the available space (in landscape the natural height might not quite fit).
-        let aspectRatio = gameState.areaSize.landscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
-        let height = bounds.width/aspectRatio
+        let aspectRatio = safeArea.size.landscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
+        let height = layoutWidth * aspectRatio
+        Logger.log("natural height is \(height)")
         let areaY = dealButton.frame.maxY + border
-        let maxHeight = bounds.maxY - areaY
-        playingArea.frame = CGRect(x: bounds.minX, y: areaY, width: bounds.width, height: min(height, maxHeight))
+        let maxHeight = layoutY + layoutHeight - areaY
+        playingArea.frame = CGRect(x: layoutX, y: areaY, width: layoutWidth, height: min(height, maxHeight))
         Logger.log("Safe area is \(safeArea)")
-        Logger.log("Layout area is \(bounds)")
         Logger.log("Playing area frame is \(playingArea.frame)")
-        // We can now set up details in the playingArea
+        // We can now define the extent of the public area based on the playing area and whether or not there's a private area
         setupPublicArea(settings.hasHands)
         // Now place the cards and GridBoxes, with possible rescaling
-        let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
-        for cardState in gameState.cards {
-            let newView : UIView
-            if cardState.index >= 0 {
-                newView = findAndFixCard(from: cardState, rescale: rescale)
-            } else {
-                let box = GridBox(origin: cardState.origin * rescale, size: cards[0].frame.size * rescale, host: self)
-                newView = box
-                box.name = cardState.name
-            }
-            // Ensure that newView has sufficient pixels overlapping the playing area so as to be easily seen
-            let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
-            let legal = playingArea.bounds.inset(by: insets)
-            let actual = newView.frame
-            if !actual.intersects(legal) {
-                var (newX, newY) = (actual.minX, actual.minY)
-                if actual.maxX <= legal.minX {
-                    newX = legal.minX - (actual.width / 2)
-                } else if actual.minX >= legal.maxX {
-                    newX = legal.maxX - (actual.width / 2)
+        if let gameState = gs {
+            let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
+            Logger.log("rescale is \(rescale)")
+            for cardState in gameState.cards {
+                let newView : UIView
+                if cardState.index >= 0 {
+                    newView = findAndFixCard(from: cardState, rescale: rescale)
+                } else {
+                    Logger.log("cards[0].frame.size was \(cards[0].frame.size), now resized to \(cards[0].frame.size * rescale)")
+                    let box = GridBox(origin: cardState.origin * rescale, size: cards[0].frame.size, host: self)
+                    newView = box
+                    box.name = cardState.name
                 }
-                if actual.maxY <= legal.minY {
-                    newY = legal.minY - (actual.height / 2)
-                } else if actual.minY >= legal.maxY {
-                    newY = legal.maxY - (actual.height / 2)
+                // Ensure that newView has sufficient pixels overlapping the playing area so as to be easily seen
+                let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
+                let legal = playingArea.bounds.inset(by: insets)
+                let actual = newView.frame
+                if !actual.intersects(legal) {
+                    var (newX, newY) = (actual.minX, actual.minY)
+                    if actual.maxX <= legal.minX {
+                        newX = legal.minX - (actual.width / 2)
+                    } else if actual.minX >= legal.maxX {
+                        newX = legal.maxX - (actual.width / 2)
+                    }
+                    if actual.maxY <= legal.minY {
+                        newY = legal.minY - (actual.height / 2)
+                    } else if actual.minY >= legal.maxY {
+                        newY = legal.maxY - (actual.height / 2)
+                    }
+                    newView.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: newView.frame.size)
                 }
-                newView.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: newView.frame.size)
+                playingArea.addSubview(newView)
             }
-            playingArea.addSubview(newView)
+            for card in cardViews {
+                card.maybeBeSnapped(boxViews)
+            }
+            refreshBoxCounts()
+        } else {
+            // First ever layout, no gameState exists yet.  Just create and place the deck, without rescaling.
+            shuffleAndPlace()
         }
-        for card in cardViews {
-            card.maybeBeSnapped(boxViews)
-        }
-        refreshBoxCounts()
         Logger.log("Layout performed")
     }
 
@@ -577,7 +579,7 @@ class ViewController: UIViewController {
             card.turnFaceDown()
         }
         card.frame.origin = from.origin * rescale
-        card.frame.size = card.frame.size * rescale
+        // Cards don't change size, which was set once "suitable for this device."
         return card
     }
 
@@ -600,6 +602,7 @@ class ViewController: UIViewController {
 
     // Front for Deck.makePlayingDeck, ensures that every card gets a gesture recognizer, but only once.
     private func makePlayingDeck(_ deck: Deck, _ instructions: PlayingDeckTemplate) -> [Card] {
+        Logger.log("making playing deck")
         let cards = deck.makePlayingDeck(instructions)
         for card in cards {
             if let recognizers = card.gestureRecognizers, recognizers.count > 0 {
@@ -654,7 +657,7 @@ class ViewController: UIViewController {
         cards = makePlayingDeck(deck, settings.deckType)
         configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
         removeAllCardsAndBoxes()
-        shuffleAndPlace(playingArea.bounds.width)
+        shuffleAndPlace()
     }
 
     // Refresh the box counts in all GridBoxes
@@ -700,7 +703,7 @@ class ViewController: UIViewController {
             // Deck type
             cards = makePlayingDeck(deck, settings.deckType)
             removeAllCardsAndBoxes()
-            shuffleAndPlace(playingArea.bounds.width)
+            shuffleAndPlace()
         }
     }
 
@@ -717,7 +720,7 @@ class ViewController: UIViewController {
     }
 
     // Shuffle cards and form deck.  Add a GridBox to hold the deck and place everything on the playingArea
-    private func shuffleAndPlace(_ : CGFloat) {
+    private func shuffleAndPlace() {
         let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
         let cardHeight = cardWidth / deck.aspectRatio
         let cardSize = CGSize(width: cardWidth, height: cardHeight)
@@ -880,6 +883,7 @@ extension ViewController : CommunicatorDelegate {
         } else {
             // This is not the initial player exchange but a move by an active player.  There is a special step for the first move
             //  to determine which deck is being used and to set up the hand area if requested.
+            Logger.log("Received GameState contains \(gameState.cards.count) cards")
             if !firstYieldOccurred {
                 if let deckType = gameState.deckType {
                     cards = makePlayingDeck(deck, deckType)
@@ -888,10 +892,8 @@ extension ViewController : CommunicatorDelegate {
                 setupPublicArea(gameState.handArea)
                 setFirstYieldOccurred(true, gameState.areaSize.landscape)
             }
-            Logger.log("Received GameState contains \(gameState.cards.count) cards")
             removePublicCardsAndBoxes()
             doLayout(gameState)
-            Logger.log("After processing, layout contains \(playingArea.subviews.count) subviews")
             if gameState.yielding {
                 activePlayer = (activePlayer + 1) % players.count
                 for i in 0..<players.count {
