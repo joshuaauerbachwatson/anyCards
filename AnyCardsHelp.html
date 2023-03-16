@@ -4,15 +4,16 @@
 <title>AnyCards Help</title>
 </head>
 <body>
-    <h2>Special Actions</h1>
+ <h2>Special Actions</h2>
         <ul>
             <li><a href="javascript:window.webkit.messageHandlers.sendFeedback.postMessage('send')">Report a Problem or Send Feedback</a>
         </ul>
-	<h1>AnyCards Help</h1>
-	<p>Help is organized as follows.
+<h1>AnyCards Help</h1>
+ <p>Help is organized as follows.</p>
 		<ul>
 			<li><a href="#What">What is AnyCards?</a>
 			<li><a href="#Controls">The Game Controls</a>
+			<li><a href="#Groups">Managing Groups</a>
 			<li><a href="#Choosing">Choosing and Setting Up a Game</a>
 			<li><a href="#Players">Assembling Players</a>
 			<li><a href="#Playing">Playing a Game</a>
@@ -20,43 +21,86 @@
 			<li><a href="#Problems">Reporting Problems</a>
 		</ul>
 
-	<br><hr><h2><a name="What"/>What is <em>AnyCards</em>?</h2>
+<br><hr><h2><a name="What"/>What is <em>AnyCards</em>?</h2>
 
-			<p><em>AnyCards</em> provides a shared playing surface across devices and supplies deck of cards.  By
-			default, this is a standard 52 card deck but alternative decks can be selected by the initiating player.
-			The players use their separate devices to play a card game with the cards.  Each player may optionally
-			have a private hand.  The game provides for an orderly succession of turns but does not otherwise build
-			in the rules of any particular card game.  It will support the playing of a wide variety of games (those
-			that don't require non-card accessories such as chips).  Achieving agreement about what game to play,
-			enforcing its rules, or incorporating vocal phases such as bidding, may require voice or message contact
-			between players (not provided by the game).
+ <p><em>AnyCards</em> provides a shared playing surface across devices and supplies a virtual deck of cards.
+	By default, this is a standard 52 card deck but alternative decks can be selected by the initiating
+	player.</p>
 
-	<br><hr><h2><a name="Controls">The Game Controls</h2>
-   <p>At the top of the game screen you will see the following controls.				
-     <img src="buttonsScreenshot.png" width="500">
-  <h3>Player Labels</h3>
+ <p>The players use their separate devices to play a card game with the cards.  Each player may optionally
+	have a private hand.  The game provides for an orderly succession of turns but does not otherwise build in
+	the rules of any particular card game.  It will support the playing of a wide variety of games (those that
+	don't require non-card accessories such as chips).</p>
 
-	 <p>The four white labels in the top row list the players of the game.
-     <ul><li>AnyCards can be played with more than four players but we are currently only making provision for showing up to four players explicitly.</li></ul>
-	 <p>Before the list of players has been assembled, the first label will contain your own name.  If you have
-		 not yet established a name for yourself in the game settings, this name will be the name of your device.
-		 The fact that it represents you is indicated by the asterisks and italics.
-	<br><hr><h2><a name="Choosing"/>Choosing and Setting Up a Game</h2>
-	<br><hr><h2><a name="Players"/>Assembling Players</h2>
-	<br><hr><h2><a name="Playing"/>Playing a Game</h2>
-	<br><hr><h2><a name="Ending"/>Ending a Game</h2>
-	<br><hr><h2><a name="Problems"/>Reporting Problems</h2>
-		<p>At the top of this help text is a link for reporting problems.  Touching it will bring up an
-			initialized email sending view with the recipient set to the AnyCards reporting address and some
-			instructions in the body of the message (which you should delete and replace with your specific problem
-			report).
-		<p>You can use this capabiity to send any kind of commentary or input that you like, but a key purpose is
-			to support reporting bugs and other problems that you are having with the app.  To this end, the email,
-			by default, contains up to two (often just one) logs of recent activity.  When you are reporting a
-			serious problem, such as a crash or misbehavior of some sort, it is a good idea to leave these logs in
-			place since they help in diagnosing problems.  They include only information about recent sequences of
-			actions inside the app itself and do not include any personal information.  However, if you feel more
-			comfortable removing these logs you are free to do so.
+ <p>Achieving agreement about what game to play, enforcing its rules, or incorporating interactions such as
+	bidding, may require voice or message contact between players (not provided by the game).</p>
+
+<br><hr><h2><a name="Controls"/>The Game Controls</h2>
+			
+ <p>At the top of the game screen you will see the following controls.</p>
+   <img src="buttonsScreenshot.png" width="500">
+
+<h3>Player Labels</h3>
+
+ <p>The four white labels in the top row list the players of the game.  AnyCards may be played with any number of
+	 players between one (solitaire) and four.
+
+ <p>Before the list of players has been assembled, the first label will contain your own name.  If you have
+	 not yet established a name for yourself in the game settings, this name will be the name of your device.
+	 The fact that it represents you is indicated by the asterisks and italics.  To set a meaningful name for
+	 yourself, touch <tt>Game</tt>, and fill in "Your User Name."</p>
+
+ <p>Depending on how you have set the minimum and maximum number of players, remaining player labels are set
+   to <tt>[Must Find]</tt> (needed to meet the minimum) or <tt>[Optional]</tt> (above the minimum, below the
+   maximum).  If the maximum number of players is less than four, the excess labels are omitted.</p>
+
+ <p>After the list of players has been assembled (see <a href="#Players">Assembling Players</a>), each
+   player's chosen name (or device name is displayed).  Your own name will appear (in italics with asterisks)
+   but not necessarily first.  The list represents the order of play, and the player in the first position
+   must play first.  The player whose turn is current is indicated by a green color.  The number of players will be
+   fixed for the remainder of the game.</p>
+
+<h3>Help Button</h3>
+
+ <p>You probably know already that this button brings up this help text.</p>
+																																											
+<h3>Groups Button</h3>
+
+ <p>This button opens a dialog that allows you to manage groups of players that can play games together without
+	 being "nearby."  See <a href="#Groups">Managing Groups</a>.</p>
+
+<h3>Group Name Label</h3>
+ 
+ <p>This label states the name of the group with which you are currently playing.  The special "nearby only"
+	 group consists of other players who are close by, are running AnyCards, and have agreed to let AnyCards use
+	 the local wifi to communicate.  Other groups can contain remote players but must be created and joined as
+	 described in <a href="#Groups">Managing Groups</a>.</p>
+	 
+
+<h3>Players Button</h3>
+
+
+<h3>Game Button</h3>
+
+<h3>Deal Button</h3>
+
+<br><hr><h2><a name="Groups"/>Managing Groups</h2>
+<br><hr><h2><a name="Choosing"/>Choosing and Setting Up a Game</h2>
+<br><hr><h2><a name="Players"/>Assembling Players</h2>
+<br><hr><h2><a name="Playing"/>Playing a Game</h2>
+<br><hr><h2><a name="Ending"/>Ending a Game</h2>
+<br><hr><h2><a name="Problems"/>Reporting Problems</h2>
+ <p>At the top of this help text is a link for reporting problems.  Touching it will bring up an
+	 initialized email sending view with the recipient set to the AnyCards reporting address and some
+	 instructions in the body of the message (which you should delete and replace with your specific problem
+	 report).</p>
+ <p>You can use this capabiity to send any kind of commentary or input that you like, but a key purpose is
+   to support reporting bugs and other problems that you are having with the app.  To this end, the email,
+	 by default, contains up to two (often just one) logs of recent activity.  When you are reporting a
+	 serious problem, such as a crash or misbehavior of some sort, it is a good idea to leave these logs in
+	 place since they help in diagnosing problems.  They include only information about recent sequences of
+	 actions inside the app itself and do not include any personal information.  However, if you feel more
+	 comfortable removing these logs you are free to do so.</p>
 
 </body> 
 </html>
