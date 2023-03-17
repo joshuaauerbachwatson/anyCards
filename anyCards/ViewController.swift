@@ -108,7 +108,6 @@ class ViewController: UIViewController {
     var playerLabels = [UILabel]()
 
     // Buttons and button-sized labels
-    let showButton = UIButton()
     let yieldButton = UIButton()
     let groupLabel = UILabel()
     let groupsButton = UIButton()
@@ -170,8 +169,6 @@ class ViewController: UIViewController {
                 player.isHidden = true
             }
         }
-        configureButton(showButton, title: ShowTitle, target: self, action: #selector(showTouched), parent: self.view)
-        showButton.isHidden = true
         configureButton(groupsButton, title: GroupsTitle, target: self, action: #selector(groupsTouched), parent: self.view)
         configureButton(yieldButton, title: YieldTitle, target: self, action: #selector(yieldTouched), parent: self.view)
         yieldButton.isHidden = true
@@ -275,10 +272,9 @@ class ViewController: UIViewController {
         helpButton.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
         let buttonY = labelY + controlHeight + border
         // Remaning buttons form a new row
-        showButton.frame = CGRect(x: layoutX, y: buttonY, width: ctlWidth, height: controlHeight)
-        groupsButton.frame = showButton.frame
-        yieldButton.frame = showButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        groupLabel.frame = yieldButton.frame
+        groupLabel.frame = CGRect(x: layoutX, y: buttonY, width: ctlWidth, height: controlHeight)
+        yieldButton.frame = groupLabel.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        groupsButton.frame = yieldButton.frame
         findPlayersButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         endGameButton.frame = findPlayersButton.frame
         optionsButton.frame = findPlayersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
@@ -354,6 +350,7 @@ class ViewController: UIViewController {
         if let card = touch.view {
             let wasCovered = isCovered(card)
             playingArea.bringSubviewToFront(card)
+            transmit(false)
             return !wasCovered
         } else {
             Logger.logFatalError("Card gesture recognizer called with non-card")
@@ -368,6 +365,7 @@ class ViewController: UIViewController {
             } else {
                 card.turnFaceUp()
             }
+            transmit(false)
         }
     }
 
@@ -390,6 +388,7 @@ class ViewController: UIViewController {
                 card.maybeBeSnapped(boxViews)
             }
             refreshBoxCounts()
+            transmit(false)
         }
     }
 
@@ -427,6 +426,7 @@ class ViewController: UIViewController {
             } else {
                 // Deletion request
                 boxes.forEach { $0.removeFromSuperview() }
+                transmit(false)
             }
         }
     }
@@ -435,12 +435,6 @@ class ViewController: UIViewController {
     @objc func optionsTouched() {
         let dialog = OptionSettingsDialog()
         Logger.logPresent(dialog, host: self, animated: false)
-    }
-
-    // Respond to touch of show button.  Sends the GameState but does not advance the turn.
-    @objc func showTouched() {
-        Logger.log("Show Touched")
-        transmit(false)
     }
 
     // Respond to touch of the groups button.  Opens the dialog for creating, accepting, and deleting
@@ -523,15 +517,7 @@ class ViewController: UIViewController {
 
     // Check whether this player is the the player whose turn it is and enable the End Turn button if so
     private func checkTurnToPlay() {
-        if thisPlayersTurn {
-            showButton.isHidden = false
-            yieldButton.isHidden = false
-            groupLabel.isHidden = true
-        } else {
-            showButton.isHidden = true
-            yieldButton.isHidden = true
-            groupLabel.isHidden = false
-        }
+        yieldButton.isHidden = !thisPlayersTurn
     }
 
     // Display a player in its label using the appropriate text color and attributes
@@ -626,6 +612,7 @@ class ViewController: UIViewController {
         playingArea.sendSubviewToBack(gridBox)
         gridBox.maybeSnapUp(cardViews)
         gridBox.refreshCount()
+        transmit(false)
     }
 
     // Set the firstYieldOccurred field and the associated orientation lock fields.  Hide the options button once first yield occurs.
@@ -656,7 +643,6 @@ class ViewController: UIViewController {
         playerListStable = 0
         playerListChanged = false
         playerLabels.forEach { $0.textColor = NormalTextColor }
-        showButton.isHidden = true
         groupsButton.isHidden = false
         yieldButton.isHidden = true
         groupLabel.isHidden = false
@@ -764,7 +750,7 @@ class ViewController: UIViewController {
         }
         if playBegun {
             // Once play begins, we don't need the timer any more.  Ensure that the player list is trimmed to maxPlayers and that any labels
-            // not showing actual players are hidden
+            // not showing actual players are hidden.  If the current player is not first to play, hide the options button.
             timer.invalidate()
             while players.count > maxPlayers {
                 players.removeLast()
@@ -772,14 +758,19 @@ class ViewController: UIViewController {
             for i in players.count..<playerLabels.count {
                 playerLabels[i].isHidden = true
             }
+            if !thisPlayersTurn {
+                optionsButton.isHidden = true
+            }
         }
         // In either case, make sure any actual players are showing in the labels
         configurePlayerLabels(minPlayers, maxPlayers)
     }
 
     // Transmit GameState to the other players, either when just showing or when yielding
-    private func transmit(_ yielding: Bool) {
-        assert(thisPlayersTurn)
+    func transmit(_ yielding: Bool) {
+        guard thisPlayersTurn && communicator != nil else {
+            return // Make it easy to call this without worrying.
+        }
         let gameState : GameState
         if !firstYieldOccurred && thisPlayer == 0 {
             gameState = GameState(deckType: settings.deckType, handArea: settings.hasHands, yielding: yielding,

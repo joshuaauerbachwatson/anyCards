@@ -109,6 +109,9 @@ class GridBox : UIView {
                     snapFrame = cardFrame
                     cards.forEach { $0.frame = cardFrame }
                 }
+                if recognizer.state == .ended {
+                    host.transmit(false)
+                }
             }
         }
     }
