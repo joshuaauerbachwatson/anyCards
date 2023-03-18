@@ -34,24 +34,19 @@ import (
 //
 // Inputs:
 //
+//	appToken - (validated previously)
 //	gameToken - a token giving access to the game
 //	player - the player's "order number" (an all-numeric String) which serves as a unique id
 //
 // Outputs:
 //
 //	players: the list of all active players as a blank separated string containing order numbers in ascending
-//	  order.  Note we provide this only so that clients can enforce play order.  Eventually the server should be
-//	  enforcing this.
+//	  order.
 //	gameState: the GameState structure represented as a dictionary (only the clients know the semantics)
 func poll(w http.ResponseWriter, body map[string]interface{}) {
-	_, player, game := getGameAndPlayer(w, body)
+	_, _, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return
-	}
-	if game.Players[player] == nil {
-		// Generally only true on the first poll.  TODO when we eliminate poll we will still need a way
-		// to register a new player.
-		game.Players[player] = new(int)
 	}
 	players := sortAndEncode(game.Players)
 	type PollResponse struct {
@@ -64,7 +59,7 @@ func poll(w http.ResponseWriter, body map[string]interface{}) {
 }
 
 // Subroutine to sort and encode the player numbers
-func sortAndEncode(players map[string]*int) string {
+func sortAndEncode(players map[string]int) string {
 	keys := maps.Keys(players)
 	sort.Strings(keys)
 	return strings.Join(keys, " ")

@@ -25,20 +25,19 @@ import (
 // Source for the withdraw Action.
 // Inputs:
 //
-//	gameToken: the secret token for the game provided by the game's creator (64 chars alphameric)
-//	player: the player's "order number" (a string parsable as int) which serves as a unique id
+//	 appToken: (validated previously)
+//		gameToken: the secret token for the game provided by the game's initiator (64 chars alphameric)
+//		player: the player's "order number" (a string parsable as int) which serves as a unique id
 //
 // Outputs:
 //
 //	status == StatusOK if the gameToken matches a game, from which the player is withdrawn (if present)
 //	status == StatusBadRequest if either argument is missing or ill-formed
-//	status == StatusNotFound if the arguments are superficially ok but the gameToken fails to match an active game
 //
 // If the gameToken is syntactically valid but fails to match any game, the "not found" response is used
 // rather than an auth failure.   We can't distinguish unauthorized access from a once-authorized token
 // whose game has expired.
-// If the player withdrawing is the last player of the game, the game is nevertheless left in place and could
-// be "played again" by presenting its game token.  Games that are idle for long enough are removed.
+// If the player withdrawing is the last player of the game (or the game is already empty), the game is deleted.
 // We do not use the "not found" response if the player is not in the game.  That is considered "success".
 func withdraw(w http.ResponseWriter, body map[string]interface{}) {
 	gameToken, player, game := getGameAndPlayer(w, body)
@@ -46,18 +45,9 @@ func withdraw(w http.ResponseWriter, body map[string]interface{}) {
 		return
 	}
 	fmt.Printf("request to withdraw player %s from game %s\n", player, gameToken)
-	if game.Players[player] == nil {
-		fmt.Printf("player %s is not in the game (already withdrawn?)\n", player)
-		return
-	}
 	delete(game.Players, player)
-	if game.Players[player] == nil {
-		fmt.Printf("player %s was successfully withdrawn\n", player)
-		if len(game.Players) == 0 {
-			game.State = nil
-			fmt.Println("No players left; old game state removed")
-		}
-		return
+	if len(game.Players) == 0 {
+		fmt.Printf("game %s has no remaining players, deleting\n", gameToken)
+		delete(games, gameToken)
 	}
-	indicateError(http.StatusInternalServerError, "player failed to be withdrawn", w)
 }

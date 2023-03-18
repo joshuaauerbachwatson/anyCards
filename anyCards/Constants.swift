@@ -53,6 +53,7 @@ let DealingCardsMax = 52
 let MinCardPixels = CGFloat(5) // Minimum number of pixels of a card's width or height that must be within the playing area
 let FixedLabelHeight = CGFloat(25)
 let ReturnLabelWidth = CGFloat(150)
+let GameTokenLength = 12
 
 // Document names
 let ServerGameFile = "serverGames"

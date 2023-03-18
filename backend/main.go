@@ -31,16 +31,6 @@ func main() {
 	// Set up handlers.  Note: we are currently following the old passive multicast logic that we used in
 	// the serverless implementation.  Ultimately, the role of this server should increase to include knowledge
 	// of what game is being played and enforcement of the rules.
-	http.HandleFunc(pathCreate, func(w http.ResponseWriter, r *http.Request) {
-		if body := screenRequest(w, r); body != nil {
-			createGame(w, *body)
-		}
-	})
-	http.HandleFunc(pathDelete, func(w http.ResponseWriter, r *http.Request) {
-		if body := screenRequest(w, r); body != nil {
-			deleteGame(w, *body)
-		}
-	})
 	http.HandleFunc(pathNewState, func(w http.ResponseWriter, r *http.Request) {
 		if body := screenRequest(w, r); body != nil {
 			newGameState(w, *body)

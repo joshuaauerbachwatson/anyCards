@@ -358,7 +358,7 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
             return
         }
         if button.tag == ConfirmOp.CreateGroup.rawValue {
-            generateNewGroupToken(name)
+            generateNewGameToken(name)
         } else {
             guard let token = token.text?.trim() else {
                 bail()
@@ -370,37 +370,10 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
         }
     }
 
-    // Function to create a new game in the backend, returning a token
-    func generateNewGroupToken(_ groupName: String) {
-        let errHandler = self.vc.error
-        var arg: Data
-        do {
-            arg = try JSONEncoder().encode([ argAppToken: AppToken ])
-        } catch {
-            errHandler(error, false)
-            return
-        }
-        postAnAction(pathCreate, arg) { (data, response, err ) in
-            guard let result = validateResponse(data,response, err, Dictionary<String,String>.self, errHandler) else {
-                // Error already displayed by validator
-                DispatchQueue.main.async {
-                    self.cancelButtonTouched(self.cancelButton)
-                }
-                return
-            }
-            if let token = result[argGameToken] {
-                serverGames.storeEntry(groupName, token, true)
-                self.settings.communication = .ServerBased(groupName)
-                DispatchQueue.main.async {
-                    self.showGroup(groupName, token)
-                }
-            } else {
-                DispatchQueue.main.async {
-                    errHandler(ServerError("No gameToken in response or response was invalid"), false)
-                    self.cancelButtonTouched(self.cancelButton)
-                }
-            }
-        }
+    // Function to create a new game token (random).
+    func generateNewGameToken(_ groupName: String) {
+        let token = randomString(length: GameTokenLength)
+        self.showGroup(groupName, token)
     }
 
     // Respond to touch of the 'cancel' button

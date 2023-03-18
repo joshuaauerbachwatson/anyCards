@@ -20,7 +20,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -40,37 +39,25 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]interface
 	}
 	body := new(map[string]interface{})
 	err := json.NewDecoder(r.Body).Decode(body)
-	if err == nil {
+	if err != nil {
+		indicateError(http.StatusBadRequest, "malformed request body (not JSON?)", w)
+		return nil
+	}
+	appToken := (*body)[argAppToken]
+	if appToken == anycardsAppToken {
 		return body
 	}
-	indicateError(http.StatusBadRequest, "malformed request body (not JSON?)", w)
-	return nil
-}
-
-// Secondary validator for post bodies containing the one true appToken.  For the moment, we require
-// this to create games and to perform the dump and reset admin functions.  This suffices for
-// development.  In production, we'd want easily obtained identity tokens for creating games and more
-// restricted ones for the admin functions.
-func checkAppToken(w http.ResponseWriter, body map[string]interface{}, request string) bool {
-	appToken := body[argAppToken]
-	if appToken == anycardsAppToken {
-		return true
-	}
-	msg := fmt.Sprintf("unauthorized %s request", request)
+	msg := fmt.Sprintf("unauthorized %s request", uri)
 	indicateError(http.StatusUnauthorized, msg, w)
-	return false
+	return nil
 }
 
 // Secondary validator for post bodies containing gameToken.  Returns the gameToken (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
-func getGameToken(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
+func validateGameToken(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
 	gameToken, ok := body["gameToken"].(string)
 	if ok {
 		if len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken) {
-			game := games[gameToken]
-			if game != nil {
-				game.IdleCount = 0
-			}
 			return gameToken, true
 		}
 	}
@@ -80,15 +67,11 @@ func getGameToken(w http.ResponseWriter, body map[string]interface{}) (string, b
 
 // Secondary validator for post bodies containing player.  Returns the player (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
-func getPlayer(w http.ResponseWriter, gameToken string, body map[string]interface{}) (string, bool) {
+func validatePlayer(w http.ResponseWriter, gameToken string, body map[string]interface{}) (string, bool) {
 	player, ok := body["player"].(string)
 	if ok {
 		maybe, err := strconv.Atoi(player)
 		if err == nil && maybe >= 0 {
-			game := games[gameToken]
-			if game != nil && game.Players[player] != nil {
-				*game.Players[player] = 0
-			}
 			return player, true
 		}
 	}
@@ -104,22 +87,26 @@ func indicateError(status int, msg string, w http.ResponseWriter) {
 	w.Write(errorDictionary(msg))
 }
 
-// Convenience wrapper for getting the game and player, validating args in the process, and
-// determining whether the game exists.  All errors result in an error response being sent
-// and a return with a nil Game.
+// Get the gameToken, player, and game for a request.  The game need not previously exist but
+// will be created on demand.  However, either the game token or the player value may be malformed.
+// All errors result in an error response being sent and a return with a nil Game.
 func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (string, string, *Game) {
-	gameToken, ok := getGameToken(w, body)
+	gameToken, ok := validateGameToken(w, body)
 	if !ok {
 		return "", "", nil
 	}
-	player, ok := getPlayer(w, gameToken, body)
+	player, ok := validatePlayer(w, gameToken, body)
 	if !ok {
 		return gameToken, "", nil
 	}
 	game := games[gameToken]
 	if game == nil {
-		indicateError(http.StatusNotFound, "gameToken doesn't designate a game", w)
+		game = &Game{Players: make(map[string]int), State: map[string]interface{}{}}
+		games[gameToken] = game
+	} else {
+		game.IdleCount = 0
 	}
+	game.Players[player] = 0
 	return gameToken, player, game // game will be nil on error
 }
 
@@ -128,13 +115,4 @@ func errorDictionary(msg string) []byte {
 	dict := map[string]string{"error": msg}
 	toSend, _ := json.Marshal(dict) // assume no error
 	return toSend
-}
-
-// Simple random generator for game tokens
-func randomGameToken() string {
-	b := make([]byte, gameTokenLen)
-	for i := range b {
-		b[i] = gameTokenChars[rand.Intn(numGameTokenChars)]
-	}
-	return string(b)
 }

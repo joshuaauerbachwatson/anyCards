@@ -200,6 +200,12 @@ func shuffle<T>(_ array : [T]) -> [T] {
     return ans
 }
 
+// Get a random string of a given length formed from alphanumeric characters
+func randomString(length: Int) -> String {
+  let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  return String((0..<length).map{ _ in letters.randomElement()! })
+}
+
 // Special packaging of bummer for noting holes in the implementation during development (shouldn't be called in production).
 // To allow it to be called in tight places, it will present on the console if no host is given to present the dialog.
 // If a host is given, the dialog is always attempted but does not always work since the host could be busy with another dialog or

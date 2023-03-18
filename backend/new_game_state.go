@@ -25,16 +25,15 @@ import (
 // Source for the newGameState Action.
 // Inputs:
 //
-//	gameToken: the token giving access to the game
-//	player: the player string (random number used as ordinal)
-//	gameState - the new value for the game state as a JSON-encoded String
+//	 appToken:  (already validated at entry)
+//		gameToken: the token giving access to the game
+//		player: the player string (random number used as ordinal)
+//		gameState - the new value for the game state as a JSON-encoded String
 //
 // Outputs:
 //
-//	status == StatusOK if the game exists and the player and gameState are admitted
+//	status == StatusOK if the game exists or can be created and the player and gameState are admitted
 //	status == StatusBadRequest if any argument is ill-formed
-//	status == StatusNotFound if the game cannot be found
-//	status == StatusForbidden if the new state is rejected by the game rules (not used yet)
 func newGameState(w http.ResponseWriter, body map[string]interface{}) {
 	gameToken, player, game := getGameAndPlayer(w, body)
 	if game == nil {
@@ -45,13 +44,8 @@ func newGameState(w http.ResponseWriter, body map[string]interface{}) {
 		indicateError(http.StatusBadRequest, "missing or malformed gameState argument", w)
 		return
 	}
-	// TODO game rules should be applied here to check whether the new game state is acceptable
 	game.State = gameState
-	if game.Players[player] == nil {
-		fmt.Printf("Recording new player %s\n", player)
-		idle := 0
-		game.Players[player] = &idle
-	}
+	game.Players[player] = 0
 	fmt.Printf("New gamestate recorded for game %s\n", gameToken)
 	w.WriteHeader(http.StatusOK)
 }

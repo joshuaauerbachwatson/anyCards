@@ -40,13 +40,12 @@ func cleanup() {
 		}
 		oldPlayerCount := len(game.Players)
 		for player, idleCount := range game.Players {
-			if idleCount == nil {
-				continue
-			}
-			*idleCount++
-			if *idleCount > playerTimeout {
+			idleCount++
+			if idleCount > playerTimeout {
 				fmt.Printf("cleanup deleting player %s from game %s\n", player, token)
 				delete(game.Players, player)
+			} else {
+				game.Players[player] = idleCount
 			}
 		}
 		newPlayerCount := len(game.Players)

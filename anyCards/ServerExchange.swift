@@ -48,7 +48,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     convenience init(_ gameToken: String, _ player: Player, _ delegate: CommunicatorDelegate) {
         self.init(player, delegate)
         self.gameToken = gameToken
-        let poll = Poll(gameToken: gameToken, player: playerID)
+        let poll = Poll(appToken: AppToken, gameToken: gameToken, player: playerID)
         guard let encoded = try? encoder.encode(poll) else {
             Logger.logFatalError("Unexpected failure to encode gameToken and player")
         }
@@ -115,7 +115,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     func send(_ gameState: GameState) {
         var arg: Data
         do {
-            let msg = SentState(gameToken: self.gameToken!, player: self.playerID, gameState: gameState)
+            let msg = SentState(appToken: AppToken, gameToken: self.gameToken!, player: self.playerID, gameState: gameState)
             arg = try encoder.encode(msg)
         } catch {
             delegate.error(error, false)
@@ -180,6 +180,7 @@ struct ServerError: Error, CustomDebugStringConvertible {
 
 // The value sent in a newstate exchange
 struct SentState: Encodable {
+    let appToken: String
     let gameToken: String
     let player: String
     let gameState: GameState
@@ -187,6 +188,7 @@ struct SentState: Encodable {
 
 // The value sent when polling
 struct Poll: Encodable {
+    let appToken: String
     let gameToken: String
     let player: String
 }

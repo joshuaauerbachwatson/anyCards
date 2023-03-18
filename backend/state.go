@@ -27,7 +27,7 @@ import (
 
 // The state of one game
 type Game struct {
-	Players   map[string]*int        `json:"players"`   // key is the player's "order" string, value is the idleCount
+	Players   map[string]int         `json:"players"`   // key is the player's "order" string, value is the idleCount
 	IdleCount int                    `json:"idleCount"` // global idle count for the game as a whole
 	State     map[string]interface{} `json:"state"`     // the game state (not interpreted here)
 }
@@ -47,9 +47,6 @@ var cleanupCounter int
 // This is an aid during development.  We might need something more sophisticated
 // for observability in the long run.
 func dump(w http.ResponseWriter, body map[string]interface{}) {
-	if !checkAppToken(w, body, "dump") {
-		return
-	}
 	ans := DumpedState{CleanupCounter: cleanupCounter, Games: games}
 	encoded, err := json.MarshalIndent(ans, "", "  ")
 	if err != nil {
@@ -63,9 +60,6 @@ func dump(w http.ResponseWriter, body map[string]interface{}) {
 
 // Handler for an admin function to reset to the empty state
 func reset(w http.ResponseWriter, body map[string]interface{}) {
-	if !checkAppToken(w, body, "reset") {
-		return
-	}
 	fmt.Println("reset called")
 	games = make(map[string]*Game)
 	cleanupCounter = 0

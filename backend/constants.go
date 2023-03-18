@@ -37,8 +37,6 @@ const (
 	gameTokenLen = 12
 
 	// URL paths representing verbs
-	pathCreate   = "/create"
-	pathDelete   = "/delete"
 	pathNewState = "/newstate"
 	pathPoll     = "/poll"
 	pathWithdraw = "/withdraw"
