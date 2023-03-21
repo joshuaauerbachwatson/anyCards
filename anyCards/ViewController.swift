@@ -56,21 +56,10 @@ class ViewController: UIViewController {
     // Otherwise they are ignored.
     var firstYieldOccurred = false
 
-    // Indicates that the player list has changed since the last periodic check.  Each check resets to false.  An actual change in the list
-    // resets to true.   The value must be false for PlayerCheckCount intervals of PlayerCheckSpacing duration in order to set playBegun.
-    var playerListChanged = false
-
-    // Indicates the number of times (at intervals of PlayerCheckSpacing) that the player list was found to be stable with at least the minimum
-    // number of members.  When this reaches PlayerCheckCount, the playBegun bit is set.   Reset to zero if the player list changes.
-    var playerListStable = 0
-
-    // The value for the minimum number of players, often (but not always) taken from the OptionSettings (once player list exchanges begin,
+    // The value for the number of players, often (but not always) taken from the OptionSettings (once player list exchanges begin,
     // changes to the OptionSettings have no effect on the current game but information received from other players can raise or lower
     // this value)
-    var minPlayers = -1    // To be properly initialized in configurePlayerLabels().
-
-    // The value for the maximum number of players.  See minPlayers
-    var maxPlayers = -1    // To be properly initialized in configurePlayerLabels().
+    var numPlayers = -1    // To be properly initialized in configurePlayerLabels().
 
     // Convenient terse finder for settings
     var settings : OptionSettings {
@@ -198,7 +187,7 @@ class ViewController: UIViewController {
         if notYetInitialized {
             notYetInitialized = false // don't repeat this sequence
             doLayout(nil)
-            configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
+            configurePlayerLabels(settings.numPlayers)
             groupLabel.text = settings.communication.displayName
             Logger.log("Game initialized")
         }
@@ -400,7 +389,6 @@ class ViewController: UIViewController {
     }
 
     // Respond to touch of find players button by making a communicator and sending out the initial player list.
-    // Also starts a timer for checking player list stability.
     @objc func findPlayersTouched() {
         Logger.log("Find Players Touched")
         if players.count == 0 {
@@ -408,7 +396,6 @@ class ViewController: UIViewController {
         }
         guard let communicator = makeCommunicator(settings.communication, players[0], self, self) else { return }
         self.communicator = communicator
-        Timer.scheduledTimer(withTimeInterval: PlayerCheckSpacing, repeats: true, block: timerTick)
         findPlayersButton.isHidden = true
         groupsButton.isHidden = true
         endGameButton.isHidden = false
@@ -449,7 +436,7 @@ class ViewController: UIViewController {
         Logger.log("Yield Touched")
         transmit(true)
         activePlayer = (thisPlayer + 1) % players.count
-        configurePlayerLabels(minPlayers, maxPlayers)
+        configurePlayerLabels(numPlayers)
         checkTurnToPlay()
     }
 
@@ -534,9 +521,8 @@ class ViewController: UIViewController {
 
     // Configure the player labels and min/maxPlayers fields according to the current agreement on the min and max player count.
     // Initially, these values come from OptionSettings; afterwards, they come from GameState received from other players.
-    private func configurePlayerLabels(_ min: Int, _ max: Int) {
-        minPlayers = min
-        maxPlayers = max
+    private func configurePlayerLabels(_ num: Int) {
+        numPlayers = num
         for i in 0..<playerLabels.count {
             let label = playerLabels[i]
             label.isHidden = false
@@ -545,10 +531,8 @@ class ViewController: UIViewController {
             } else if i == 0 {
                 // Implies player.count == 0, meaning the game has not started.  Just fill in current player
                 configurePlayer(label, settings.userName, i)
-            } else if i < min {
+            } else if i < num {
                 label.text = communicator == nil ? MustFind : Searching
-            } else if i < max {
-                label.text = OptionalPlayer
             } else {
                 label.isHidden = true
             }
@@ -556,7 +540,7 @@ class ViewController: UIViewController {
         // Special case: if communicator has not been started we determine which of findPlayers and endGame are showing based on min/maxPlayers
         // Once the communicator is started the FindPlayers button will show initially and change to endGame once the player list is stable
         if communicator == nil {
-            let solitaire = minPlayers == 1 && maxPlayers == 1
+            let solitaire = numPlayers == 1
             findPlayersButton.isHidden = solitaire
             endGameButton.isHidden = !solitaire
         }
@@ -640,8 +624,6 @@ class ViewController: UIViewController {
         setFirstYieldOccurred(false, false)
         thisPlayer = 0
         activePlayer = 0
-        playerListStable = 0
-        playerListChanged = false
         playerLabels.forEach { $0.textColor = NormalTextColor }
         groupsButton.isHidden = false
         yieldButton.isHidden = true
@@ -651,7 +633,7 @@ class ViewController: UIViewController {
         // Set up new game
         deck = DefaultDeck.deck
         cards = makePlayingDeck(deck, settings.deckType)
-        configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
+        configurePlayerLabels(settings.numPlayers)
         removeAllCardsAndBoxes()
         shuffleAndPlace()
     }
@@ -689,7 +671,7 @@ class ViewController: UIViewController {
         // a nil communicator implies a false setting for that flag.
         if communicator == nil {
             // Min and max players
-            configurePlayerLabels(settings.minPlayers, settings.maxPlayers)
+            configurePlayerLabels(settings.numPlayers)
         }
         // Playing deck and hands area can be changed even after communicator is started if this is the first player and he has not yet
         // ever yielded.
@@ -732,40 +714,6 @@ class ViewController: UIViewController {
         placeNewGridBox(deckBox)
     }
 
-    // Respond to timer tick during player search
-    private func timerTick(_ timer: Timer) {
-        if !playBegun {
-            // Until play begins, we are looking for stability in the count and at least minPlayers players.
-            if playerListChanged {
-                playerListChanged = false
-                playerListStable = 0
-            } else if players.count >= minPlayers {
-                playerListStable += 1
-                if playerListStable >= PlayerCheckCount {
-                    playBegun = true
-                    checkTurnToPlay()
-                    communicator?.updatePlayers(players)
-                }
-            }
-        }
-        if playBegun {
-            // Once play begins, we don't need the timer any more.  Ensure that the player list is trimmed to maxPlayers and that any labels
-            // not showing actual players are hidden.  If the current player is not first to play, hide the options button.
-            timer.invalidate()
-            while players.count > maxPlayers {
-                players.removeLast()
-            }
-            for i in players.count..<playerLabels.count {
-                playerLabels[i].isHidden = true
-            }
-            if !thisPlayersTurn {
-                optionsButton.isHidden = true
-            }
-        }
-        // In either case, make sure any actual players are showing in the labels
-        configurePlayerLabels(minPlayers, maxPlayers)
-    }
-
     // Transmit GameState to the other players, either when just showing or when yielding
     func transmit(_ yielding: Bool) {
         guard thisPlayersTurn && communicator != nil else {
@@ -800,8 +748,9 @@ extension ViewController : CommunicatorDelegate {
     // player list.  Note: we don't use this to detect lost peers; we use the more specific up-call for that purpose.
     func connectedDevicesChanged(_ numConnectedDevices: Int) {
         Logger.log("connectedDevicesChanged, now \(numConnectedDevices)")
-        if players.count < minPlayers {
-            communicator?.send(GameState(players: players, minPlayers: minPlayers, maxPlayers: maxPlayers))
+        if players.count < numPlayers {
+            let playerCount = settings.leadPlayer ? numPlayers : -1
+            communicator?.send(GameState(players: players, numPlayers: playerCount))
         }
     }
 
@@ -847,21 +796,15 @@ extension ViewController : CommunicatorDelegate {
     }
     private func doGameChanged(_ gameState: GameState) {
         if gameState.players.count > 0 {
-            // Phase 1 transfer: determining player list.  First, reconcile min and max players.
-            //   - The min is initially set to the max of all players' min settings
-            //   - The max is set to the min of all players' max settings
-            //   - If the resulting min is higher than the max, it is set to match the max.
-            var newMin = max(gameState.minPlayers, minPlayers)
-            let newMax = min(gameState.maxPlayers, maxPlayers)
-            if newMin > newMax {
-                newMin = newMax
+            // Phase 1 transfer: determining player list.  First, determine whether the sending player has provided
+            //   a new numPlayers value (only the "lead" player should do this).
+            var changed = false
+            if gameState.numPlayers > 0 {
+                configurePlayerLabels(gameState.numPlayers)
+                changed = true
             }
-            var changed = newMin != minPlayers || newMax != maxPlayers
-            if changed {
-                configurePlayerLabels(newMin, newMax)
-            }
-            // Then, if the incoming list differs from the local list, merge the lists, and ensure that all players in the list are
-            // also in the session.
+            // Then, if the incoming list differs from the local list, merge the lists and notify the communicator.
+            // Only the multipeer communicator actually needs or uses this notification.
             if players != gameState.players {
                 Logger.log("Former players list was \(players)")
                 Logger.log("New players list is \(gameState.players)")
@@ -875,11 +818,36 @@ extension ViewController : CommunicatorDelegate {
                 self.thisPlayer = thisPlayer
                 communicator?.updatePlayers(players)
             }
-            // If anything changed at all, then send out the result and indicate that the player list has changed to delay start
-            // of play until things settle down.
+
+            // Check whether we now have the right number of players.  It is an error to have too many.  If we have exactly the
+            // right number, check that there is exactly one lead player and indicate an error if there is none or more than one.
+            // If that test is passed, indicate that play can begin.
+            if numPlayers < players.count {
+                presentTerminalError(PlayerErrorTitle, TooManyPlayersMessage)
+                return
+            } else if numPlayers == players.count {
+                for player in 0..<numPlayers {
+                    if players[player].order == 1 {
+                        if player > 0 {
+                            presentTerminalError(PlayerErrorTitle, TooManyLeadsMessage)
+                            return
+                        }
+                    } else if player == 0 {
+                        presentTerminalError(PlayerErrorTitle, NoLeadPlayersMessage)
+                        return
+                    }
+                }
+                // Player list is complete with exactly one lead player
+                playBegun = true
+                checkTurnToPlay()
+            }
+
+            // If anything changed at all, then share the result with other players so that consensus can eventually occur.
+            // Note: in the absence of communication failures this is overkill because all players actually should get the same
+            // information.  It seems that when we use MPC this extra sharing step is needed sometimes.  Things should quiesce because
+            // if nothing changed, nothing is transmitted.
             if changed {
-                communicator?.send(GameState(players: players, minPlayers: minPlayers, maxPlayers: maxPlayers))
-                playerListChanged = true
+                communicator?.send(GameState(players: players, numPlayers: numPlayers))
             }
         } else {
             // This is not the initial player exchange but a move by an active player.  There is a special step for the first move
@@ -913,14 +881,21 @@ extension ViewController : CommunicatorDelegate {
         } else {
             Logger.log("Lost player \(player!)(\(playerID))")
         }
+        let lostPlayerMessage = String(format: LostPlayerTemplate, player!)
+        presentTerminalError(LostPlayerTitle, lostPlayerMessage)
+    }
+
+    // Present an error message box for a condition that should terminate the game
+    // Designed to be used in callbacks (uses DispatchQueue.main.async)
+    func presentTerminalError(_ title: String, _ message: String) {
         var host: UIViewController = self
         DispatchQueue.main.async {
             while host.presentedViewController != nil {
                 host = host.presentedViewController!
             }
             let action = UIAlertAction(title: OkButtonTitle, style: .cancel, handler: nil)
-            let lostPlayerMessage = String(format: LostPlayerTemplate, player!)
-            let alert = UIAlertController(title: LostPlayerTitle, message: lostPlayerMessage, preferredStyle: .alert)
+            let fullMessage = message + EndGame
+            let alert = UIAlertController(title: title, message: fullMessage, preferredStyle: .alert)
             alert.addAction(action)
             Logger.logPresent(alert, host: self, animated: false)
             self.prepareNewGame()
@@ -938,12 +913,6 @@ extension ViewController : CommunicatorDelegate {
 
     // Make a Player object for the current player
     func makePlayer(_ settings: OptionSettings) -> Player {
-        let name = settings.userName
-        switch settings.communication {
-        case .MultiPeer:
-            return Player(name, false)
-        case .ServerBased(let group):
-            return Player(name, serverGames.isCreator(group))
-        }
+        return Player(settings.userName, settings.leadPlayer)
     }
 }

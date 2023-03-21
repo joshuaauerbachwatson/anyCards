@@ -358,22 +358,20 @@ class GroupManagementDialog : UIViewController, UITextFieldDelegate {
             return
         }
         if button.tag == ConfirmOp.CreateGroup.rawValue {
-            generateNewGameToken(name)
-        } else {
-            guard let token = token.text?.trim() else {
-                bail()
-                return
-            }
-            serverGames.storeEntry(name, token, false)
-            settings.communication = .ServerBased(name)
-            showGroup(name, token)
+            generateNewGameToken() // TODO we might do without this capability: let humans chose the token
         }
+        guard let token = token.text?.trim() else {
+            bail()
+            return
+        }
+        serverGames.storeEntry(name, token)
+        settings.communication = .ServerBased(name)
+        showGroup(name, token)
     }
 
     // Function to create a new game token (random).
-    func generateNewGameToken(_ groupName: String) {
-        let token = randomString(length: GameTokenLength)
-        self.showGroup(groupName, token)
+    func generateNewGameToken() {
+        self.groupName.text = randomString(length: GameTokenLength)
     }
 
     // Respond to touch of the 'cancel' button

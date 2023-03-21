@@ -16,7 +16,7 @@
 
 import UIKit
 
-// Dialog for option setting in Any Old Card Game
+// Dialog for option setting in AnyCards
 class OptionSettingsDialog : UIViewController {
     // Parent view controller
     var vc : ViewController {
@@ -42,11 +42,9 @@ class OptionSettingsDialog : UIViewController {
     let deckType = TouchableLabel()           // Fifth row, right
     let handAreaLabel = UILabel()             // Sixth row, left
     let handArea = TouchableLabel()           // Sixth row, right
-    let minPlayersLabel = UILabel()           // Seventh row, left
-    let minPlayers = Stepper()                // Seventh row, right
-    let maxPlayersLabel = UILabel()           // Eighth row, left
-    let maxPlayers = Stepper()                // Eighth row, right
-    let doneButton = UIButton()               // Nineth row
+    let numPlayersLabel = UILabel()           // Seventh row, left
+    let numPlayers = Stepper()                // Seventh row, right
+    let doneButton = UIButton()               // Eighth row
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -104,10 +102,9 @@ class OptionSettingsDialog : UIViewController {
         handArea.view.font = getTextFont()
         handArea.view.backgroundColor = LabelBackground
 
-        // Min and max players and their labels
-        configureStepperAndLabel(minPlayersLabel, minPlayers, MinPlayersText, settings.minPlayers)
-        configureStepperAndLabel(maxPlayersLabel, maxPlayers, MaxPlayersText, settings.maxPlayers)
-        setSteppersMinMax()
+        // Number of players and label
+        configureStepperAndLabel(numPlayersLabel, numPlayers, NumPlayersText, settings.numPlayers)
+        setStepperMinMax()
 
         // Done button
         configureButton(doneButton, title: DoneButtonTitle, target: self, action: #selector(doneButtonTouched), parent: view)
@@ -116,8 +113,7 @@ class OptionSettingsDialog : UIViewController {
         if vc.communicator != nil {
             userName.isUserInteractionEnabled = false
             communicationStyle.isUserInteractionEnabled = false
-            minPlayers.isUserInteractionEnabled = false
-            maxPlayers.isUserInteractionEnabled = false
+            numPlayers.isUserInteractionEnabled = false
         }
     }
 
@@ -126,7 +122,7 @@ class OptionSettingsDialog : UIViewController {
         super.viewDidAppear(animated)
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * OptionSettingsEdgeMargin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * OptionSettingsEdgeMargin
-        let ctlHeight = (fullHeight - 8 * OptionSettingsSpacer - 2 * OptionSettingsEdgeMargin) / 9
+        let ctlHeight = (fullHeight - 7 * OptionSettingsSpacer - 2 * OptionSettingsEdgeMargin) / 8
         let ctlWidth = (fullWidth - OptionSettingsSpacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
@@ -140,11 +136,9 @@ class OptionSettingsDialog : UIViewController {
         deckType.frame = communicationStyle.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
         handAreaLabel.frame = deckTypeLabel.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
         handArea.frame = deckType.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
-        minPlayersLabel.frame = handAreaLabel.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
-        minPlayers.frame = handArea.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
-        maxPlayersLabel.frame = minPlayersLabel.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
-        maxPlayers.frame = minPlayers.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
-        doneButton.frame = CGRect(x: startX, y: maxPlayers.frame.maxY + OptionSettingsSpacer, width: fullWidth, height: ctlHeight)
+        numPlayersLabel.frame = handAreaLabel.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
+        numPlayers.frame = handArea.frame.offsetBy(dx: 0, dy: ctlHeight + OptionSettingsSpacer)
+        doneButton.frame = CGRect(x: startX, y: numPlayers.frame.maxY + OptionSettingsSpacer, width: fullWidth, height: ctlHeight)
     }
 
     // Actions
@@ -204,11 +198,9 @@ class OptionSettingsDialog : UIViewController {
     }
 
     // Set the limits of both steppers taking into account the value of the other (so that always min <= max)
-    private func setSteppersMinMax() {
-        minPlayers.minimumValue = PlayersMin
-        minPlayers.maximumValue = min(maxPlayers.value, PlayersMax)
-        maxPlayers.minimumValue = max(minPlayers.value, PlayersMin)
-        maxPlayers.maximumValue = PlayersMax
+    private func setStepperMinMax() {
+        numPlayers.minimumValue = PlayersMin
+        numPlayers.maximumValue = PlayersMax
     }
 }
 
@@ -230,9 +222,8 @@ extension OptionSettingsDialog : UITextFieldDelegate {
 // Conform to StepperDelegate
 extension OptionSettingsDialog : StepperDelegate {
     func valueChanged(_ stepper: Stepper) {
-        settings.minPlayers = minPlayers.value
-        settings.maxPlayers = maxPlayers.value
-        setSteppersMinMax()
+        settings.numPlayers = numPlayers.value
+        setStepperMinMax()
         vc.settingsChanged()
     }
     func displayText(_ value: Int) -> String {

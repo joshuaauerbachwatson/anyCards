@@ -16,36 +16,23 @@
 
 import Foundation
 
-// Stores associations between server game group names and other information (game token, isCreator flag)
-
-class GameInfo : Codable {
-    let token: String
-    let isCreator: Bool
-    init(_ token: String, _ isCreator: Bool) {
-        self.token = token
-        self.isCreator = isCreator
-    }
-}
+// Stores associations between player group nicknames and player group tokens.  Used only when playing games
+// using the server (with MPC, the player group
 
 class ServerGames : Codable {
     // The dictionary keyed by the user-chosen game name string
-    private var dictionary = [String: GameInfo]()
+    private var dictionary = [String: String]()
 
     // Get the token for a given name
     func getToken(_ name: String) -> String? {
-        let ans = dictionary[name]?.token
+        let ans = dictionary[name]
         Logger.log("getToken(\(name))=\(ans ?? "")")
         return ans
     }
 
-    // Get the isCreator flag for a given name.  This indicates whether the present player was the creator of the token for the game.
-    func isCreator(_ name: String) -> Bool {
-        return dictionary[name]?.isCreator ?? false
-    }
-
     // Get the name for a given token (slower in theory but we don't expect the dictionary to be large)
     func getName(_ token: String) -> String? {
-        let ans = dictionary.first { $0.1.token == token }?.0
+        let ans = dictionary.first { $0.1 == token }?.0
         Logger.log("getName(\(token))=\(ans ?? "")")
         return ans
     }
@@ -86,10 +73,10 @@ class ServerGames : Codable {
         Logger.log("Server group table successfully saved")
     }
 
-    // Store a new entry (name, token, isCreator) in the dictionary
-    func storeEntry(_ name: String, _ token: String, _ isCreator: Bool) {
-        dictionary[name] = GameInfo(token, isCreator)
-        Logger.log("dictionary updated with \(name)=\(token),\(isCreator)")
+    // Store a new entry (name, token) in the dictionary
+    func storeEntry(_ name: String, _ token: String) {
+        dictionary[name] = token
+        Logger.log("dictionary updated with \(name)=\(token)")
         save()
     }
 }

@@ -26,8 +26,8 @@ class OptionSettings {
     private static let CommunicationKey = "Communication"
     private static let DeckTypeKey = "DeckType"
     private static let HasHandsKey = "HasHands"
-    private static let MinPlayersKey = "MinPlayers"
-    private static let MaxPlayersKey = "MaxPlayers"
+    private static let NumPlayersKey = "NumPlayers"
+    private static let LeadPlayerKey = "LeadPlayer"
 
     // Single instance
     static let instance = OptionSettings()
@@ -96,35 +96,28 @@ class OptionSettings {
         }
     }
 
-    var minPlayers : Int {
+    var numPlayers : Int {
         get {
-            let stored = UserDefaults.standard.integer(forKey: OptionSettings.MinPlayersKey)
+            let stored = UserDefaults.standard.integer(forKey: OptionSettings.NumPlayersKey)
             if stored > 0 {
                 return stored
             }
             // Never stored, use static default
-            UserDefaults.standard.set(MinPlayersDefault, forKey: OptionSettings.MinPlayersKey)
-            return MinPlayersDefault
+            UserDefaults.standard.set(NumPlayersDefault, forKey: OptionSettings.NumPlayersKey)
+            return NumPlayersDefault
         }
         set {
             // We assume dialogs allow only reasonable values through so no checking here
-            UserDefaults.standard.set(newValue, forKey: OptionSettings.MinPlayersKey)
+            UserDefaults.standard.set(newValue, forKey: OptionSettings.NumPlayersKey)
         }
     }
 
-    var maxPlayers : Int {
+    var leadPlayer : Bool {
         get {
-            let stored = UserDefaults.standard.integer(forKey: OptionSettings.MaxPlayersKey)
-            if stored > 0 {
-                return stored
-            }
-            // Never stored, use static default
-            UserDefaults.standard.set(MaxPlayersDefault, forKey: OptionSettings.MaxPlayersKey)
-            return MaxPlayersDefault
+            return UserDefaults.standard.bool(forKey: OptionSettings.LeadPlayerKey)
         }
         set {
-            // We assume dialogs allow only reasonable values through so no checking here
-            UserDefaults.standard.set(newValue, forKey: OptionSettings.MaxPlayersKey)
+            UserDefaults.standard.set(newValue, forKey: OptionSettings.LeadPlayerKey)
         }
     }
 }

@@ -19,8 +19,7 @@ import UIKit
 // Global constants for Any Old Card Game
 
 // Numbers
-let MinPlayersDefault = 2
-let MaxPlayersDefault = 4
+let NumPlayersDefault = 2
 let PlayersMin = 1
 let PlayersMax = 4
 let PlayerCheckCount = 3 // Number of times the player list must be stable before declaring "game time"
@@ -73,8 +72,13 @@ let HelpTextBackground = UIColor.white
 let DefaultDeckName = "DefaultCardDeck.png"
 let MultiPeerServiceName = "anyoldcardgame"
 let LostPlayerTitle = "Lost Player"
-let LostPlayerTemplate = "Lost contact with '%@'; game ending."
+let LostPlayerTemplate = "Lost contact with '%@'"
+let EndGame = "; game ending"
 let OptionsTitle = "Game"
+let PlayerErrorTitle = "Error finding players"
+let TooManyPlayersMessage = "Too many players"
+let TooManyLeadsMessage = "More than one player claims the leader role"
+let NoLeadPlayersMessage = "No player claims the lead role"
 let FindPlayersTitle = "Players"
 let ShowTitle = "Show"
 let GroupsTitle = "Groups"
@@ -89,11 +93,9 @@ let HandAreaNo = "Absent"
 let PlayViaGameCenter = "Use Game Center"
 let LocalOnly = "Nearby Only"
 let UserNameText = "Your User Name: "
-let MinPlayersText = "Min. # of players: "
-let MaxPlayersText = "Max. # of players: "
+let NumPlayersText = "Number of players: "
 let MustFind = "[Must Find]"
 let Searching = "[Searching]"
-let OptionalPlayer = "[Optional]"
 let SettingsHeaderText = "Settings for Current Game"
 let DoneButtonTitle = "Done"
 let OkButtonTitle = "Ok"
