@@ -16,53 +16,49 @@
 
 import Foundation
 
-// Stores associations between player group nicknames and player group tokens.  Used only when playing games
-// using the server (with MPC, the player group
+// Stores pairs consisting of player group tokens (required) and player group nicknames (optional).  Used only when playing games
+// using the server (with MPC, the player group consists of those in proximity, by definition).
+
+struct ServerGamePair: Codable {
+    let token: String
+    let nickName: String?
+}
 
 class ServerGames : Codable {
-    // The dictionary keyed by the user-chosen game name string
-    private var dictionary = [String: String]()
+    // The ServerGamePairs being stored persistently
+    var pairs = [ServerGamePair]()
 
-    // Get the token for a given name
-    func getToken(_ name: String) -> String? {
-        let ans = dictionary[name]
-        Logger.log("getToken(\(name))=\(ans ?? "")")
-        return ans
+    var tokens: [String] {
+        get {
+            return pairs.map { $0.token }
+        }
     }
 
-    // Get the name for a given token (slower in theory but we don't expect the dictionary to be large)
-    func getName(_ token: String) -> String? {
-        let ans = dictionary.first { $0.1 == token }?.0
-        Logger.log("getName(\(token))=\(ans ?? "")")
-        return ans
+    var first: ServerGamePair? {
+        get {
+            return pairs.first
+        }
     }
 
-    var names: [String] {
-        let ans = dictionary.keys.sorted()
-        Logger.log("names=\(ans)")
-        return ans
-    }
-
-    // Get the "next" name, given a name from the names list.  Slow in theory but we don't expect the dictionary
-    // to be large
-    func next(_ current: String) -> String? {
-        guard let index = names.firstIndex(of: current), index < names.count - 1 else {
+    // Get the "next" pair, given a token
+    func next(_ current: String) -> ServerGamePair? {
+        guard let index = tokens.firstIndex(of: current), index < tokens.count - 1 else {
             Logger.log("\(current) has no 'next'")
             return nil
         }
-        let ans = names[index + 1]
+        let ans = pairs[index + 1]
         Logger.log("next(\(current))=\(ans)")
         return ans
     }
 
-    // Remove an item by its name
+    // Remove items by token value (there should be only one such item but this will remove all in case of duplicates)
     func remove(_ item: String) {
         Logger.log("remove(\(item))")
-        dictionary[item] = nil
+        pairs.removeAll(where: { $0.token == item })
         save()
     }
 
-    // Save the dictionary to disk
+    // Save the pairs to disk
     private func save() {
         let encoder = JSONEncoder()
         guard let encoded = try? encoder.encode(self) else {
@@ -74,20 +70,21 @@ class ServerGames : Codable {
     }
 
     // Store a new entry (name, token) in the dictionary
-    func storeEntry(_ name: String, _ token: String) {
-        dictionary[name] = token
-        Logger.log("dictionary updated with \(name)=\(token)")
+    func storeEntry(_ token: String, _ nickName: String?) {
+        let newPair = ServerGamePair(token: token, nickName: nickName)
+        Logger.log("save game tokens updated with \(token)(\(nickName ?? "nil"))")
+        pairs.append(newPair)
         save()
     }
 }
 
 var serverGames: ServerGames = {
-    let dictionaryFile = getDocDirectory().appendingPathComponent(ServerGameFile)
+    let storageFile = getDocDirectory().appendingPathComponent(ServerGameFile)
     do {
-        let archived = try Data(contentsOf: dictionaryFile)
+        let archived = try Data(contentsOf: storageFile)
         let decoder = JSONDecoder()
         let ans = try decoder.decode(ServerGames.self, from: archived)
-        Logger.log("ServerGames instance loaded from disk with \(ans.names.count) entries")
+        Logger.log("ServerGames instance loaded from disk with \(ans.pairs.count) entries")
         return ans
     } catch {
         Logger.log("Saved ServerGames not found, a new one was created")

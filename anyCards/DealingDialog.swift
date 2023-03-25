@@ -18,13 +18,8 @@ import UIKit
 
 // Dialog for dealing cards in Any Old Card Game
 class DealingDialog : UIViewController {
-    // Parent view controller
-    var vc : ViewController {
-        if let ans = presentingViewController as? ViewController {
-            return ans
-        }
-        Logger.logFatalError("Could not retrieve ViewController within DealingDialog")
-    }
+    // The main view controller (not necessarily the presenting controller for this controller)
+    let vc : ViewController
 
     // Terser reference to settings
     var settings : OptionSettings {
@@ -49,9 +44,10 @@ class DealingDialog : UIViewController {
     let confirmButton = UIButton() // Fifth Row
     let cancelButton = UIButton()  // Sixth Row
 
-    init(_ sources: Dictionary<String,GridBox>) {
+    init(_ sources: Dictionary<String,GridBox>, _ vc: ViewController) {
         self.sources = sources
         self.sourceOrder = orderSources(sources.keys.map { String($0) })
+        self.vc = vc
         super.init(nibName: nil, bundle: nil)
         preferredContentSize = OptionSettingsSize
         modalPresentationStyle = UIModalPresentationStyle.formSheet

@@ -98,12 +98,9 @@ class ViewController: UIViewController {
 
     // Buttons and button-sized labels
     let yieldButton = UIButton()
-    let groupLabel = UILabel()
     let groupsButton = UIButton()
-    let findPlayersButton = UIButton()
     let endGameButton = UIButton()
     let optionsButton = UIButton()
-    let dealButton = UIButton()
     let helpButton = UIButton()
 
     // The subset of the playingArea subviews that are cards.  Normally, the contents of this array is the same as that of the cards
@@ -161,15 +158,9 @@ class ViewController: UIViewController {
         configureButton(groupsButton, title: GroupsTitle, target: self, action: #selector(groupsTouched), parent: self.view)
         configureButton(yieldButton, title: YieldTitle, target: self, action: #selector(yieldTouched), parent: self.view)
         yieldButton.isHidden = true
-        configureLabel(groupLabel, UIColor.white, parent: self.view)
-        groupLabel.isHidden = false
-        groupLabel.font = UIFont.italicSystemFont(ofSize: groupLabel.font.pointSize)
-        groupLabel.textColor = .blue
-        configureButton(findPlayersButton, title: FindPlayersTitle, target: self, action: #selector(findPlayersTouched), parent: self.view)
         configureButton(endGameButton, title: EndGameTitle, target: self, action: #selector(endGameTouched), parent: self.view)
         endGameButton.isHidden = true
         configureButton(optionsButton, title: OptionsTitle, target: self, action: #selector(optionsTouched), parent: self.view)
-        configureButton(dealButton, title: DealTitle, target: self, action: #selector(dealTouched), parent: self.view)
         configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
 
         // Add GridBox-making and destroying recognizer to the playingArea view
@@ -188,7 +179,6 @@ class ViewController: UIViewController {
             notYetInitialized = false // don't repeat this sequence
             doLayout(nil)
             configurePlayerLabels(settings.numPlayers)
-            groupLabel.text = settings.communication.displayName
             Logger.log("Game initialized")
         }
     }
@@ -249,31 +239,28 @@ class ViewController: UIViewController {
         let layoutY = safeArea.midY - layoutHeight / 2
         // Calculate some values needed to layout buttons and labels
         let controlHeight = ControlHeightRatio * layoutHeight
-        let ctlWidth = (layoutWidth - 4 * border) / 5
+        let ctlWidth = (layoutWidth - 3 * border) / 4
         var labelX = layoutX
+        let buttonX = layoutX
         let labelY = layoutY + border
-        // Layout the buttons and labels
+        let buttonY = labelY + controlHeight + border
+        // Layout the player labels
         for playerLabel in playerLabels {
-            playerLabel.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
+            place(playerLabel, labelX, labelY, ctlWidth, controlHeight)
             labelX += ctlWidth + border
         }
-        // The help button shares a row with the player labels
-        helpButton.frame = CGRect(x: labelX, y: labelY, width: ctlWidth, height: controlHeight)
-        let buttonY = labelY + controlHeight + border
-        // Remaning buttons form a new row
-        groupLabel.frame = CGRect(x: layoutX, y: buttonY, width: ctlWidth, height: controlHeight)
-        yieldButton.frame = groupLabel.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        groupsButton.frame = yieldButton.frame
-        findPlayersButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        endGameButton.frame = findPlayersButton.frame
-        optionsButton.frame = findPlayersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        dealButton.frame = optionsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        // Layout the buttons
+        place(groupsButton, buttonX, buttonY, ctlWidth, controlHeight)
+        endGameButton.frame = groupsButton.frame
+        optionsButton.frame = groupsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        yieldButton.frame = optionsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        helpButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         // The playingArea frame is positioned below the buttons and labels with the fixed aspect ratio determined by the
         // orientation but limited by the available space (in landscape the natural height might not quite fit).
         let aspectRatio = safeArea.size.landscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
         let height = layoutWidth * aspectRatio
         Logger.log("natural height is \(height)")
-        let areaY = dealButton.frame.maxY + border
+        let areaY = helpButton.frame.maxY + border
         let maxHeight = layoutY + layoutHeight - areaY
         playingArea.frame = CGRect(x: layoutX, y: areaY, width: layoutWidth, height: min(height, maxHeight))
         Logger.log("Safe area is \(safeArea)")
@@ -388,15 +375,13 @@ class ViewController: UIViewController {
         prepareNewGame()
     }
 
-    // Respond to touch of find players button by making a communicator and sending out the initial player list.
-    @objc func findPlayersTouched() {
-        Logger.log("Find Players Touched")
+    // Start the search for players
+    func startPlayerSearch() {
         if players.count == 0 {
             players.append(makePlayer(settings))
         }
         guard let communicator = makeCommunicator(settings.communication, players[0], self, self) else { return }
         self.communicator = communicator
-        findPlayersButton.isHidden = true
         groupsButton.isHidden = true
         endGameButton.isHidden = false
     }
@@ -424,10 +409,10 @@ class ViewController: UIViewController {
         Logger.logPresent(dialog, host: self, animated: false)
     }
 
-    // Respond to touch of the groups button.  Opens the dialog for creating, accepting, and deleting
-    // game tokens.
+    // Respond to touch of the players button.  Opens the dialog for choosing nearby versus remote, entering a group token for remote,
+    // nominating yourself as lead player, setting the number of players, etc.
     @objc func groupsTouched() {
-        let dialog = GroupManagementDialog()
+        let dialog = PlayerManagementDialog()
         Logger.logPresent(dialog, host: self, animated: false)
     }
 
@@ -438,17 +423,6 @@ class ViewController: UIViewController {
         activePlayer = (thisPlayer + 1) % players.count
         configurePlayerLabels(numPlayers)
         checkTurnToPlay()
-    }
-
-    // Respond to touch of deal button.  Opens the dialog for dividing the contents of a gridbox (default "deck") into other gridboxes.
-    @objc func dealTouched() {
-        let dealSources = findDealSources()
-        if dealSources.isEmpty {
-            bummer(title: NoDealTitle, message: NoDealPossible, host: self)
-            return
-        }
-        let dialog = DealingDialog(dealSources)
-        Logger.logPresent(dialog, host: self, animated: false)
     }
 
     // Respond to touch of help button.   Display help html file.
@@ -537,13 +511,6 @@ class ViewController: UIViewController {
                 label.isHidden = true
             }
         }
-        // Special case: if communicator has not been started we determine which of findPlayers and endGame are showing based on min/maxPlayers
-        // Once the communicator is started the FindPlayers button will show initially and change to endGame once the player list is stable
-        if communicator == nil {
-            let solitaire = numPlayers == 1
-            findPlayersButton.isHidden = solitaire
-            endGameButton.isHidden = !solitaire
-        }
     }
 
     // Find a specific card from its card-state and adjust it to match the card state, possibly rescaling according to the current playingArea bounds
@@ -627,8 +594,6 @@ class ViewController: UIViewController {
         playerLabels.forEach { $0.textColor = NormalTextColor }
         groupsButton.isHidden = false
         yieldButton.isHidden = true
-        groupLabel.isHidden = false
-        groupLabel.text = settings.communication.displayName
         players = []
         // Set up new game
         deck = DefaultDeck.deck

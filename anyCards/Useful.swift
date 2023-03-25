@@ -119,6 +119,18 @@ func * (_ rect: CGRect, _ scale: CGFloat) -> CGRect {
 // Functions (alphabetical)
 //
 
+// Convenience for getting the X value to place one view to the right of another (assumes OptionsSettingsSpacer gives the amount
+// of space
+func after(_ view: UIView) -> CGFloat {
+    return view.frame.maxX + OptionSettingsSpacer
+}
+
+// Conveniece for getting the Y value to place one view below another (assumes OptionSettingsSpacer gives the amount of space
+// between views)
+func below(_ view: UIView) -> CGFloat {
+    return view.frame.maxY + OptionSettingsSpacer
+}
+
 // Crop an image to a given rectangle
 func cropImage(_ original: UIImage, _ rect: CGRect) -> UIImage {
     // A correct cropping requires the image to be in the "up" orientation, so we first assure that.
@@ -170,6 +182,24 @@ func getSuffix(_ file: String, _ prefixLen: Int) -> Int? {
     return Int(file.suffix(from: indexFrom))
 }
 
+// Special packaging of bummer for noting holes in the implementation during development (shouldn't be called in production).
+// To allow it to be called in tight places, it will present on the console if no host is given to present the dialog.
+// If a host is given, the dialog is always attempted but does not always work since the host could be busy with another dialog or
+// may not be fully initialized.  We don't test for these conditions because there isn't a solidly reliable test.   If the dialog
+// fails, it will result in a message on the console, but a less informative one.
+func notImplemented(_ function: String, host maybeHost: UIViewController?) {
+    if let host = maybeHost {
+        bummer(title: "Not Implemented", message: "You need to write the code for \(function)", host: host)
+    } else {
+        print("Not implemented: you need to write the code for \(function)")
+    }
+}
+
+// Convenience for setting the frame of a view
+func place(_ view: UIView, _ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat) {
+    view.frame = CGRect(x: x, y: y, width: width, height: height)
+}
+
 // Determine the safe area of a main view.  Since we are assuming at least iOS 11, we
 // can use the safeAreaInsets property of the view to compute the result.
 func safeAreaOf(_ view: UIView) -> CGRect {
@@ -205,17 +235,3 @@ func randomString(length: Int) -> String {
   let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   return String((0..<length).map{ _ in letters.randomElement()! })
 }
-
-// Special packaging of bummer for noting holes in the implementation during development (shouldn't be called in production).
-// To allow it to be called in tight places, it will present on the console if no host is given to present the dialog.
-// If a host is given, the dialog is always attempted but does not always work since the host could be busy with another dialog or
-// may not be fully initialized.  We don't test for these conditions because there isn't a solidly reliable test.   If the dialog
-// fails, it will result in a message on the console, but a less informative one.
-func notImplemented(_ function: String, host maybeHost: UIViewController?) {
-    if let host = maybeHost {
-        bummer(title: "Not Implemented", message: "You need to write the code for \(function)", host: host)
-    } else {
-        print("Not implemented: you need to write the code for \(function)")
-    }
-}
-

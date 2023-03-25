@@ -16,12 +16,9 @@
 
 import UIKit
 
-// Basic support for game communication.  Two implementations are
-// contemplated.
-// 1.  Multi-peer (proximity).  Implemented.
-// 2.  Backend with volatile state (using DigitalOcean App Platform).  In progress.
-// The long range plan is to drop (1) and retire the communicator abstraction,
-// then shift logic to the backend so we can better implement pluggable game rules.
+// Basic support for game communication.  Two implementations exist.
+// 1.  Multi-peer (proximity).
+// 2.  Backend with volatile state (using DigitalOcean App Platform).
 
 // The protocol implemented by all Communicator implementations
 protocol Communicator {
@@ -40,7 +37,7 @@ protocol CommunicatorDelegate {
 }
 
 // Enumerate the kinds of communicators that exist.  We treat server-based communicators
-// with different game groups as different "kinds".
+// with different game tokens different "kinds".
 enum CommunicatorKind {
     case MultiPeer, ServerBased(String)
 
@@ -50,7 +47,7 @@ enum CommunicatorKind {
             return .MultiPeer
         }
         switch name {
-            // ServerBased group names must not begin with blank
+            // ServerBased group tokens must not begin with blank
         case " MultiPeer":
             return .MultiPeer
         default: return .ServerBased(name)
@@ -62,8 +59,8 @@ enum CommunicatorKind {
         switch self {
         case .MultiPeer:
             return " MultiPeer"
-        case .ServerBased (let gameName):
-            return gameName
+        case .ServerBased (let gameToken):
+            return gameToken
         }
     }
 
@@ -72,8 +69,8 @@ enum CommunicatorKind {
         switch self {
         case .MultiPeer:
             return LocalOnly
-        case .ServerBased (let gameName):
-            return gameName
+        case .ServerBased (let gameToken):
+            return gameToken
         }
     }
 
@@ -82,14 +79,14 @@ enum CommunicatorKind {
     var next: CommunicatorKind {
         switch self {
         case .MultiPeer:
-            if let name = serverGames.names.first {
-                return .ServerBased(name)
+            if let token = serverGames.pairs.first?.token {
+                return .ServerBased(token)
             } else {
                 return .MultiPeer
             }
-        case .ServerBased (let name):
-            if let nextName = serverGames.next(name) {
-                return .ServerBased(nextName)
+        case .ServerBased (let token):
+            if let nextToken = serverGames.next(token)?.token {
+                return .ServerBased(nextToken)
             } else {
                 return .MultiPeer
             }
@@ -103,13 +100,7 @@ func makeCommunicator(_ kind: CommunicatorKind, _ player: Player, _ delegate: Co
     switch kind {
     case .MultiPeer:
         return MultiPeerCommunicator(player, delegate)
-    case .ServerBased(let groupName):
-        guard let gameToken = serverGames.getToken(groupName) else {
-            // This actually represents a loss of internal consistency since the group name was chosen from
-            // a dialog and should have an associated token.  Not clear what else we can do about it though.
-            bummer(title: "Not found", message: "Game group \(groupName) was not found", host: host)
-            return nil
-        }
+    case .ServerBased(let gameToken):
         return ServerBasedCommunicator(gameToken, player, delegate)
     }
 }
