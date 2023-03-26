@@ -16,7 +16,7 @@
 
 import UIKit
 
-// Dialog for option setting in AnyCards
+// Dialog for game setup setting in AnyCards (class name is historical)
 class OptionSettingsDialog : UIViewController {
     // Parent view controller
     var vc : ViewController {

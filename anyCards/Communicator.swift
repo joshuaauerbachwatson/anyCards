@@ -68,7 +68,7 @@ enum CommunicatorKind {
     var displayName : String {
         switch self {
         case .MultiPeer:
-            return LocalOnly
+            return LocalText
         case .ServerBased (let gameToken):
             return gameToken
         }

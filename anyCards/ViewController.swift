@@ -98,9 +98,9 @@ class ViewController: UIViewController {
 
     // Buttons and button-sized labels
     let yieldButton = UIButton()
-    let groupsButton = UIButton()
+    let playersButton = UIButton()
     let endGameButton = UIButton()
-    let optionsButton = UIButton()
+    let gameSetupButton = UIButton()
     let helpButton = UIButton()
 
     // The subset of the playingArea subviews that are cards.  Normally, the contents of this array is the same as that of the cards
@@ -155,12 +155,12 @@ class ViewController: UIViewController {
                 player.isHidden = true
             }
         }
-        configureButton(groupsButton, title: GroupsTitle, target: self, action: #selector(groupsTouched), parent: self.view)
+        configureButton(playersButton, title: PlayersTitle, target: self, action: #selector(playersTouched), parent: self.view)
         configureButton(yieldButton, title: YieldTitle, target: self, action: #selector(yieldTouched), parent: self.view)
         yieldButton.isHidden = true
         configureButton(endGameButton, title: EndGameTitle, target: self, action: #selector(endGameTouched), parent: self.view)
         endGameButton.isHidden = true
-        configureButton(optionsButton, title: OptionsTitle, target: self, action: #selector(optionsTouched), parent: self.view)
+        configureButton(gameSetupButton, title: GameSetupTitle, target: self, action: #selector(gameSetupTouched), parent: self.view)
         configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
 
         // Add GridBox-making and destroying recognizer to the playingArea view
@@ -250,10 +250,10 @@ class ViewController: UIViewController {
             labelX += ctlWidth + border
         }
         // Layout the buttons
-        place(groupsButton, buttonX, buttonY, ctlWidth, controlHeight)
-        endGameButton.frame = groupsButton.frame
-        optionsButton.frame = groupsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        yieldButton.frame = optionsButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        place(playersButton, buttonX, buttonY, ctlWidth, controlHeight)
+        endGameButton.frame = playersButton.frame
+        gameSetupButton.frame = playersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        yieldButton.frame = gameSetupButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         helpButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         // The playingArea frame is positioned below the buttons and labels with the fixed aspect ratio determined by the
         // orientation but limited by the available space (in landscape the natural height might not quite fit).
@@ -382,7 +382,7 @@ class ViewController: UIViewController {
         }
         guard let communicator = makeCommunicator(settings.communication, players[0], self, self) else { return }
         self.communicator = communicator
-        groupsButton.isHidden = true
+        playersButton.isHidden = true
         endGameButton.isHidden = false
     }
 
@@ -403,15 +403,15 @@ class ViewController: UIViewController {
         }
     }
 
-    // Respond to touch of options button
-    @objc func optionsTouched() {
+    // Respond to touch of gameSetup button
+    @objc func gameSetupTouched() {
         let dialog = OptionSettingsDialog()
         Logger.logPresent(dialog, host: self, animated: false)
     }
 
     // Respond to touch of the players button.  Opens the dialog for choosing nearby versus remote, entering a group token for remote,
     // nominating yourself as lead player, setting the number of players, etc.
-    @objc func groupsTouched() {
+    @objc func playersTouched() {
         let dialog = PlayerManagementDialog()
         Logger.logPresent(dialog, host: self, animated: false)
     }
@@ -565,10 +565,10 @@ class ViewController: UIViewController {
         transmit(false)
     }
 
-    // Set the firstYieldOccurred field and the associated orientation lock fields.  Hide the options button once first yield occurs.
+    // Set the firstYieldOccurred field and the associated orientation lock fields.  Hide the game setup button once first yield occurs.
     private func setFirstYieldOccurred(_ value: Bool, _ landscape: Bool) {
         self.firstYieldOccurred = value
-        self.optionsButton.isHidden = value
+        self.gameSetupButton.isHidden = value
         if value {
             Logger.log("firstYieldOccurred has been set to true, orientation locked to \(landscape ? "landscape" : "portrait")")
             self.lockedToLandscape = landscape
@@ -591,7 +591,7 @@ class ViewController: UIViewController {
         thisPlayer = 0
         activePlayer = 0
         playerLabels.forEach { $0.textColor = NormalTextColor }
-        groupsButton.isHidden = false
+        playersButton.isHidden = false
         yieldButton.isHidden = true
         players = []
         // Set up new game
@@ -724,8 +724,8 @@ extension ViewController : CommunicatorDelegate {
                 self.communicator?.shutdown()
                 let communication = self.settings.communication
                 switch communication {
-                case .ServerBased(let groupName):
-                    serverGames.remove(groupName)
+                case .ServerBased(let token):
+                    serverGames.remove(token)
                     self.settings.communication = communication.next
                 default:
                     break

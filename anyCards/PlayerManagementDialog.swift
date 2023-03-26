@@ -103,10 +103,12 @@ class PlayerManagementDialog : UIViewController {
         // Num Players and its label
         configureLeftLabel(numPlayersLabel, NumPlayersText)
         configureStepper(numPlayers, delegate: self, value: settings.numPlayers, parent: view)
+        numPlayers.minimumValue = PlayersMin
+        numPlayers.maximumValue = PlayersMax
         if settings.leadPlayer {
-            unhide(vc.optionsButton, numPlayersLabel, numPlayers)
+            unhide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         } else {
-            hide(vc.optionsButton, numPlayersLabel, numPlayers)
+            hide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         }
 
         // Local/remote
@@ -179,12 +181,12 @@ class PlayerManagementDialog : UIViewController {
             // Was on, toggle off
             settings.leadPlayer = false
             leaderStatus.text = NonleaderText
-            hide(vc.optionsButton, numPlayersLabel, numPlayers)
+            hide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         } else {
             // Was off, toggle on
             settings.leadPlayer = true
             leaderStatus.text = LeaderText
-            unhide(vc.optionsButton, numPlayersLabel, numPlayers)
+            unhide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         }
     }
 
@@ -198,14 +200,14 @@ class PlayerManagementDialog : UIViewController {
             localRemote.text = LocalText
         } else {
             // was local, toggle to remote
-            setRemoteControlsHidden(false) // shows initial group
+            setRemoteControlsHidden(false) // shows initial token
             localRemote.text = RemoteText
         }
     }
 
     // Respond to touch of the next button by going to the next remembered token
     @objc func nextTouched() {
-        nextGroup()
+        nextToken()
     }
 
     // Respond to touch of the remember / forget button
@@ -213,12 +215,12 @@ class PlayerManagementDialog : UIViewController {
         if rememberForgetButton.titleLabel?.text == ForgetTitle {
             doForget()
         } else {
-            doGroupSave()
+            doTokenSave()
         }
     }
 
-    // Logic for saving what the user has entered when editing a group defintion
-    func doGroupSave() {
+    // Logic for saving what the user has entered when editing a token defintion
+    func doTokenSave() {
         guard let token = editToken.text, token.count > 0 else {
             bummer(title: MissingToken, message: MissingToken, host: self)
             return
@@ -229,22 +231,22 @@ class PlayerManagementDialog : UIViewController {
         }
         serverGames.storeEntry(token, editNickName.text)
         settings.communication = .ServerBased(token)
-        showGroup(editNickName.text, token)
+        showToken(editNickName.text, token)
         editToken.text = nil
         editNickName.text = nil
     }
 
-    // Logic for moving to the next group when a group is displayed (assumes the group is not being edited)
-    func nextGroup() {
+    // Logic for moving to the next token when a token is displayed (assumes the token is not being edited)
+    func nextToken() {
         if let current = token.text, current.count > 0 {
             if let nextPair = serverGames.next(current) {
-                showGroup(nextPair.nickName, nextPair.token)
+                showToken(nextPair.nickName, nextPair.token)
             } else {
-                showBlankGroup()
+                showBlankToken()
             }
-        } else if let initialGroup = serverGames.first {
-            showGroup(initialGroup.nickName, initialGroup.token)
-        } // else no group was showing and there is no group to show so 'next' is a no-op
+        } else if let initialToken = serverGames.first {
+            showToken(initialToken.nickName, initialToken.token)
+        } // else no token was showing and there is no token to show so 'next' is a no-op
     }
 
     // Respond to touch of the rememberForget button when it's titled "forget"
@@ -258,7 +260,7 @@ class PlayerManagementDialog : UIViewController {
             guard let current = token.text else {
                 return // strange situation, but be robust
             }
-            nextGroup()
+            nextToken()
             serverGames.remove(current)
             if let next = token.text {
                 settings.communication = .ServerBased(next)
@@ -289,8 +291,8 @@ class PlayerManagementDialog : UIViewController {
         }
     }
 
-    // Show a specific remote in this dialog (assumes isRemote is true and that the labels are showing)
-    func showGroup(_ name: String?, _ tokenText: String) {
+    // Show a specific token in this dialog (assumes isRemote is true and that the labels are showing)
+    func showToken(_ name: String?, _ tokenText: String) {
         unhide(nickName, token)
         hide(editNickName, editToken)
         editNickName.text = nil
@@ -300,8 +302,8 @@ class PlayerManagementDialog : UIViewController {
         rememberForgetButton.setTitle(ForgetTitle, for: .normal)
     }
 
-    // Show a blank group to be filled in by the user (assumes remote and that the labels are showing)
-    func showBlankGroup() {
+    // Show a blank token to be filled in by the user (assumes remote and that the labels are showing)
+    func showBlankToken() {
         unhide(editNickName, editToken)
         hide(nickName, token, rememberForgetButton) // rememberForget will unhide when there is a valid token
         nickName.text = nil
@@ -311,14 +313,14 @@ class PlayerManagementDialog : UIViewController {
         rememberForgetButton.setTitle(SaveTitle, for: .normal)
     }
 
-    // Show the appropriate initial group (assuming remote and that the labels are showing)
-    func showInitialGroup() {
+    // Show the appropriate initial token (assuming remote and that the labels are showing)
+    func showInitialToken() {
         if let pair = serverGames.first {
             settings.communication = .ServerBased(pair.token)
-            showGroup(pair.nickName, pair.token)
+            showToken(pair.nickName, pair.token)
         } else {
             // settings not modified in this case; will be modified later when editing completes
-            showBlankGroup()
+            showBlankToken()
         }
     }
 
@@ -328,7 +330,7 @@ class PlayerManagementDialog : UIViewController {
             hide(token, nickName, tokenLabel, nickNameLabel, editNickName, editToken, nextButton, rememberForgetButton)
         } else {
             unhide(tokenLabel, nickNameLabel, nextButton, rememberForgetButton)
-            showInitialGroup()
+            showInitialToken()
         }
     }
 
