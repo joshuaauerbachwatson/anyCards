@@ -493,9 +493,8 @@ class ViewController: UIViewController {
         label.textColor = (playBegun && playerIndex == activePlayer) ? ActivePlayerColor : NormalTextColor
     }
 
-    // Configure the player labels and min/maxPlayers fields according to the current agreement on the min and max player count.
-    // Initially, these values come from OptionSettings; afterwards, they come from GameState received from other players.
-    private func configurePlayerLabels(_ num: Int) {
+    // Configure the player labels according to latest information.
+    func configurePlayerLabels(_ num: Int) {
         numPlayers = num
         for i in 0..<playerLabels.count {
             let label = playerLabels[i]
@@ -628,26 +627,12 @@ class ViewController: UIViewController {
         }
     }
 
-    // Called when settings change.  Reloads all settings that are permitted to change, depending on the phase of the game.  Some setting
-    // changes are not effective until the next game.
-    func settingsChanged() {
-        // If the communicator has not started, all changes are allowed.  The CommunicatorKind change does not need to be processed here since
-        // the latest value will be read when the communicator starts.   Changes guarded by firstYieldOccurred can be handled below because
-        // a nil communicator implies a false setting for that flag.
-        if communicator == nil {
-            // Min and max players
-            configurePlayerLabels(settings.numPlayers)
-        }
-        // Playing deck and hands area can be changed even after communicator is started if this is the first player and he has not yet
-        // ever yielded.
-        if !firstYieldOccurred && thisPlayer == 0 {
-            // Hand area
-            setupPublicArea(settings.hasHands)
-            // Deck type
-            cards = makePlayingDeck(deck, settings.deckType)
-            removeAllCardsAndBoxes()
-            shuffleAndPlace()
-        }
+    // Called when the deck type or hand area setting changes.  Does the initial setup for that combination of decktype and hand area.
+    func newShuffle() {
+        setupPublicArea(settings.hasHands)
+        cards = makePlayingDeck(deck, settings.deckType)
+        removeAllCardsAndBoxes()
+        shuffleAndPlace()
     }
 
     // Set up the public area and the hand area marker based on the current settings

@@ -104,7 +104,7 @@ class OptionSettingsDialog : UIViewController {
         let newDeckType = Decks.next(settings.deckType.displayName)
         deckType.text = newDeckType.displayName
         settings.deckType = newDeckType
-        vc.settingsChanged()
+        vc.newShuffle()
     }
 
     // Respond to touch of the 'hand area" touchable label by toggling between present and absent
@@ -112,7 +112,7 @@ class OptionSettingsDialog : UIViewController {
         let newValue = !settings.hasHands
         settings.hasHands = newValue
         handArea.text = newValue ? HandAreaYes : HandAreaNo
-        vc.settingsChanged()
+        vc.newShuffle()
     }
 
     // Respond to touch of deal button.  Opens the dialog for dividing the contents of a gridbox (default "deck") into other gridboxes.
@@ -128,19 +128,4 @@ class OptionSettingsDialog : UIViewController {
 
     // Subroutines
 
-}
-
-// Conform to UITextFieldDelegate
-extension OptionSettingsDialog : UITextFieldDelegate {
-    // React to a change in the text field containing the user name
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        if let newText = textField.text, reason == .committed {
-            settings.userName = newText
-            vc.settingsChanged()
-        }
-    }
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return false
-    }
 }

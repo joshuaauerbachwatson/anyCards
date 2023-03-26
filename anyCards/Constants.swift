@@ -37,7 +37,7 @@ let LayoutAreaRatioPortrait = CGFloat(1322) / CGFloat(1024) // H/W to use for la
 let LayoutAreaRatioLandscape = CGFloat(1366) / CGFloat(980) // H/W to use for layout in landscape (== iPad 12.9" safe area shapes)
 let ControlHeightRatio = CGFloat(1) / CGFloat(20) // Ratio of label or button height to safe area height
 let OptionSettingsSize = CGSize(width: 480, height: 300)
-let GroupManagementSize = CGSize(width:480, height: 600)
+let PlayerManagementSize = CGSize(width:480, height: 600)
 let OptionSettingsEdgeMargin = CGFloat(10)
 let OptionSettingsSpacer = CGFloat(4)
 let GridBoxExpansion = CGFloat(1.2)
@@ -139,6 +139,8 @@ let RemoteText = "Entire internet"
 let LocalText = "Nearby only"
 let ForgetTitle = "Forget this token"
 let MissingToken = "Missing token"
+let InvalidTokenTitle = "Invalid token"
+let InvalidTokenMessage = "Token must be 12 chars, letters and numbers only"
 
 // Bug reporting
 let FeedbackEmail = "anycardsreports@gmail.com"

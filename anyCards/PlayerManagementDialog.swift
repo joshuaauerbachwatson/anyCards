@@ -53,9 +53,14 @@ class PlayerManagementDialog : UIViewController {
     let rememberForgetButton = UIButton() // 10th row
     let findPlayersButton = UIButton()  // 11th row
 
+    // editable field tags
+    let UserNameTag = 0
+    let TokenTag = 1
+    let NicknameTag = 2
+
     init() {
         super.init(nibName: nil, bundle: nil)
-        preferredContentSize = OptionSettingsSize // borrowed
+        preferredContentSize = PlayerManagementSize
         modalPresentationStyle = UIModalPresentationStyle.formSheet
     }
 
@@ -87,10 +92,8 @@ class PlayerManagementDialog : UIViewController {
 
         // userName and label
         configureLeftLabel(userNameLabel, UserNameText)
-        configureTextField(userName, LabelBackground, parent: view)
-        userName.textColor = NormalTextColor
+        configureEditableField(userName, UserNameTag)
         userName.text = settings.userName
-        userName.delegate = self
 
         // Leader status and its label
         configureLeftLabel(leaderStatusLabel, LeaderStatusLabelText)
@@ -114,12 +117,12 @@ class PlayerManagementDialog : UIViewController {
         // Token and its label
         configureLeftLabel(tokenLabel, TokenLabelText)
         configureLabel(token, LabelBackground, parent: view)
-        configureEditableField(editToken, 0)
+        configureEditableField(editToken, TokenTag)
 
         // Nickname and its label
         configureLeftLabel(nickNameLabel, NickNameLabelText)
         configureLabel(nickName, LabelBackground, parent: view)
-        configureEditableField(editNickName, 1)
+        configureEditableField(editNickName, NicknameTag)
 
         // next button
         configureButton(nextButton, title: NextTitle, target: self, action: #selector(nextTouched), parent: view)
@@ -148,8 +151,10 @@ class PlayerManagementDialog : UIViewController {
         let twoThirdsWidth = 2 * thirdWidth + spacer
         place(header, startX, startY, fullWidth, ctlHeight)
         place(version, startX, below(header), fullWidth, ctlHeight)
-        place(leaderStatusLabel, startX, below(version), thirdWidth, ctlHeight)
-        place(leaderStatus, after(leaderStatusLabel), below(version), twoThirdsWidth, ctlHeight)
+        place(userNameLabel, startX, below(version), thirdWidth, ctlHeight)
+        place(userName, after(userNameLabel), below(version), twoThirdsWidth, ctlHeight)
+        place(leaderStatusLabel, startX, below(userName), thirdWidth, ctlHeight)
+        place(leaderStatus, after(leaderStatusLabel), below(userName), twoThirdsWidth, ctlHeight)
         place(numPlayersLabel, startX, below(leaderStatus), thirdWidth, ctlHeight)
         place(numPlayers, after(numPlayersLabel), below(leaderStatus), twoThirdsWidth, ctlHeight)
         place(localRemoteLabel, startX, below(numPlayers), thirdWidth, ctlHeight)
@@ -216,6 +221,10 @@ class PlayerManagementDialog : UIViewController {
     func doGroupSave() {
         guard let token = editToken.text, token.count > 0 else {
             bummer(title: MissingToken, message: MissingToken, host: self)
+            return
+        }
+        if !validToken(token) {
+            bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
             return
         }
         serverGames.storeEntry(token, editNickName.text)
@@ -294,7 +303,7 @@ class PlayerManagementDialog : UIViewController {
     // Show a blank group to be filled in by the user (assumes remote and that the labels are showing)
     func showBlankGroup() {
         unhide(editNickName, editToken)
-        hide(nickName, token)
+        hide(nickName, token, rememberForgetButton) // rememberForget will unhide when there is a valid token
         nickName.text = nil
         token.text = nil
         editNickName.placeholder = NickNamePlaceholder
@@ -351,11 +360,64 @@ class PlayerManagementDialog : UIViewController {
             return "\(VersionPrefix)\(appVersion!)(\(buildNumber!))"
         }
     }
+
+    // Determines if token is valid
+    func validToken(_ text: String?) -> Bool {
+        guard let token = text else {
+            return false
+        }
+        return token.count == GameTokenLength && validTokenChars(token)
+    }
+
+    // Determines if characters are valid for inclusion in a token
+    func validTokenChars(_ chars: String) -> Bool {
+        return (try? Regex("^[a-zA-Z0-9]*$").wholeMatch(in: chars)) != nil
+    }
 }
 
 // Conform to UITextFieldDelegate
 extension PlayerManagementDialog: UITextFieldDelegate {
+    // Prevent erroneous characters from entering the editToken field
+    func textField(_ field: UITextField, shouldChangeCharactersIn _: NSRange, replacementString chars: String) -> Bool {
+        if field.tag != TokenTag {
+            return true
+        }
+        return validTokenChars(chars)
+    }
 
+    // Don't allow invalid token to be left in the token field
+    func textFieldShouldEndEditing(_ field: UITextField) -> Bool {
+        if field.tag != TokenTag {
+            return true
+        }
+        hide(rememberForgetButton)
+        if let token = field.text, token.count > 0 {
+            if validToken(token) {
+                unhide(rememberForgetButton)
+            } else {
+                bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
+                return false
+            }
+        } // if valid or if currently clear
+        return true
+    }
+
+    // Store new value of the player name field
+    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
+        if textField.tag != UserNameTag {
+            return
+        }
+        if let newText = textField.text, reason == .committed {
+            settings.userName = newText
+            vc.configurePlayerLabels(settings.numPlayers)
+        }
+    }
+
+    // For all fields, allow the return key to end editing
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return false
+    }
 }
 
 // Conform to StepperDelegate
