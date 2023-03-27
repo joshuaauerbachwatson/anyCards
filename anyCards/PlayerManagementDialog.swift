@@ -427,6 +427,7 @@ extension PlayerManagementDialog: StepperDelegate {
     func valueChanged(_ stepper: Stepper) {
         settings.numPlayers = stepper.value
         findPlayersButton.isHidden = settings.numPlayers < 2
+        vc.configurePlayerLabels(stepper.value)
     }
 
     func displayText(_ value: Int) -> String {
