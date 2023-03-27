@@ -277,20 +277,6 @@ class PlayerManagementDialog : UIViewController {
 
     // Subroutines
 
-    // Hide some controls
-    func hide(_ ctls: UIView...) {
-        for ctl in ctls {
-            ctl.isHidden = true
-        }
-    }
-
-    // Unhide some controls
-    func unhide(_ ctls: UIView...) {
-        for ctl in ctls {
-            ctl.isHidden = false
-        }
-    }
-
     // Show a specific token in this dialog (assumes isRemote is true and that the labels are showing)
     func showToken(_ name: String?, _ tokenText: String) {
         unhide(nickName, token)

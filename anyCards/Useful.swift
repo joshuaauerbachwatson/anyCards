@@ -182,6 +182,13 @@ func getSuffix(_ file: String, _ prefixLen: Int) -> Int? {
     return Int(file.suffix(from: indexFrom))
 }
 
+// Hide some controls
+func hide(_ ctls: UIView...) {
+    for ctl in ctls {
+        ctl.isHidden = true
+    }
+}
+
 // Special packaging of bummer for noting holes in the implementation during development (shouldn't be called in production).
 // To allow it to be called in tight places, it will present on the console if no host is given to present the dialog.
 // If a host is given, the dialog is always attempted but does not always work since the host could be busy with another dialog or
@@ -198,6 +205,12 @@ func notImplemented(_ function: String, host maybeHost: UIViewController?) {
 // Convenience for setting the frame of a view
 func place(_ view: UIView, _ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat) {
     view.frame = CGRect(x: x, y: y, width: width, height: height)
+}
+
+// Get a random string of a given length formed from alphanumeric characters
+func randomString(length: Int) -> String {
+  let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  return String((0..<length).map{ _ in letters.randomElement()! })
 }
 
 // Determine the safe area of a main view.  Since we are assuming at least iOS 11, we
@@ -230,8 +243,9 @@ func shuffle<T>(_ array : [T]) -> [T] {
     return ans
 }
 
-// Get a random string of a given length formed from alphanumeric characters
-func randomString(length: Int) -> String {
-  let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-  return String((0..<length).map{ _ in letters.randomElement()! })
+// Unhide some controls
+func unhide(_ ctls: UIView...) {
+    for ctl in ctls {
+        ctl.isHidden = false
+    }
 }

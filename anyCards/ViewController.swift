@@ -152,14 +152,13 @@ class ViewController: UIViewController {
             let player = makeLabel(LabelBackground, parent: self.view)
             playerLabels.append(player)
             if i > 0 {
-                player.isHidden = true
+                hide(player)
             }
         }
         configureButton(playersButton, title: PlayersTitle, target: self, action: #selector(playersTouched), parent: self.view)
         configureButton(yieldButton, title: YieldTitle, target: self, action: #selector(yieldTouched), parent: self.view)
-        yieldButton.isHidden = true
         configureButton(endGameButton, title: EndGameTitle, target: self, action: #selector(endGameTouched), parent: self.view)
-        endGameButton.isHidden = true
+        hide(endGameButton, yieldButton)
         configureButton(gameSetupButton, title: GameSetupTitle, target: self, action: #selector(gameSetupTouched), parent: self.view)
         configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
 
@@ -382,8 +381,8 @@ class ViewController: UIViewController {
         }
         guard let communicator = makeCommunicator(settings.communication, players[0], self, self) else { return }
         self.communicator = communicator
-        playersButton.isHidden = true
-        endGameButton.isHidden = false
+        hide(playersButton)
+        unhide(endGameButton)
     }
 
     // Respond to long press.  A long press within a GridBox is currently interpreted as a request to delete the GridBox.
@@ -498,7 +497,7 @@ class ViewController: UIViewController {
         numPlayers = num
         for i in 0..<playerLabels.count {
             let label = playerLabels[i]
-            label.isHidden = false
+            unhide(label)
             if i < players.count {
                 configurePlayer(label, players[i].name, i)
             } else if i == 0 {
@@ -507,7 +506,7 @@ class ViewController: UIViewController {
             } else if i < num {
                 label.text = communicator == nil ? MustFind : Searching
             } else {
-                label.isHidden = true
+                hide(label)
             }
         }
     }
@@ -591,8 +590,8 @@ class ViewController: UIViewController {
         thisPlayer = 0
         activePlayer = 0
         playerLabels.forEach { $0.textColor = NormalTextColor }
-        playersButton.isHidden = false
-        yieldButton.isHidden = true
+        unhide(playersButton)
+        hide(endGameButton, yieldButton)
         players = []
         // Set up new game
         deck = DefaultDeck.deck
@@ -639,11 +638,11 @@ class ViewController: UIViewController {
     private func setupPublicArea(_ present: Bool) {
         if present {
             publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cards[0].bounds.height, right: 0))
-            handAreaMarker.frame = CGRect(x: publicArea.minX, y: publicArea.maxY, width: publicArea.width, height: border)
-            handAreaMarker.isHidden = false
+            place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
+            unhide(handAreaMarker)
         } else {
             publicArea = playingArea.bounds
-            handAreaMarker.isHidden = true
+            hide(handAreaMarker)
         }
     }
 
