@@ -142,8 +142,8 @@ class PlayerManagementDialog : UIViewController {
     // When view appears, we do layout
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let spacer = OptionSettingsSpacer // borrowed
-        let margin = OptionSettingsEdgeMargin // borrowed
+        let spacer = DialogSpacer // borrowed
+        let margin = DialogEdgeMargin // borrowed
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * margin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * margin
         let ctlHeight = (fullHeight - 10 * spacer - 2 * margin) / 11

@@ -119,16 +119,16 @@ func * (_ rect: CGRect, _ scale: CGFloat) -> CGRect {
 // Functions (alphabetical)
 //
 
-// Convenience for getting the X value to place one view to the right of another (assumes OptionsSettingsSpacer gives the amount
+// Convenience for getting the X value to place one view to the right of another (assumes DialogSpacer gives the amount
 // of space
 func after(_ view: UIView) -> CGFloat {
-    return view.frame.maxX + OptionSettingsSpacer
+    return view.frame.maxX + DialogSpacer
 }
 
-// Conveniece for getting the Y value to place one view below another (assumes OptionSettingsSpacer gives the amount of space
+// Conveniece for getting the Y value to place one view below another (assumes DialogSpacer gives the amount of space
 // between views)
 func below(_ view: UIView) -> CGFloat {
-    return view.frame.maxY + OptionSettingsSpacer
+    return view.frame.maxY + DialogSpacer
 }
 
 // Crop an image to a given rectangle

@@ -404,7 +404,7 @@ class ViewController: UIViewController {
 
     // Respond to touch of gameSetup button
     @objc func gameSetupTouched() {
-        let dialog = OptionSettingsDialog()
+        let dialog = GameSetupDialog()
         Logger.logPresent(dialog, host: self, animated: false)
     }
 

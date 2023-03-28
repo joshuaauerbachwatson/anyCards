@@ -16,8 +16,8 @@
 
 import UIKit
 
-// Dialog for game setup setting in AnyCards (class name is historical)
-class OptionSettingsDialog : UIViewController {
+// Dialog for game setup in AnyCards
+class GameSetupDialog : UIViewController {
     // Parent view controller
     var vc : ViewController {
         if let ans = presentingViewController as? ViewController {
@@ -42,7 +42,7 @@ class OptionSettingsDialog : UIViewController {
 
     init() {
         super.init(nibName: nil, bundle: nil)
-        preferredContentSize = OptionSettingsSize
+        preferredContentSize = GameSetupSize
         modalPresentationStyle = UIModalPresentationStyle.formSheet
     }
 
@@ -83,10 +83,10 @@ class OptionSettingsDialog : UIViewController {
     // When view appears, we do layout
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * OptionSettingsEdgeMargin
-        let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * OptionSettingsEdgeMargin
-        let ctlHeight = (fullHeight - 3 * OptionSettingsSpacer - 2 * OptionSettingsEdgeMargin) / 4
-        let ctlWidth = (fullWidth - OptionSettingsSpacer) / 2
+        let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * DialogEdgeMargin
+        let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * DialogEdgeMargin
+        let ctlHeight = (fullHeight - 3 * DialogSpacer - 2 * DialogEdgeMargin) / 4
+        let ctlWidth = (fullWidth - DialogSpacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
         place(header, startX, startY, fullWidth, ctlHeight)

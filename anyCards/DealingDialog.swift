@@ -49,7 +49,7 @@ class DealingDialog : UIViewController {
         self.sourceOrder = orderSources(sources.keys.map { String($0) })
         self.vc = vc
         super.init(nibName: nil, bundle: nil)
-        preferredContentSize = OptionSettingsSize
+        preferredContentSize = GameSetupSize
         modalPresentationStyle = UIModalPresentationStyle.formSheet
     }
 
@@ -97,8 +97,8 @@ class DealingDialog : UIViewController {
     // When view appears, we do layout and validate the initial values
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let spacer = OptionSettingsSpacer // borrowed
-        let margin = OptionSettingsEdgeMargin // borrowed
+        let spacer = DialogSpacer
+        let margin = DialogEdgeMargin
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * margin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * margin
         let ctlHeight = (fullHeight - 5 * spacer - 2 * margin) / 6

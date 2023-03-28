@@ -12,10 +12,10 @@
 		EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */ = {isa = PBXBuildFile; fileRef = EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */; };
 		EE71CA5029CA1B1300BEC774 /* PlayerManagementDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */; };
 		EE71CA5229D3324A00BEC774 /* playerDialogInitial.png in Resources */ = {isa = PBXBuildFile; fileRef = EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */; };
+		EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5329D36C2600BEC774 /* GameSetup.swift */; };
 		EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8D1E2E270B013900958060 /* ServerExchange.swift */; };
 		EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */; };
 		EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */; };
-		EE90290926DEDF7A00F87FF8 /* OptionSettingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028FA26DEDF7A00F87FF8 /* OptionSettingDialog.swift */; };
 		EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */; };
 		EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028FC26DEDF7A00F87FF8 /* GameState.swift */; };
 		EE90290C26DEDF7A00F87FF8 /* Base.lproj in Resources */ = {isa = PBXBuildFile; fileRef = EE9028FD26DEDF7A00F87FF8 /* Base.lproj */; };
@@ -46,13 +46,13 @@
 		EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = AnyCardsHelp.html; sourceTree = SOURCE_ROOT; };
 		EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerManagementDialog.swift; sourceTree = "<group>"; };
 		EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playerDialogInitial.png; sourceTree = SOURCE_ROOT; };
+		EE71CA5329D36C2600BEC774 /* GameSetup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameSetup.swift; sourceTree = "<group>"; };
 		EE8D1E2E270B013900958060 /* ServerExchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerExchange.swift; sourceTree = "<group>"; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE9028EC26DE962700F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EE9028F126DE962700F87FF8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptionSettings.swift; sourceTree = "<group>"; };
-		EE9028FA26DEDF7A00F87FF8 /* OptionSettingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptionSettingDialog.swift; sourceTree = "<group>"; };
 		EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GridBox.swift; sourceTree = "<group>"; };
 		EE9028FC26DEDF7A00F87FF8 /* GameState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
 		EE9028FD26DEDF7A00F87FF8 /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Base.lproj; sourceTree = "<group>"; };
@@ -124,11 +124,11 @@
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
 				EE68816929B7CB99003F4831 /* Feedback.swift */,
 				EE9028FC26DEDF7A00F87FF8 /* GameState.swift */,
+				EE71CA5329D36C2600BEC774 /* GameSetup.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
 				EE68816729B7BCC7003F4831 /* HelpController.swift */,
 				EE90291626DEE27500F87FF8 /* Logger.swift */,
 				EE90290626DEDF7A00F87FF8 /* MultiPeer.swift */,
-				EE9028FA26DEDF7A00F87FF8 /* OptionSettingDialog.swift */,
 				EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
 				EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */,
@@ -239,13 +239,13 @@
 				EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */,
 				EE90292126DEE6A100F87FF8 /* Stepper.swift in Sources */,
 				EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */,
+				EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */,
 				EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */,
 				EE90291526DEDF7A00F87FF8 /* MultiPeer.swift in Sources */,
 				EE71CA5029CA1B1300BEC774 /* PlayerManagementDialog.swift in Sources */,
 				EE90291F26DEE69200F87FF8 /* AuerbachLook.swift in Sources */,
 				EE90291126DEDF7A00F87FF8 /* ViewController.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
-				EE90290926DEDF7A00F87FF8 /* OptionSettingDialog.swift in Sources */,
 				EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */,
 				EEEF9B712716DFAE005994FB /* ServerGames.swift in Sources */,
 				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
