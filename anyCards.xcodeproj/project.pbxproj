@@ -10,7 +10,6 @@
 		EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE68816729B7BCC7003F4831 /* HelpController.swift */; };
 		EE68816A29B7CB99003F4831 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE68816929B7CB99003F4831 /* Feedback.swift */; };
 		EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */ = {isa = PBXBuildFile; fileRef = EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */; };
-		EE68817129BBC6FA003F4831 /* buttonsScreenshot.png in Resources */ = {isa = PBXBuildFile; fileRef = EE68817029BBC6F9003F4831 /* buttonsScreenshot.png */; };
 		EE71CA5029CA1B1300BEC774 /* PlayerManagementDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */; };
 		EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8D1E2E270B013900958060 /* ServerExchange.swift */; };
 		EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */; };
@@ -44,7 +43,6 @@
 		EE68816929B7CB99003F4831 /* Feedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
 		EE68816B29B7CFBF003F4831 /* anyCards.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = anyCards.xcodeproj; sourceTree = SOURCE_ROOT; };
 		EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = AnyCardsHelp.html; sourceTree = SOURCE_ROOT; };
-		EE68817029BBC6F9003F4831 /* buttonsScreenshot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = buttonsScreenshot.png; sourceTree = SOURCE_ROOT; };
 		EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerManagementDialog.swift; sourceTree = "<group>"; };
 		EE8D1E2E270B013900958060 /* ServerExchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerExchange.swift; sourceTree = "<group>"; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,7 +114,6 @@
 				EE9028FD26DEDF7A00F87FF8 /* Base.lproj */,
 				EE90290026DEDF7A00F87FF8 /* Card.swift */,
 				EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */,
-				EE68817029BBC6F9003F4831 /* buttonsScreenshot.png */,
 				EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */,
 				EE90290526DEDF7A00F87FF8 /* Communicator.swift */,
 				EE90290126DEDF7A00F87FF8 /* Constants.swift */,
@@ -213,7 +210,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE90290C26DEDF7A00F87FF8 /* Base.lproj in Resources */,
-				EE68817129BBC6FA003F4831 /* buttonsScreenshot.png in Resources */,
 				EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */,
 				EE90290E26DEDF7A00F87FF8 /* Assets.xcassets in Resources */,
 			);

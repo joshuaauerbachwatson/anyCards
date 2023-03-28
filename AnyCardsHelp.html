@@ -1,112 +1,184 @@
 <!doctype html public "html2.0">
 <html>
 <head>
-	<title>AnyCards Help</title>
-	<style>
-		body {
-      font-family: -apple-system;
-      font-size: 24px;
- 		}
-	</style>
+<title>AnyCards Help</title>
+<style>
+body {
+	font-family: -apple-system;
+	font-size: 24px;
+}
+
+img {
+	float: left;
+	margin: 10px;
+}
+</style>
 </head>
 <body>
- <h2>Special Actions</h2>
-        <ul>
-            <li><a href="javascript:window.webkit.messageHandlers.sendFeedback.postMessage('send')">Report a Problem or Send Feedback</a>
-        </ul>
-<h1>AnyCards Help</h1>
- <p>Help is organized as follows.</p>
-		<ul>
-			<li><a href="#What">What is AnyCards?</a>
-			<li><a href="#Controls">The Game Controls</a>
-			<li><a href="#Groups">Managing Groups</a>
-			<li><a href="#Choosing">Choosing and Setting Up a Game</a>
-			<li><a href="#Players">Assembling Players</a>
-			<li><a href="#Playing">Playing a Game</a>
-			<li><a href="#Ending">Ending a Game</a>
-			<li><a href="#Problems">Reporting Problems</a>
-		</ul>
+	<h2>Special Actions</h2>
+	<ul>
+		<li><a
+			href="javascript:window.webkit.messageHandlers.sendFeedback.postMessage('send')">Report
+				a Problem or Send Feedback</a>
+	</ul>
+	<h1>AnyCards Help</h1>
+	<p>Help is organized as follows.</p>
+	<ul>
+		<li><a href="#What">What is AnyCards?</a></li>
+		<li><a href="#Assembling">How To Assemble Players</a></li>
+		<li><a href="#Setup">Setting up a Game</a></li>
+		<li><a href="#Playing">Playing and Ending a Game</a></li>
+		<li><a href="#Problems">Reporting Problems</a></li>
+	</ul>
 
-<br><hr><h2><a name="What"/>What is <em>AnyCards</em>?</h2>
+	<br>
+	<hr>
+	<h2>
+		<a name="What">What is AnyCards?</a>
+	</h2>
 
- <p><em>AnyCards</em> provides a shared playing surface across devices and supplies a virtual deck of cards.
-	By default, this is a standard 52 card deck but alternative decks can be selected by the initiating
-	player.</p>
+	<p>
+		<em>AnyCards</em> provides a virtual table-top that is shared across
+		devices. It also provides a virtual deck of cards which can be of a
+		number of different sizes (but always made up of standard cards
+		without jokers). It allows you to make boxes to hold stacks of cards.
+	</p>
 
- <p>The players use their separate devices to play a card game with the cards.  Each player may optionally
-	have a private hand.  The game provides for an orderly succession of turns but does not otherwise build in
-	the rules of any particular card game.  It will support the playing of a wide variety of games (those that
-	don't require non-card accessories such as chips).</p>
+	<p>The players use their separate devices to play a card game with
+		the cards. Each player may optionally have a private hand. The game
+		provides for an orderly succession of turns but does not otherwise
+		build in the rules of any particular card game. It will support the
+		playing of a wide variety of games that are played entirely with
+		cards.</p>
 
- <p>Achieving agreement about what game to play, enforcing its rules, or incorporating interactions such as
-	bidding, may require voice or message contact between players (not provided by the game).</p>
+	<p>Achieving agreement about what game to play, enforcing its
+		rules, or incorporating interactions such as bidding, may require
+		voice or message contact between players (not provided by the game).</p>
 
-<br><hr><h2><a name="Controls"/>The Game Controls</h2>
-			
- <p>At the top of the game screen you will see the following controls.</p>
-   <img src="buttonsScreenshot.png" width="500">
+	<br>
+	<hr>
+	<h2>
+		<a name="Assembling" />How to Assemble Players
+	</h2>
 
-<h3>Player Labels</h3>
+	<p>
+		After installing and starting the game, touch the <b>Players</b>
+		button to bring up a dialog that looks like the picture. <img
+			alt="pictureOfPlayersDialog" src="playerDialog1.png">
+	</p>
 
- <p>The four white labels in the top row list the players of the game.  AnyCards may be played with any number of
-	 players between one (solitaire) and four.
+	<p>
+		The first time you do this, <b>Your User Name</b> will be whatever
+		name you gave to your device (usually not too meaningful to others).
+		Touch the white text box to bring up the keyboard and replace the name
+		with a name that you want to be known by when playing. A group of
+		players that wants to play together should be sure to choose
+		distinctive names.
+	</p>
+		
+	<p>
+		Exactly one player in the group of players must be the leader.  That player will actually set up the
+		game (deal out the cards, do whatever else is required).  The leader also sets the number of players
+		that are expected. Touch the blue text to the right of the <b>Are you leader?</b> label to
+		toggle back and forth between being the leader and not.  Notice that the <b>Number of players</b>
+		stepper appears and disappears accordingly, as does the <b>Game Setup</b> button at the top of
+		the app window (not shown in the picture).
+	</p>
+		  
+	<p>
+		Decide who in your group will be the leader and let that player set the number of players.
+	</p>
+		
+	<p>
+		There are two ways for players to find each other (the <b>Player source</b>), called <b>Nearby
+			only</b> and <b>Entire internet</b>. One of these modes is shown in blue.
+		Touching the blue text toggles between the two modes.  All players must select the same mode.
+	</p>
 
- <p>Before the list of players has been assembled, the first label will contain your own name.  If you have
-	 not yet established a name for yourself in the game settings, this name will be the name of your device.
-	 The fact that it represents you is indicated by the asterisks and italics.  To set a meaningful name for
-	 yourself, touch <tt>Game</tt>, and fill in "Your User Name."</p>
+	<h3>Nearby Only Mode</h3>
 
- <p>Depending on how you have set the minimum and maximum number of players, remaining player labels are set
-   to <tt>[Must Find]</tt> (needed to meet the minimum) or <tt>[Optional]</tt> (above the minimum, below the
-   maximum).  If the maximum number of players is less than four, the excess labels are omitted.</p>
+	<p>
+		In the <b>Nearby only</b> mode, players must be near each other
+		(within bluetooth range or on the same wifi hub). All such players are
+		assumed to be playing with each other. Once all players have set the <b>Nearby
+		only</b> mode, a single player has assumed the leader role and set the number
+		of players, all players can touch the <b>Find Players</b> button to move on
+		to the game setup phase.
+	</p>
 
- <p>After the list of players has been assembled (see <a href="#Players">Assembling Players</a>), each
-   player's chosen name (or device name is displayed).  Your own name will appear (in italics with asterisks)
-   but not necessarily first.  The list represents the order of play, and the player in the first position
-   must play first.  The player whose turn is current is indicated by a green color.  The number of players will be
-   fixed for the remainder of the game.</p>
+	<h3>Entire Internet Mode</h3>
 
-<h3>Help Button</h3>
+	<p>
+		When you switch to <b>Entire Internet</b> mode, the players can be
+		anywhere, as long as they each have an internet connection. Some
+		additional fields and buttons will appear. At least the <b>Token</b>
+		field must be filled in.  Every player must fill in the same value.
+		Once this is true, all players can touch <b>Find Players</b> and move on to the
+		game setup phase.
+	</p>
+	<ul>
+		<li>A <em>game token</em> is a value chosen by a group of players to distinguish
+		if from other groups of players.  It is useful if it is meaningful to the group
+		but more important that it be hard to guess, so that no other AnyCards players can
+		crash your game and groups of players don't collide with each other.</li>
+		<li>The game token must be made up of letters and numbers only.  Upper and lower
+		case letters are distinct (case is meaningful).</li>
+		<li>The game token must be exactly 12 characters long.</li>
+	</ul>
+	
+	<h4>Nicknames</h4>
+	<p>
+		You will also have an opportunity to enter your own nickname for the token.  This text is
+		not transmitted and other players don't have to choose the same nickname or any nickname
+		at all.  This optional field is provided to aid the process of remembering and retrieving
+		tokens.
+	</p>
+	
+	<h4>Remembering and retrieving tokens</h4>
+	<p>
+		Since it takes some effort for a group to come up with a token and for all players to enter it,
+		AnyCards provides the ability to remember tokens (and their associated nicknames).  
+	</p>
+	<ul>
+		<li>The <b>Show Next Token</b> button cycles through the remembered tokens.  If a remembered token is
+		showing, you can also use this button to bring up the entry area for a new token.</li>  
+		<li>The <b>Forget this Token</b> will drop a remembered token from the list.</li>
+		<li>As soon as you have entered a new valid token, the <b>Remember this Token</b> button will appear
+		and give you an opportunity to add it to the list.</li>
+   </ul>
 
- <p>You probably know already that this button brings up this help text.</p>
-																																											
-<h3>Groups Button</h3>
+	<br>
+	<hr>
+	<h2>
+		<a name="Setup">Setting up a Game</a>
+	</h2>
 
- <p>This button opens a dialog that allows you to manage groups of players that can play games together without
-	 being "nearby."  See <a href="#Groups">Managing Groups</a>.</p>
+	<br>
+	<hr>
+	<h2>
+		<a name="Playing">Playing and Ending a Game</a>
+	</h2>
 
-<h3>Group Name Label</h3>
- 
- <p>This label states the name of the group with which you are currently playing.  The special "nearby only"
-	 group consists of other players who are close by, are running AnyCards, and have agreed to let AnyCards use
-	 the local wifi to communicate.  Other groups can contain remote players but must be created and joined as
-	 described in <a href="#Groups">Managing Groups</a>.</p>
-	 
+    <br>
+	<hr>
+	<h2>
+		<a name="Problems" />Reporting Problems
+	</h2>
+	<p>At the top of this help text is a link for reporting problems.
+		Touching it will bring up an initialized email sending view with the
+		recipient set to the AnyCards reporting address and some instructions
+		in the body of the message (which you should delete and replace with
+		your specific problem report).</p>
+	<p>You can use this capabiity to send any kind of commentary or
+		input that you like, but a key purpose is to support reporting bugs
+		and other problems that you are having with the app. To this end, the
+		email, by default, contains up to two (often just one) logs of recent
+		activity. When you are reporting a serious problem, such as a crash or
+		misbehavior of some sort, it is a good idea to leave these logs in
+		place since they help in diagnosing problems. They include only
+		information about recent sequences of actions inside the app itself
+		and do not include any personal information. However, if you feel more
+		comfortable removing these logs you are free to do so.</p>
 
-<h3>Players Button</h3>
-
-
-<h3>Game Button</h3>
-
-<h3>Deal Button</h3>
-
-<br><hr><h2><a name="Groups"/>Managing Groups</h2>
-<br><hr><h2><a name="Choosing"/>Choosing and Setting Up a Game</h2>
-<br><hr><h2><a name="Players"/>Assembling Players</h2>
-<br><hr><h2><a name="Playing"/>Playing a Game</h2>
-<br><hr><h2><a name="Ending"/>Ending a Game</h2>
-<br><hr><h2><a name="Problems"/>Reporting Problems</h2>
- <p>At the top of this help text is a link for reporting problems.  Touching it will bring up an
-	 initialized email sending view with the recipient set to the AnyCards reporting address and some
-	 instructions in the body of the message (which you should delete and replace with your specific problem
-	 report).</p>
- <p>You can use this capabiity to send any kind of commentary or input that you like, but a key purpose is
-   to support reporting bugs and other problems that you are having with the app.  To this end, the email,
-	 by default, contains up to two (often just one) logs of recent activity.  When you are reporting a
-	 serious problem, such as a crash or misbehavior of some sort, it is a good idea to leave these logs in
-	 place since they help in diagnosing problems.  They include only information about recent sequences of
-	 actions inside the app itself and do not include any personal information.  However, if you feel more
-	 comfortable removing these logs you are free to do so.</p>
-
-</body> 
+</body>
 </html>
