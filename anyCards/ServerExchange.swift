@@ -211,7 +211,7 @@ func validateResponse<T: Decodable>(_ data: Data?, _ response: URLResponse?, _ e
         errHandler(ServerError("Could not interpret response from backend"), false)
         return nil
     }
-    Logger.log("Got response: \(resp)")
+    Logger.log("Got response status code: \(resp.statusCode)")
     if resp.statusCode < 200 || resp.statusCode > 299 {
         // By convention, in any error case, the body will not conform to T but rather will be a one-element string->string Dictionary
         // whose element is "error" (or else there is no body).
