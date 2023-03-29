@@ -142,8 +142,8 @@ class PlayerManagementDialog : UIViewController {
     // When view appears, we do layout
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let spacer = DialogSpacer // borrowed
-        let margin = DialogEdgeMargin // borrowed
+        let spacer = DialogSpacer
+        let margin = DialogEdgeMargin
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * margin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * margin
         let ctlHeight = (fullHeight - 10 * spacer - 2 * margin) / 11
@@ -271,6 +271,16 @@ class PlayerManagementDialog : UIViewController {
     // Respond to touch of the find players button
     @objc func findPlayersTouched() {
         Logger.log("Find Players Touched")
+        if !editToken.isHidden && editToken.isFirstResponder {
+            // The button was touched right after entering text; first make sure the
+            // end-of-editing event happens.  This could cause an error dialog.
+            editToken.resignFirstResponder()
+            // Then make sure it succeeded in updating the communication
+            if !isRemote {
+                Logger.log("Find players nullified because token editing was incomplete")
+                return
+            }
+        }
         vc.startPlayerSearch()
         Logger.logDismiss(self, host: vc, animated: true)
     }
@@ -279,12 +289,13 @@ class PlayerManagementDialog : UIViewController {
 
     // Show a specific token in this dialog (assumes isRemote is true and that the labels are showing)
     func showToken(_ name: String?, _ tokenText: String) {
-        unhide(nickName, token)
+        unhide(nickName, token, rememberForgetButton)
         hide(editNickName, editToken)
         editNickName.text = nil
         editToken.text = nil
         nickName.text = name
         token.text = tokenText
+        settings.communication = .ServerBased(tokenText)
         rememberForgetButton.setTitle(ForgetTitle, for: .normal)
     }
 
@@ -296,13 +307,13 @@ class PlayerManagementDialog : UIViewController {
         token.text = nil
         editNickName.placeholder = NickNamePlaceholder
         editToken.placeholder = TokenPlaceholder
+        settings.communication = .MultiPeer // until a valid token is available
         rememberForgetButton.setTitle(SaveTitle, for: .normal)
     }
 
     // Show the appropriate initial token (assuming remote and that the labels are showing)
     func showInitialToken() {
         if let pair = serverGames.first {
-            settings.communication = .ServerBased(pair.token)
             showToken(pair.nickName, pair.token)
         } else {
             // settings not modified in this case; will be modified later when editing completes
@@ -365,12 +376,25 @@ class PlayerManagementDialog : UIViewController {
 
 // Conform to UITextFieldDelegate
 extension PlayerManagementDialog: UITextFieldDelegate {
-    // Prevent erroneous characters from entering the editToken field
-    func textField(_ field: UITextField, shouldChangeCharactersIn _: NSRange, replacementString chars: String) -> Bool {
+    // Prevent erroneous characters from entering the editToken field.  Also prevents too many characters from being entered.
+    // Deals with hiding or unhiding the save button according to whether the new character count is exactly GameTokenLength
+    func textField(_ field: UITextField, shouldChangeCharactersIn range: NSRange, replacementString chars: String) -> Bool {
         if field.tag != TokenTag {
             return true
         }
-        return validTokenChars(chars)
+        if !validTokenChars(chars) {
+            return false
+        }
+        let newLen = (field.text?.count ?? 0) + chars.count - range.length
+        if newLen < 0 || newLen > GameTokenLength {
+            return false
+        }
+        if newLen == GameTokenLength {
+            unhide(rememberForgetButton)
+        } else {
+            hide(rememberForgetButton)
+        }
+        return true
     }
 
     // Don't allow invalid token to be left in the token field
@@ -382,6 +406,7 @@ extension PlayerManagementDialog: UITextFieldDelegate {
         if let token = field.text, token.count > 0 {
             if validToken(token) {
                 unhide(rememberForgetButton)
+                settings.communication = .ServerBased(token)
             } else {
                 bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
                 return false
