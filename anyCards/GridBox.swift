@@ -20,14 +20,27 @@ import UIKit
 // Cards that overlap a GridBox snap into it, being placed either on top of other cards (if faceup) in the GridBox or behind
 // if (facedown).
 class GridBox : UIView {
+    enum Kind {
+        case FaceDown
+        case FaceUp
+    }
+
+    var kind: Kind = .FaceDown {
+        didSet {
+            switch kind {
+            case .FaceDown:
+                turnFaceDown()
+            case .FaceUp:
+                turnFaceUp()
+            }
+        }
+    }
+
     // The "snap frame" subarea of the GridBox (where cards end up)
     var snapFrame : CGRect
 
-    // A label containing the name of the GridBox when not being edited (hidden when nameField is shown)
-    let nameLabel : TouchableLabel
-
-    // A TextField containing the name of the GridBox while being edited (normally hidden in favor of nameLabel, revealed on touch)
-    let nameField : UITextField
+    // A label containing the name of the GridBox
+    let nameLabel : UILabel
 
     // A label containing the count of cards currently "on" this GridBox
     let countLabel : UILabel
@@ -58,11 +71,8 @@ class GridBox : UIView {
         let legendHeight = gridFrame.height - snapFrame.height
         // The nameLabel takes a large proportion of the legend area at the bottom
         let nameWidth = snapFrame.width * GridBoxNamePortion
-        nameLabel = TouchableLabel()
+        nameLabel = UILabel()
         nameLabel.frame = CGRect(x: 0, y: snapFrame.height, width: nameWidth, height: legendHeight)
-        // The (editable) nameField has the same frame as the nameLabel but is hidden when not editing
-        nameField = UITextField(frame: nameLabel.frame)
-        nameField.isHidden = true
         // The countLabel occupies the rest of the expansion area
         countLabel = UILabel(frame: CGRect(x: nameWidth, y: snapFrame.height, width: snapFrame.width - nameWidth, height: legendHeight))
         self.host = host
@@ -70,11 +80,8 @@ class GridBox : UIView {
         // Finish configuring widgets
         backgroundColor = GridBackgroundColor
         configureLabel(countLabel, LabelBackground, parent: self)
-        configureTouchableLabel(nameLabel, target: self, action: #selector(nameTouched), parent: self)
+        configureLabel(nameLabel, LabelBackground, parent: self)
         countLabel.textColor = CountLabelColor
-        configureTextField(nameField, LabelBackground, parent: self)
-        nameField.delegate = self
-        nameField.textColor = NormalTextColor
         // Add drag support to the view as a whole
         let recognizer = UIPanGestureRecognizer(target: self, action: #selector(boxDragged))
         addGestureRecognizer(recognizer)
@@ -116,17 +123,30 @@ class GridBox : UIView {
         }
     }
 
-    // Respond to touch of name label (request to edit)
-    @objc func nameTouched() {
-        nameLabel.isHidden = true
-        nameField.text = nameLabel.text
-        nameField.isHidden = false
-        nameField.becomeFirstResponder()
-    }
-
     // Other functions
 
-    // Deterimine if a new frame for this GridBox is legal.  It must be within the public and and may not overlap with another GridBox
+    // Prompt the user to enter a name for the box.  This is invoked prior to placing the box if no name has yet been assigned.
+    // It may also be invoked from a menu in order to rename an existing box.
+    func promptForName() {
+        let alert = UIAlertController(title: GridBoxNameTitle, message: GridBoxNameMessage, preferredStyle: .alert)
+        let cancel = UIAlertAction(title: CancelButtonTitle, style: .cancel) { _ in
+            // Do nothing
+        }
+        let setName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
+            if let newName = alert.textFields?.first?.text {
+                self.name = newName
+            }
+        }
+        alert.addTextField() { field in
+            field.placeholder = GridBoxNamePlaceholder
+        }
+        alert.addAction(cancel)
+        alert.addAction(setName)
+        Logger.logPresent(alert, host: host, animated: true)
+    }
+
+    // Deterimine if a new frame for this GridBox is legal.  It must be within the public area and may not overlap with
+    // another GridBox
     private func canAssignFrame(_ newFrame: CGRect) -> Bool {
         if !host.publicArea.contains(newFrame) {
             return false
@@ -160,6 +180,12 @@ class GridBox : UIView {
     // After card movement or some other more general rearrangement, cards are snapped by the GridBox that they overlap "the most".
     func snapUp(_ card: Card) {
         card.frame = snapFrame
+        switch kind {
+        case .FaceUp:
+            card.turnFaceUp()
+        case .FaceDown:
+            card.turnFaceDown()
+        }
         if card.isFaceUp {
             superview?.bringSubviewToFront(card)
         } else {
@@ -168,25 +194,40 @@ class GridBox : UIView {
         }
     }
 
+    // Turn the entire deck face down.  If the deck is already face down, no-op.  If the deck is currently face-up, the view order
+    // of the cards is reversed while turning them over so that the effect is as if the entire pile was turned over.
+    func turnFaceDown() {
+        switch kind {
+        case .FaceUp:
+            let cards = self.cards.reversed()
+            for card in cards {
+                card.turnFaceDown()
+                self.sendSubviewToBack(card)
+            }
+            kind = .FaceDown
+        case .FaceDown:
+            break
+        }
+    }
+
+    // Turn the entire deck face up.  If the deck is already face up, no-op.  If the deck is currently face-down, the view order
+    // of the cards is reversed while turning them over so that the effect is as if the entire pile was turned over.
+    func turnFaceUp() {
+        switch kind {
+        case .FaceUp:
+            break
+        case .FaceDown:
+            let cards = self.cards.reversed()
+            for card in cards {
+                card.turnFaceUp()
+                self.sendSubviewToBack(card)
+            }
+            kind = .FaceUp
+        }
+    }
+
     // Refresh the displayed count in the countLabel
     func refreshCount() {
         countLabel.text = String(cards.count)
     }
 }
-
-// Conform to UITextFieldDelegate
-extension GridBox : UITextFieldDelegate {
-    // React to a change in the text field containing the box's name
-    func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        if let newText = textField.text, reason == .committed {
-            nameLabel.text = newText
-            nameLabel.isHidden = false
-            textField.isHidden = true
-        }
-    }
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        return false
-    }
-}
-

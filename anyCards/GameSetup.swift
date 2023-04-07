@@ -39,6 +39,7 @@ class GameSetupDialog : UIViewController {
     let handArea = TouchableLabel()           // Third row, right
     let dealButton = UIButton()               // Fourth row
     // TODO add controls to name the current configuration, save it, retrieve it
+    let doneButton = UIButton()               // Fifth row
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -78,6 +79,12 @@ class GameSetupDialog : UIViewController {
 
         // Deal button
         configureButton(dealButton, title: DealTitle, target: self, action: #selector(dealTouched), parent: view)
+        if vc.boxViews.first(where: { $0.name == DeckBoxName }) == nil {
+            dealButton.isHidden = true
+        }
+
+        // Done button
+        configureButton(doneButton, title: DoneTitle, target: self, action: #selector(doneTouched), parent: view)
     }
 
     // When view appears, we do layout
@@ -85,7 +92,7 @@ class GameSetupDialog : UIViewController {
         super.viewDidAppear(animated)
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * DialogEdgeMargin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * DialogEdgeMargin
-        let ctlHeight = (fullHeight - 3 * DialogSpacer - 2 * DialogEdgeMargin) / 4
+        let ctlHeight = (fullHeight - 4 * DialogSpacer - 2 * DialogEdgeMargin) / 5
         let ctlWidth = (fullWidth - DialogSpacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
@@ -95,6 +102,7 @@ class GameSetupDialog : UIViewController {
         place(handAreaLabel, startX, below(deckType), ctlWidth, ctlHeight)
         place(handArea, after(handAreaLabel), below(deckType), ctlWidth, ctlHeight)
         place(dealButton, startX, below(handArea), fullWidth, ctlHeight)
+        place(doneButton, startX, below(dealButton), fullWidth, ctlHeight)
     }
 
     // Actions
@@ -117,15 +125,16 @@ class GameSetupDialog : UIViewController {
 
     // Respond to touch of deal button.  Opens the dialog for dividing the contents of a gridbox (default "deck") into other gridboxes.
     @objc func dealTouched() {
-        let dealSources = vc.findDealSources()
-        if dealSources.isEmpty {
-            bummer(title: NoDealTitle, message: NoDealPossible, host: self)
-            return
+        guard let deck = vc.boxViews.first(where: { $0.name == DeckBoxName }) else {
+            return // shouldn't happen because deal button should be hidden if there is no deck
         }
-        let dialog = DealingDialog(dealSources, vc)
-        Logger.logPresent(dialog, host: self, animated: false)
+        let dialog = DealingDialog(deck, vc)
+        Logger.logDismiss(self, host: vc, animated: true)
+        Logger.logPresent(dialog, host: vc, animated: false)
     }
 
-    // Subroutines
-
+    // Respond to touch of done button.  Just does a self-dismiss
+    @objc func doneTouched() {
+        Logger.logDismiss(self, host: vc, animated: true)
+    }
 }

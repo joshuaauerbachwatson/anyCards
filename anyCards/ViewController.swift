@@ -192,7 +192,6 @@ class ViewController: UIViewController {
     // Support orientations according the "lock" flags.  If not locks, all orientations are accepted.
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         get {
-            Logger.log("supportedInterfaceOrientations interrogated")
             if lockedToLandscape {
                 return .landscape
             }
@@ -236,6 +235,7 @@ class ViewController: UIViewController {
         }
         let layoutX = safeArea.midX - layoutWidth / 2
         let layoutY = safeArea.midY - layoutHeight / 2
+
         // Calculate some values needed to layout buttons and labels
         let controlHeight = ControlHeightRatio * layoutHeight
         let ctlWidth = (layoutWidth - 3 * border) / 4
@@ -243,17 +243,20 @@ class ViewController: UIViewController {
         let buttonX = layoutX
         let labelY = layoutY + border
         let buttonY = labelY + controlHeight + border
+
         // Layout the player labels
         for playerLabel in playerLabels {
             place(playerLabel, labelX, labelY, ctlWidth, controlHeight)
             labelX += ctlWidth + border
         }
+
         // Layout the buttons
         place(playersButton, buttonX, buttonY, ctlWidth, controlHeight)
         endGameButton.frame = playersButton.frame
         gameSetupButton.frame = playersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         yieldButton.frame = gameSetupButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         helpButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+
         // The playingArea frame is positioned below the buttons and labels with the fixed aspect ratio determined by the
         // orientation but limited by the available space (in landscape the natural height might not quite fit).
         let aspectRatio = safeArea.size.landscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
@@ -385,19 +388,19 @@ class ViewController: UIViewController {
         unhide(endGameButton)
     }
 
-    // Respond to long press.  A long press within a GridBox is currently interpreted as a request to delete the GridBox.
-    // A long press that is not within any GridBox is interpreted as a request to create a new GridBox.
-    // This might succeed or fail.
+    // Respond to long press.  A long press within a GridBox brings up the GridBoxMenu dialog to perform various actions
+    // on the gridbox.  A long press that is not within any GridBox is interpreted as a request to create a new GridBox.
+    // This might succeed or fail.  Once it's determined that it will succeed, the NewGridBoxMenu is brought up to prepare
+    // the attributes of the GridBox.  We assume that GridBoxes do not overlap, so the long press cannot be within more than
+    // one GridBox.
     @objc func longPressDetected(_ recognizer: UILongPressGestureRecognizer) {
         if recognizer.state == .ended {
             let location = recognizer.location(in: playingArea)
-            let boxes = boxViews.filter { $0.frame.contains(location) }
-            if boxes.isEmpty {
-                attemptNewGridBox(location)
+            if let box = boxViews.first(where:  { $0.frame.contains(location) }) {
+                let menu = GridBoxMenu(box)
+                Logger.logPresent(menu, host: self, animated: true)
             } else {
-                // Deletion request
-                boxes.forEach { $0.removeFromSuperview() }
-                transmit(false)
+                attemptNewGridBox(location)
             }
         }
     }
@@ -450,6 +453,7 @@ class ViewController: UIViewController {
             gridBoxFails()
             return
         }
+        gridBox.kind = .FaceDown
         // Now check for overlap with other GridBoxes
         let overlaps = boxViews.filter { $0.frame.intersects(gridBox.frame) }
         if overlaps.isEmpty {
@@ -561,6 +565,11 @@ class ViewController: UIViewController {
         playingArea.sendSubviewToBack(gridBox)
         gridBox.maybeSnapUp(cardViews)
         gridBox.refreshCount()
+        if gridBox.name == nil {
+            gridBox.promptForName()
+        }
+        // TODO timing on this is bad because the name dialog may not have completed.
+        // The transmit should happen in an epilog.
         transmit(false)
     }
 
@@ -634,10 +643,17 @@ class ViewController: UIViewController {
         shuffleAndPlace()
     }
 
+    // Get the appropriate size for a card in the current layout
+    private func cardSize() -> CGSize {
+        let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
+        let cardHeight = cardWidth / deck.aspectRatio
+        return CGSize(width: cardWidth, height: cardHeight)
+    }
+
     // Set up the public area and the hand area marker based on the current settings
     private func setupPublicArea(_ present: Bool) {
         if present {
-            publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cards[0].bounds.height, right: 0))
+            publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize().height, right: 0))
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
             unhide(handAreaMarker)
         } else {
@@ -648,11 +664,9 @@ class ViewController: UIViewController {
 
     // Shuffle cards and form deck.  Add a GridBox to hold the deck and place everything on the playingArea
     private func shuffleAndPlace() {
-        let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
-        let cardHeight = cardWidth / deck.aspectRatio
-        let cardSize = CGSize(width: cardWidth, height: cardHeight)
+        let cardSize = self.cardSize()
         let cards = shuffle(self.cards)
-        let deckOrigin = CGPoint(x: cardWidth, y: cardHeight)
+        let deckOrigin = CGPoint(x: cardSize.width, y: cardSize.height)
         cards.forEach { card in
             card.turnFaceDown()
             card.frame = CGRect(origin: deckOrigin, size: cardSize)
@@ -660,6 +674,7 @@ class ViewController: UIViewController {
         }
         let deckBox = GridBox(center: cards[0].center, size: cardSize, host: self)
         deckBox.name = MainDeckName
+        deckBox.kind = .FaceDown
         placeNewGridBox(deckBox)
     }
 
@@ -677,17 +692,6 @@ class ViewController: UIViewController {
             gameState = GameState(yielding: yielding, playingArea: playingArea, publicArea: publicArea)
         }
         communicator?.send(gameState)
-    }
-
-    // Find all the named grid boxes (which are potential "deal" sources)
-    func findDealSources() -> Dictionary<String,GridBox> {
-        var result = Dictionary<String,GridBox>()
-        for subview in playingArea.subviews {
-            if let box = subview as? GridBox, let name = box.name {
-                result[name] = box
-            }
-        }
-        return result
     }
 }
 

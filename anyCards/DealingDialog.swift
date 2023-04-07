@@ -27,8 +27,7 @@ class DealingDialog : UIViewController {
     }
 
     // Model information
-    let sources: Dictionary<String,GridBox>
-    let sourceOrder: [String]
+    let box: GridBox
     var hands = DealingHandsDefault
     var cards = DealingCardsDefault
 
@@ -38,15 +37,12 @@ class DealingDialog : UIViewController {
     let handsLabel = UILabel()     // Second row, second half
     let cardsStepper = Stepper()   // Third row, first half
     let cardsLabel = UILabel()     // Third row, second half
-    let fromLabel = UILabel()      // Fourth row, first half
-    let sourceLabel = TouchableLabel() // Fourth row, second Half
-    let errorLabel = UILabel()     // Fifth Row
-    let confirmButton = UIButton() // Fifth Row
-    let cancelButton = UIButton()  // Sixth Row
+    let errorLabel = UILabel()     // Fourth Row
+    let confirmButton = UIButton() // Fourth Row
+    let cancelButton = UIButton()  // Fifth Row
 
-    init(_ sources: Dictionary<String,GridBox>, _ vc: ViewController) {
-        self.sources = sources
-        self.sourceOrder = orderSources(sources.keys.map { String($0) })
+    init(_ box: GridBox, _ vc: ViewController) {
+        self.box = box
         self.vc = vc
         super.init(nibName: nil, bundle: nil)
         preferredContentSize = GameSetupSize
@@ -63,7 +59,11 @@ class DealingDialog : UIViewController {
 
         // Header
         configureLabel(header, SettingsDialogBackground, parent: view)
-        header.text = DealingHeaderText
+        if let name = box.name {
+            header.text = String(format: DealingHeaderTemplate, name)
+        } else {
+            header.text = DealingHeaderUnnamed
+        }
 
         // Steppers and their associated labels
         configureStepper(handsStepper, delegate: self, value: hands, parent: view)
@@ -76,14 +76,6 @@ class DealingDialog : UIViewController {
         handsStepper.maximumValue = DealingHandsMax
         cardsStepper.minimumValue = DealingCardsMin
         cardsStepper.maximumValue = DealingCardsMax
-
-        // Source information
-        configureLabel(fromLabel, LabelBackground, parent: view)
-        fromLabel.text = FromLabelText
-        configureTouchableLabel(sourceLabel, target: self, action: #selector(sourceLabelTouched), parent: view)
-        sourceLabel.text = sourceOrder[0]
-        sourceLabel.view.font = getTextFont()
-        sourceLabel.view.backgroundColor = LabelBackground
 
         // Error label and confirm button.  Only one will show but we don't decide which yet.
         configureLabel(errorLabel, LabelBackground, parent: view)
@@ -101,34 +93,22 @@ class DealingDialog : UIViewController {
         let margin = DialogEdgeMargin
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * margin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * margin
-        let ctlHeight = (fullHeight - 5 * spacer - 2 * margin) / 6
+        let ctlHeight = (fullHeight - 4 * spacer - 2 * margin) / 5
         let ctlWidth = (fullWidth - spacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
-        header.frame = CGRect(x: startX, y: startY, width: fullWidth, height: ctlHeight)
-        handsStepper.frame = CGRect(x: startX, y: header.frame.maxY + spacer, width: ctlWidth, height: ctlHeight)
-        handsLabel.frame = handsStepper.frame.offsetBy(dx: ctlWidth + spacer, dy: 0)
-        cardsStepper.frame = handsStepper.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        cardsLabel.frame = cardsStepper.frame.offsetBy(dx: ctlWidth + spacer, dy: 0)
-        fromLabel.frame = cardsStepper.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        sourceLabel.frame = cardsLabel.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        errorLabel.frame = CGRect(x: startX, y: fromLabel.frame.maxY + spacer, width: fullWidth, height: ctlHeight)
+        place(header, startX, startY, fullWidth, ctlHeight)
+        place(handsStepper, startX, below(header), ctlWidth, ctlHeight)
+        place(handsLabel, after(handsStepper), below(header), ctlWidth, ctlHeight)
+        place(cardsStepper, startX, below(handsStepper), ctlWidth, ctlHeight)
+        place(cardsLabel, after(cardsStepper), below(handsStepper), ctlWidth, ctlHeight)
+        place(errorLabel, startX, below(cardsStepper), fullWidth, ctlHeight)
         confirmButton.frame = errorLabel.frame
-        cancelButton.frame = confirmButton.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
+        place(cancelButton, startX, below(confirmButton), fullWidth, ctlHeight)
         validate()
     }
 
     // Actions
-
-    // Respond to touching of the source label
-    @objc func sourceLabelTouched() {
-        if let currentSource = sourceLabel.text, let currentIndex = sourceOrder.firstIndex(of: currentSource) {
-            // Will be true if source label was initialized and the sourceOrder is not empty.  These pre-conditiona
-            // should always be met in practice.
-            let nextIndex = currentIndex + 1 % sourceOrder.count
-            sourceLabel.text = sourceOrder[nextIndex]
-        }
-    }
 
     // Respond to touching of the confirm button
     @objc func confirmTouched() {
@@ -148,15 +128,11 @@ class DealingDialog : UIViewController {
     // Validate the current settings for the deal and decide whether to post an error message.   Either the errorLabel or the confirmButton
     // will show, never both.
     private func validate() {
-        guard let deckName = sourceLabel.text, let deck = sources[deckName] else {
-            // The source label should always have valid text and that text should denote a deck in sources.
-            Logger.logFatalError(InternalDealingError)
-        }
-        if hands * cards > deck.cards.count {
+        if hands * cards > box.cards.count {
             postError(NotEnoughCards)
             return
         }
-        if hands > handsCapacity(deck.frame) {
+        if hands > handsCapacity(box.frame) {
             postError(TooManyHands)
             return
         }
@@ -184,7 +160,6 @@ class DealingDialog : UIViewController {
 
     // Decide whether a box frame can be placed (does not overlap any other view)
     private func canBePlaced(_ frame: CGRect) -> Bool {
-        Logger.log("Testing placement of \(frame)")
         if !vc.publicArea.contains(frame) {
             Logger.log("Frame is outside public area")
             return false
@@ -201,22 +176,18 @@ class DealingDialog : UIViewController {
 
     // Perform the actual deal
     private func performDeal() {
-        guard let deckName = sourceLabel.text, let deck = sources[deckName] else {
-            // The source label should always have valid text and that text should denote a deck in sources.
-            Logger.logFatalError(InternalDealingError)
-        }
-        var origin = CGPoint(x: deck.frame.maxX, y: deck.frame.minY)
+        var origin = CGPoint(x: box.frame.maxX, y: box.frame.minY)
         for i in 0..<hands {
-            let hand = GridBox(origin: origin, size: deck.snapFrame.size, host: vc)
-            origin.x += deck.frame.width
+            let hand = GridBox(origin: origin, size: box.snapFrame.size, host: vc)
+            origin.x += box.frame.width
             vc.playingArea.addSubview(hand)
             hand.name = "Hand \(i+1)"
             for _ in 0..<cards {
-                hand.snapUp(deck.cards[0])
+                hand.snapUp(box.cards[0])
             }
             hand.refreshCount()
         }
-        deck.refreshCount()
+        box.refreshCount()
     }
 }
 
@@ -231,17 +202,3 @@ extension DealingDialog: StepperDelegate {
         return String(value)
     }
 }
-
-// Order the source names so that "Deck" is first if present and the others are sorted alphabetically.
-// Since this dialog should not have been created with an empty source Dictionary, the argument, and hence
-// the result, should have at least one member.
-private func orderSources(_ sources: [String]) -> [String] {
-    var answer = sources
-    answer.sort()
-    if let deckBoxIndex = answer.firstIndex(of: DeckBoxName) {
-        answer.remove(at: deckBoxIndex)
-        answer.insert(DeckBoxName, at: 0)
-    }
-    return answer
-}
-
