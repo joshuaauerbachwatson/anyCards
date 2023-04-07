@@ -79,7 +79,7 @@ class GameSetupDialog : UIViewController {
 
         // Deal button
         configureButton(dealButton, title: DealTitle, target: self, action: #selector(dealTouched), parent: view)
-        if vc.boxViews.first(where: { $0.name == DeckBoxName }) == nil {
+        if !vc.canDeal || !vc.boxViews.contains(where: { $0.name == DeckBoxName }) {
             dealButton.isHidden = true
         }
 

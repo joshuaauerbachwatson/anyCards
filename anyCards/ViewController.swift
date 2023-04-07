@@ -84,11 +84,27 @@ class ViewController: UIViewController {
             return lockedToLandscape || (!lockedToPortrait && view.bounds.size.landscape)
         }
     }
+
     // The playing area subview
     let playingArea = UIView()
 
     // The public area within playingArea.bounds (excludes a possible "hand area" at the bottom)
     var publicArea = CGRect.zero // calculated later
+
+    // The "dealing area" within the publicArea (defined once the publicArea is defined).
+    // This is where cards are dealt by the dealing dialog
+    var dealingArea: CGRect {
+        if publicArea == CGRect.zero {
+            return publicArea
+        }
+        let y = publicArea.maxY - border - (cardSize.height * GridBoxExpansion)
+        return CGRect(x: publicArea.minX, y: y, width: publicArea.width, height: cardSize.height)
+    }
+
+    // Indicates whether dealing is possible.  Dealing is possible if there are no subviews that intersect the dealingArea
+    var canDeal: Bool {
+        return !playingArea.subviews.contains(where: { $0.frame.intersects(dealingArea)})
+    }
 
     // The division marker for the hand area
     let handAreaMarker = UIView()
@@ -112,6 +128,13 @@ class ViewController: UIViewController {
     // The subset of the playingArea subviews that are GridBoxes.
     var boxViews : [GridBox] {
         return playingArea.subviews.filter({ $0 is GridBox }).map { $0 as! GridBox }
+    }
+
+    // The expected size of a card in the current layout
+    var cardSize: CGSize {
+        let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
+        let cardHeight = cardWidth / deck.aspectRatio
+        return CGSize(width: cardWidth, height: cardHeight)
     }
 
     // Initializers
@@ -643,17 +666,10 @@ class ViewController: UIViewController {
         shuffleAndPlace()
     }
 
-    // Get the appropriate size for a card in the current layout
-    private func cardSize() -> CGSize {
-        let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
-        let cardHeight = cardWidth / deck.aspectRatio
-        return CGSize(width: cardWidth, height: cardHeight)
-    }
-
     // Set up the public area and the hand area marker based on the current settings
     private func setupPublicArea(_ present: Bool) {
         if present {
-            publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize().height, right: 0))
+            publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height, right: 0))
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
             unhide(handAreaMarker)
         } else {
@@ -664,7 +680,6 @@ class ViewController: UIViewController {
 
     // Shuffle cards and form deck.  Add a GridBox to hold the deck and place everything on the playingArea
     private func shuffleAndPlace() {
-        let cardSize = self.cardSize()
         let cards = shuffle(self.cards)
         let deckOrigin = CGPoint(x: cardSize.width, y: cardSize.height)
         cards.forEach { card in

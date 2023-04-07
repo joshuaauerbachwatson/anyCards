@@ -132,10 +132,6 @@ class DealingDialog : UIViewController {
             postError(NotEnoughCards)
             return
         }
-        if hands > handsCapacity(box.frame) {
-            postError(TooManyHands)
-            return
-        }
         errorLabel.isHidden = true
         confirmButton.isHidden = false
     }
@@ -147,41 +143,16 @@ class DealingDialog : UIViewController {
         confirmButton.isHidden = true
     }
 
-    // Test whether there is enough room to place the hands
-    private func handsCapacity(_ deckFrame: CGRect) -> Int {
-        var ans = 0
-        var next = deckFrame.offsetBy(dx: deckFrame.width, dy: 0)
-        while canBePlaced(next) {
-            ans += 1
-            next = next.offsetBy(dx: deckFrame.width, dy: 0)
-        }
-        return ans
-    }
-
-    // Decide whether a box frame can be placed (does not overlap any other view)
-    private func canBePlaced(_ frame: CGRect) -> Bool {
-        if !vc.publicArea.contains(frame) {
-            Logger.log("Frame is outside public area")
-            return false
-        }
-        for view in vc.playingArea.subviews {
-            if frame.intersects(view.frame) {
-                Logger.log("Frame was found to intersect \(view.frame)")
-                return false
-            }
-        }
-        Logger.log("Frame can be placed")
-        return true
-    }
-
     // Perform the actual deal
     private func performDeal() {
-        var origin = CGPoint(x: box.frame.maxX, y: box.frame.minY)
+        let step = vc.dealingArea.width / hands
+        let start = (step - vc.cardSize.width) / 2
+        var origin = CGPoint(x: vc.dealingArea.minX + start, y: vc.dealingArea.minY)
         for i in 0..<hands {
             let hand = GridBox(origin: origin, size: box.snapFrame.size, host: vc)
-            origin.x += box.frame.width
+            origin.x += step
             vc.playingArea.addSubview(hand)
-            hand.name = "Hand \(i+1)"
+            hand.name = "\(i+1)"
             for _ in 0..<cards {
                 hand.snapUp(box.cards[0])
             }

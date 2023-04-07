@@ -68,12 +68,11 @@ class GridBoxMenu : UIViewController {
             header.text = GridBoxMenuHeaderUnnamed
         }
         configureButton(takeHand, title: TakeHandTitle, target: self, action: #selector(takeHandTouched), parent: view)
-        if !settings.hasHands {
-            takeHand.isHidden = true
-        }
+        takeHand.isHidden = !settings.hasHands
         configureButton(turnOver, title: TurnOverTitle, target: self, action: #selector(turnOverTouched), parent: view)
         configureButton(shuffle, title: ShuffleTitle, target: self, action: #selector(shuffleTouched), parent: view)
         configureButton(deal, title: DealTitle, target: self, action: #selector(dealTouched), parent: view)
+        deal.isHidden = !vc.canDeal
         configureButton(newName, title: NewNameTitle, target: self, action: #selector(newNameTouched), parent: view)
         configureButton(delete, title: DeleteTitle, target: self, action: #selector(deleteTouched), parent: view)
         configureButton(done, title: DoneTitle, target: self, action: #selector(doneTouched), parent: view)
@@ -87,19 +86,20 @@ class GridBoxMenu : UIViewController {
         let height = (fullHeight - 7 * DialogSpacer - 2 * DialogEdgeMargin) / 8
         let startX = (view.bounds.width / 2) - (width / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
-        header.frame = CGRect(x: startX, y: startY, width: width, height: height)
-        place(takeHand, startX, below(header), width, height)
-        if turnOver.isHidden {
-            // Since this is a short-lived dialog we don't have to place hidden controls; they will never be unhidden
-            place(shuffle, startX, below(takeHand), width, height)
-        } else {
-            place(turnOver, startX, below(takeHand), width, height)
-            place(shuffle, startX, below(turnOver), width, height)
+        // We can skip placing hidden controls since the dialog is short-lived and nothing will unhide the controls
+        var previous = place(header, startX, startY, width, height)
+        func next(_ subview: UIView) {
+            if !subview.isHidden {
+                previous = place(subview, startX, below(previous), width, height)
+            }
         }
-        place(deal, startX, below(shuffle), width, height)
-        place(newName, startX, below(deal), width, height)
-        place(delete, startX, below(newName), width, height)
-        place(done, startX, below(delete), width, height)
+        next(takeHand)
+        next(turnOver)
+        next(shuffle)
+        next(deal)
+        next(newName)
+        next(delete)
+        next(done)
     }
 
     // Actions
@@ -107,13 +107,15 @@ class GridBoxMenu : UIViewController {
     // Respond to touch of take hand button
     @objc func takeHandTouched() {
         // Calculate the placement points in the private area
-        let width = vc.playingArea.bounds.width
-        let step = width / box.cards.count
-        var currentX = vc.playingArea.bounds.minX
+        let lastX = vc.playingArea.bounds.width - vc.cardSize.width - border
+        var currentX = vc.playingArea.bounds.minX + border
+        let step = (lastX - currentX) / (box.cards.count - 1)
+        //Logger.log("currentX=\(currentX), lastX=\(lastX), step=\(step)")
         let fixedY = vc.handAreaMarker.frame.maxY
         // Move the cards, turning face up and fanning according to the placement points
         for card in box.cards {
             card.frame.origin = CGPoint(x: currentX, y: fixedY)
+            //Logger.log("setting card frame origin to \(card.frame.origin)")
             card.turnFaceUp()
             currentX += step
         }
