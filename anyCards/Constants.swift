@@ -40,6 +40,7 @@ let GameSetupSize = CGSize(width: 480, height: 300)
 let GameTokenLength = 12
 let GridBoxExpansion = CGFloat(1.2)
 let GridBoxNamePortion = CGFloat(0.75) // Portion of the GridBox excess area occupied by the name (the rest holds the count)
+let HandAreaExpansion = CGFloat(1.2) // Allow some headroom for moving cards inside the hand area
 let LayoutAreaRatioLandscape = CGFloat(1366) / CGFloat(980) // H/W to use for layout in landscape (== iPad 12.9" safe area shapes)
 let LayoutAreaRatioPortrait = CGFloat(1322) / CGFloat(1024) // H/W to use for layout in portrait (== iPad 12.9" safe area shape)
 let MinCardPixels = CGFloat(5) // Minimum number of pixels of a card's width or height that must be within the playing area

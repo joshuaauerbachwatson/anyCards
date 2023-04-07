@@ -386,7 +386,22 @@ class ViewController: UIViewController {
         }
         if recognizer.state == .ended {
             if let card = recognizer.view as? Card {
+                // Let a box snap up card if appropriate
                 card.maybeBeSnapped(boxViews)
+                // Make sure the card isn't left straddling the hand area line
+                if !publicArea.contains(card.frame) && publicArea.intersects(card.frame) {
+                    // Card is partly in the public area and partly in the hand area
+                    var newOrigin: CGPoint
+                    if card.frame.midY < publicArea.maxY {
+                        // More than half the card is in the public area
+                        newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY - card.frame.height - border)
+                    } else {
+                        // At least half the card is in the hand area
+                        newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY + border)
+                    }
+                    // Snap the card into the most appropriate area
+                    card.frame.origin = newOrigin
+                }
             }
             refreshBoxCounts()
             transmit(false)
@@ -669,7 +684,7 @@ class ViewController: UIViewController {
     // Set up the public area and the hand area marker based on the current settings
     private func setupPublicArea(_ present: Bool) {
         if present {
-            publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height, right: 0))
+            publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height * HandAreaExpansion, right: 0))
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
             unhide(handAreaMarker)
         } else {

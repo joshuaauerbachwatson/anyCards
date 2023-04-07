@@ -111,7 +111,7 @@ class GridBoxMenu : UIViewController {
         var currentX = vc.playingArea.bounds.minX + border
         let step = (lastX - currentX) / (box.cards.count - 1)
         //Logger.log("currentX=\(currentX), lastX=\(lastX), step=\(step)")
-        let fixedY = vc.handAreaMarker.frame.maxY
+        let fixedY = vc.handAreaMarker.frame.maxY + border  
         // Move the cards, turning face up and fanning according to the placement points
         for card in box.cards {
             card.frame.origin = CGPoint(x: currentX, y: fixedY)
