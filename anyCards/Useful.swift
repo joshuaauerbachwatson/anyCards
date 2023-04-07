@@ -202,9 +202,11 @@ func notImplemented(_ function: String, host maybeHost: UIViewController?) {
     }
 }
 
-// Convenience for setting the frame of a view
-func place(_ view: UIView, _ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat) {
+// Convenience for setting the frame of a view.  Returns the view as a further convenience for chaining.
+@discardableResult
+func place(_ view: UIView, _ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat) -> UIView {
     view.frame = CGRect(x: x, y: y, width: width, height: height)
+    return view
 }
 
 // Get a random string of a given length formed from alphanumeric characters
