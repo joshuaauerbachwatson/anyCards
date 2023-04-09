@@ -21,17 +21,42 @@ import UIKit
 // if (facedown).
 class GridBox : UIView {
     enum Kind {
-        case FaceDown
-        case FaceUp
+        case Deck
+        case Discard
+        case General
+
+        var label: String {
+            switch self {
+            case .Deck:
+                return "deck"
+            case .Discard:
+                return "discard"
+            case .General:
+                return "general"
+            }
+        }
+
+        var next: Kind {
+            switch self {
+            case .Deck:
+                return .Discard
+            case .Discard:
+                return .General
+            case .General:
+                return .Deck
+            }
+        }
     }
 
-    var kind: Kind = .FaceDown {
+    var kind: Kind = .General {
         didSet {
             switch kind {
-            case .FaceDown:
+            case .Deck:
                 turnFaceDown()
-            case .FaceUp:
+            case .Discard:
                 turnFaceUp()
+            case .General:
+                break
             }
         }
     }
@@ -65,24 +90,18 @@ class GridBox : UIView {
 
     // Make a GridBox from frame information, provided as an origin and a size
     init(origin: CGPoint, size: CGSize, host: ViewController) {
+        nameLabel = UILabel()
+        nameLabel.backgroundColor = LabelBackground
+        countLabel = UILabel()
+        countLabel.textColor = CountLabelColor
+        countLabel.backgroundColor = LabelBackground
+        self.host = host
         snapFrame = CGRect(origin: origin, size: size)
         let gridFrame = CGRect(x: snapFrame.minX, y: snapFrame.minY, width: snapFrame.width,
                                height: snapFrame.height * GridBoxExpansion)
-        let legendHeight = gridFrame.height - snapFrame.height
-        // The nameLabel takes a large proportion of the legend area at the bottom
-        let nameWidth = snapFrame.width * GridBoxNamePortion
-        nameLabel = UILabel()
-        nameLabel.frame = CGRect(x: 0, y: snapFrame.height, width: nameWidth, height: legendHeight)
-        // The countLabel occupies the rest of the expansion area
-        countLabel = UILabel(frame: CGRect(x: nameWidth, y: snapFrame.height, width: snapFrame.width - nameWidth, height: legendHeight))
-        self.host = host
         super.init(frame: gridFrame)
-        // Finish configuring widgets
         backgroundColor = GridBackgroundColor
-        configureLabel(countLabel, LabelBackground, parent: self)
-        configureLabel(nameLabel, LabelBackground, parent: self)
-        countLabel.textColor = CountLabelColor
-        // Add drag support to the view as a whole
+        addLegend(gridFrame, snapFrame)
         let recognizer = UIPanGestureRecognizer(target: self, action: #selector(boxDragged))
         addGestureRecognizer(recognizer)
     }
@@ -123,26 +142,28 @@ class GridBox : UIView {
         }
     }
 
+    // Respond to touching of the legend
+    @objc func legendTouched() {
+        let menu = GridBoxMenu(self)
+        Logger.logPresent(menu, host: host, animated: true)
+    }
+
     // Other functions
 
-    // Prompt the user to enter a name for the box.  This is invoked prior to placing the box if no name has yet been assigned.
-    // It may also be invoked from a menu in order to rename an existing box.
-    func promptForName() {
-        let alert = UIAlertController(title: GridBoxNameTitle, message: GridBoxNameMessage, preferredStyle: .alert)
-        let cancel = UIAlertAction(title: CancelButtonTitle, style: .cancel) { _ in
-            // Do nothing
-        }
-        let setName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
-            if let newName = alert.textFields?.first?.text {
-                self.name = newName
-            }
-        }
-        alert.addTextField() { field in
-            field.placeholder = GridBoxNamePlaceholder
-        }
-        alert.addAction(cancel)
-        alert.addAction(setName)
-        Logger.logPresent(alert, host: host, animated: true)
+    // Add the legend area, which is touchable and contains both the name label and the box count label
+    // Called during initialization
+    private func addLegend(_ gridFrame: CGRect, _ snapFrame: CGRect) {
+        let legendHeight = gridFrame.height - snapFrame.height
+        let legend = UIView(frame: CGRect(x: 0, y: snapFrame.height, width: gridFrame.width, height: legendHeight))
+        // The nameLabel takes a large proportion of the legend area
+        let nameWidth = snapFrame.width * GridBoxNamePortion
+        legend.addSubview(nameLabel)
+        place(nameLabel, 0, 0, nameWidth, legendHeight)
+        // The countLabel occupies the rest of the expansion area
+        legend.addSubview(countLabel)
+        place(countLabel, nameWidth, 0, legend.bounds.width - nameWidth, legendHeight)
+        let touchableLegend = TouchableView(legend, target: self, action: #selector(legendTouched))
+        addSubview(touchableLegend)
     }
 
     // Deterimine if a new frame for this GridBox is legal.  It must be within the public area and may not overlap with
@@ -181,10 +202,12 @@ class GridBox : UIView {
     func snapUp(_ card: Card) {
         card.frame = snapFrame
         switch kind {
-        case .FaceUp:
+        case .Discard:
             card.turnFaceUp()
-        case .FaceDown:
+        case .Deck:
             card.turnFaceDown()
+        case .General:
+            break
         }
         if card.isFaceUp {
             superview?.bringSubviewToFront(card)
@@ -198,15 +221,23 @@ class GridBox : UIView {
     // of the cards is reversed while turning them over so that the effect is as if the entire pile was turned over.
     func turnFaceDown() {
         switch kind {
-        case .FaceUp:
-            let cards = self.cards.reversed()
+        case .Discard:
+            var newCards = [Card]()
             for card in cards {
                 card.turnFaceDown()
-                self.sendSubviewToBack(card)
+                card.removeFromSuperview()
+                newCards.append(card)
             }
-            kind = .FaceDown
-        case .FaceDown:
+            kind = .Deck
+            for card in newCards.reversed() {
+                host.playingArea.addSubview(card)
+            }
+        case .Deck:
             break
+        case .General:
+            for card in cards {
+                card.turnFaceDown()
+            }
         }
     }
 
@@ -214,15 +245,23 @@ class GridBox : UIView {
     // of the cards is reversed while turning them over so that the effect is as if the entire pile was turned over.
     func turnFaceUp() {
         switch kind {
-        case .FaceUp:
+        case .Discard:
             break
-        case .FaceDown:
-            let cards = self.cards.reversed()
+        case .Deck:
+            var newCards = [Card]()
             for card in cards {
                 card.turnFaceUp()
-                self.sendSubviewToBack(card)
+                card.removeFromSuperview()
+                newCards.append(card)
             }
-            kind = .FaceUp
+            kind = .Discard
+            for card in newCards.reversed() {
+                host.playingArea.addSubview(card)
+            }
+        case .General:
+            for card in cards {
+                card.turnFaceUp()
+            }
         }
     }
 

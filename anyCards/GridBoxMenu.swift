@@ -41,7 +41,7 @@ class GridBoxMenu : UIViewController {
     let turnOver = UIButton()
     let shuffle = UIButton()
     let deal = UIButton()
-    let newName = UIButton()
+    let modify = UIButton()
     let delete = UIButton()
     let done = UIButton()
 
@@ -70,10 +70,11 @@ class GridBoxMenu : UIViewController {
         configureButton(takeHand, title: TakeHandTitle, target: self, action: #selector(takeHandTouched), parent: view)
         takeHand.isHidden = !settings.hasHands
         configureButton(turnOver, title: TurnOverTitle, target: self, action: #selector(turnOverTouched), parent: view)
+        turnOver.isHidden = box.kind == .General
         configureButton(shuffle, title: ShuffleTitle, target: self, action: #selector(shuffleTouched), parent: view)
         configureButton(deal, title: DealTitle, target: self, action: #selector(dealTouched), parent: view)
         deal.isHidden = !vc.canDeal
-        configureButton(newName, title: NewNameTitle, target: self, action: #selector(newNameTouched), parent: view)
+        configureButton(modify, title: ModifyTitle, target: self, action: #selector(modifyTouched), parent: view)
         configureButton(delete, title: DeleteTitle, target: self, action: #selector(deleteTouched), parent: view)
         configureButton(done, title: DoneTitle, target: self, action: #selector(doneTouched), parent: view)
     }
@@ -97,7 +98,7 @@ class GridBoxMenu : UIViewController {
         next(turnOver)
         next(shuffle)
         next(deal)
-        next(newName)
+        next(modify)
         next(delete)
         next(done)
     }
@@ -122,17 +123,21 @@ class GridBoxMenu : UIViewController {
         // Delete the box
         box.removeFromSuperview()
         Logger.logDismiss(self, host: vc, animated: true)
+        vc.transmit()
     }
 
     // Respond to touch of turn over button
     @objc func turnOverTouched() {
         switch box.kind {
-        case .FaceUp:
+        case .Discard:
             box.turnFaceDown()
-        case .FaceDown:
+        case .Deck:
             box.turnFaceUp()
+        case .General:
+            break // should be ruled out by hiding the control
         }
         Logger.logDismiss(self, host: vc, animated: true)
+        vc.transmit()
     }
 
     // Respond to touch of shuffle button
@@ -142,6 +147,7 @@ class GridBoxMenu : UIViewController {
         cards = anyCards.shuffle(cards)
         cards.forEach() { vc.playingArea.addSubview($0) }
         Logger.logDismiss(self, host: vc, animated: true)
+        vc.transmit()
     }
 
     // Respond to touch of deal button
@@ -152,15 +158,17 @@ class GridBoxMenu : UIViewController {
     }
 
     // Respond to touch of new name button
-    @objc func newNameTouched() {
-        box.promptForName()
+    @objc func modifyTouched() {
+        let menu = ModifyGridBox(box)
         Logger.logDismiss(self, host: vc, animated: true)
+        Logger.logPresent(menu, host: vc, animated: true)
     }
 
     // Respond to touch of delete button
     @objc func deleteTouched() {
         box.removeFromSuperview()
         Logger.logDismiss(self, host: vc, animated: true)
+        vc.transmit()
     }
 
     // Respond to touch of done button

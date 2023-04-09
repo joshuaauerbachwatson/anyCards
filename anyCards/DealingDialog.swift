@@ -159,6 +159,7 @@ class DealingDialog : UIViewController {
             hand.refreshCount()
         }
         box.refreshCount()
+        vc.transmit()
     }
 }
 

@@ -351,7 +351,7 @@ class ViewController: UIViewController {
         if let card = touch.view {
             let wasCovered = isCovered(card)
             playingArea.bringSubviewToFront(card)
-            transmit(false)
+            transmit()
             return !wasCovered
         } else {
             Logger.logFatalError("Card gesture recognizer called with non-card")
@@ -362,11 +362,11 @@ class ViewController: UIViewController {
     private func cardTapped(_ touch: UITouch) {
         if let card = touch.view as? Card {
             if card.isFaceUp {
-                card.turnFaceDown()
+                card.turnFaceDown(true)
             } else {
-                card.turnFaceUp()
+                card.turnFaceUp(true)
             }
-            transmit(false)
+            transmit()
         }
     }
 
@@ -404,7 +404,7 @@ class ViewController: UIViewController {
                 }
             }
             refreshBoxCounts()
-            transmit(false)
+            transmit()
         }
     }
 
@@ -491,7 +491,7 @@ class ViewController: UIViewController {
             gridBoxFails()
             return
         }
-        gridBox.kind = .FaceDown
+        gridBox.kind = .General
         // Now check for overlap with other GridBoxes
         let overlaps = boxViews.filter { $0.frame.intersects(gridBox.frame) }
         if overlaps.isEmpty {
@@ -604,11 +604,9 @@ class ViewController: UIViewController {
         gridBox.maybeSnapUp(cardViews)
         gridBox.refreshCount()
         if gridBox.name == nil {
-            gridBox.promptForName()
+            let menu = ModifyGridBox(gridBox)
+            Logger.logPresent(menu, host: self, animated: true)
         }
-        // TODO timing on this is bad because the name dialog may not have completed.
-        // The transmit should happen in an epilog.
-        transmit(false)
     }
 
     // Set the firstYieldOccurred field and the associated orientation lock fields.  Hide the game setup button once first yield occurs.
@@ -704,20 +702,20 @@ class ViewController: UIViewController {
         }
         let deckBox = GridBox(center: cards[0].center, size: cardSize, host: self)
         deckBox.name = MainDeckName
-        deckBox.kind = .FaceDown
+        deckBox.kind = .Deck
         placeNewGridBox(deckBox)
     }
 
     // Transmit GameState to the other players, either when just showing or when yielding
-    func transmit(_ yielding: Bool) {
+    func transmit(_ yielding: Bool = false) {
         guard thisPlayersTurn && communicator != nil else {
-            return // Make it easy to call this without worrying.
+            return // Make it possible to call this without worrying.
         }
         let gameState : GameState
         if !firstYieldOccurred && thisPlayer == 0 {
             gameState = GameState(deckType: settings.deckType, handArea: settings.hasHands, yielding: yielding,
                                   playingArea: playingArea, publicArea: publicArea)
-            setFirstYieldOccurred(true, gameState.areaSize.landscape)
+            setFirstYieldOccurred(yielding, gameState.areaSize.landscape)
         } else {
             gameState = GameState(yielding: yielding, playingArea: playingArea, publicArea: publicArea)
         }

@@ -23,7 +23,7 @@ class GameSetupDialog : UIViewController {
         if let ans = presentingViewController as? ViewController {
             return ans
         }
-        Logger.logFatalError("Could not retrieve ViewController within OptionSettingsDialog")
+        Logger.logFatalError("Could not retrieve ViewController within GameSetupDialog")
     }
 
     // Terser referene to settings
@@ -113,6 +113,7 @@ class GameSetupDialog : UIViewController {
         deckType.text = newDeckType.displayName
         settings.deckType = newDeckType
         vc.newShuffle()
+        vc.transmit()
     }
 
     // Respond to touch of the 'hand area" touchable label by toggling between present and absent
@@ -121,6 +122,7 @@ class GameSetupDialog : UIViewController {
         settings.hasHands = newValue
         handArea.text = newValue ? HandAreaYes : HandAreaNo
         vc.newShuffle()
+        vc.transmit()
     }
 
     // Respond to touch of deal button.  Opens the dialog for dividing the contents of a gridbox (default "deck") into other gridboxes.

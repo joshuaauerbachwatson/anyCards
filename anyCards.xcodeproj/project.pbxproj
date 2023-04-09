@@ -14,7 +14,7 @@
 		EE71CA5229D3324A00BEC774 /* playerDialogInitial.png in Resources */ = {isa = PBXBuildFile; fileRef = EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */; };
 		EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5329D36C2600BEC774 /* GameSetup.swift */; };
 		EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */; };
-		EE71CA5829DCBACA00BEC774 /* NewGridBoxMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5729DCBACA00BEC774 /* NewGridBoxMenu.swift */; };
+		EE71CA5A29E3088E00BEC774 /* ModifyGridBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */; };
 		EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8D1E2E270B013900958060 /* ServerExchange.swift */; };
 		EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */; };
 		EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */; };
@@ -50,7 +50,7 @@
 		EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playerDialogInitial.png; sourceTree = SOURCE_ROOT; };
 		EE71CA5329D36C2600BEC774 /* GameSetup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameSetup.swift; sourceTree = "<group>"; };
 		EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridBoxMenu.swift; sourceTree = "<group>"; };
-		EE71CA5729DCBACA00BEC774 /* NewGridBoxMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewGridBoxMenu.swift; sourceTree = "<group>"; };
+		EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModifyGridBox.swift; sourceTree = "<group>"; };
 		EE8D1E2E270B013900958060 /* ServerExchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerExchange.swift; sourceTree = "<group>"; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE9028EC26DE962700F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -133,8 +133,8 @@
 				EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */,
 				EE68816729B7BCC7003F4831 /* HelpController.swift */,
 				EE90291626DEE27500F87FF8 /* Logger.swift */,
+				EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */,
 				EE90290626DEDF7A00F87FF8 /* MultiPeer.swift */,
-				EE71CA5729DCBACA00BEC774 /* NewGridBoxMenu.swift */,
 				EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
 				EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */,
@@ -237,6 +237,7 @@
 				EE68816A29B7CB99003F4831 /* Feedback.swift in Sources */,
 				EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */,
 				EE90291426DEDF7A00F87FF8 /* Communicator.swift in Sources */,
+				EE71CA5A29E3088E00BEC774 /* ModifyGridBox.swift in Sources */,
 				EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */,
 				EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */,
 				EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */,
@@ -249,7 +250,6 @@
 				EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */,
 				EE90291526DEDF7A00F87FF8 /* MultiPeer.swift in Sources */,
 				EE71CA5029CA1B1300BEC774 /* PlayerManagementDialog.swift in Sources */,
-				EE71CA5829DCBACA00BEC774 /* NewGridBoxMenu.swift in Sources */,
 				EE90291F26DEE69200F87FF8 /* AuerbachLook.swift in Sources */,
 				EE90291126DEDF7A00F87FF8 /* ViewController.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
