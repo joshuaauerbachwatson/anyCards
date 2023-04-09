@@ -87,17 +87,19 @@ class Card : UIView {
     }
 
     // Turn the card face down.  Does nothing if the card is already face down.
-    func turnFaceDown() {
+    func turnFaceDown(_ animated: Bool = false) {
         if isFaceUp {
-            UIView.transition(from: subviews[0], to: makeImageView(back), duration: FlipTime, options: .transitionFlipFromRight)
+            let duration = animated ? FlipTime : 0
+            UIView.transition(from: subviews[0], to: makeImageView(back), duration: duration, options: .transitionFlipFromRight)
             isFaceUp = false
         }
     }
 
     // Turn the card face up.  Does nothing if the card is already face up.
-    func turnFaceUp() {
+    func turnFaceUp(_ animated: Bool = false) {
         if !isFaceUp {
-            UIView.transition(from: subviews[0], to: makeImageView(front), duration: FlipTime, options: .transitionFlipFromLeft)
+            let duration = animated ? FlipTime : 0
+            UIView.transition(from: subviews[0], to: makeImageView(front), duration: duration, options: .transitionFlipFromLeft)
             isFaceUp = true
         }
     }
