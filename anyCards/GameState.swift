@@ -50,6 +50,7 @@ class GameState : Codable, Equatable {
     convenience init(yielding: Bool, playingArea: UIView, publicArea: CGRect) {
         self.init([], -1, nil, OptionSettings.instance.hasHands, yielding, playingArea, publicArea)
     }
+    
     // Initializer from Dictionary (accept new game state sent from the server)
     convenience init(_ newState: Dictionary<String,Any>) {
         let players = newState["players"] as? [Player] ?? []

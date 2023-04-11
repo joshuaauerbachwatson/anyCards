@@ -26,7 +26,7 @@ class GameSetupDialog : UIViewController {
         Logger.logFatalError("Could not retrieve ViewController within GameSetupDialog")
     }
 
-    // Terser referene to settings
+    // Terser reference to settings
     var settings : OptionSettings {
         return OptionSettings.instance
     }
@@ -38,8 +38,9 @@ class GameSetupDialog : UIViewController {
     let handAreaLabel = UILabel()             // Third row, left
     let handArea = TouchableLabel()           // Third row, right
     let dealButton = UIButton()               // Fourth row
-    // TODO add controls to name the current configuration, save it, retrieve it
-    let doneButton = UIButton()               // Fifth row
+    let saveButton = UIButton()               // Fifth row
+    let useButton = UIButton()                // Sixth row
+    let doneButton = UIButton()               // Seventh row
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -83,6 +84,15 @@ class GameSetupDialog : UIViewController {
             dealButton.isHidden = true
         }
 
+        // Save button
+        configureButton(saveButton, title: SaveSetupTitle, target: self, action: #selector(saveTouched), parent: view)
+
+        // Use button
+        configureButton(useButton, title: UseButtonTitle, target: self, action: #selector(useTouched), parent: view)
+        if savedSetups.setups.count == 0 {
+            useButton.isHidden = true
+        }
+
         // Done button
         configureButton(doneButton, title: DoneTitle, target: self, action: #selector(doneTouched), parent: view)
     }
@@ -92,7 +102,7 @@ class GameSetupDialog : UIViewController {
         super.viewDidAppear(animated)
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * DialogEdgeMargin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * DialogEdgeMargin
-        let ctlHeight = (fullHeight - 4 * DialogSpacer - 2 * DialogEdgeMargin) / 5
+        let ctlHeight = (fullHeight - 6 * DialogSpacer - 2 * DialogEdgeMargin) / 7
         let ctlWidth = (fullWidth - DialogSpacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
@@ -102,7 +112,9 @@ class GameSetupDialog : UIViewController {
         place(handAreaLabel, startX, below(deckType), ctlWidth, ctlHeight)
         place(handArea, after(handAreaLabel), below(deckType), ctlWidth, ctlHeight)
         place(dealButton, startX, below(handArea), fullWidth, ctlHeight)
-        place(doneButton, startX, below(dealButton), fullWidth, ctlHeight)
+        place(saveButton, startX, below(dealButton), fullWidth, ctlHeight)
+        place(useButton, startX, below(saveButton), fullWidth, ctlHeight)
+        place(doneButton, startX, below(useButton), fullWidth, ctlHeight)
     }
 
     // Actions
@@ -135,8 +147,68 @@ class GameSetupDialog : UIViewController {
         Logger.logPresent(dialog, host: vc, animated: false)
     }
 
+    // Respond to touch of save button.  Prompts for a name.  May also prompt for overwrite if the name is in use
+    @objc func saveTouched() {
+        let host = vc
+        Logger.logDismiss(self, host: vc, animated: true)
+        promptForName(host)
+    }
+
+    // Respond to touch of use button.  Brings up a table dialog with a list of saved setups
+    @objc func useTouched() {
+        let preferredSize = TableDialogController.getPreferredSize(savedSetups.setups.count)
+        let buttonFrame = vc.gameSetupButton.frame
+        let anchor = CGPoint(x: buttonFrame.midX, y: buttonFrame.maxY)
+        let popup = RestoreSetupDialog(vc, size: preferredSize, anchor: anchor)
+        Logger.logDismiss(self, host: vc, animated: true)
+        Logger.logPresent(popup, host: vc, animated: true)
+    }
+
     // Respond to touch of done button.  Just does a self-dismiss
     @objc func doneTouched() {
         Logger.logDismiss(self, host: vc, animated: true)
+    }
+
+    // Other functions
+
+    // Prompt for a saved setup name.  Storing the saved setup will first fail if the name conflicts with an existing
+    // saved setup.  In that case there is a second prompt asking if you want to overwrite and the setup will be saved
+    // (overwriting) if you agree.
+    func promptForName(_ vc: ViewController) {
+        let alert = UIAlertController(title: SaveSetupTitle, message: ChooseNameMessage, preferredStyle: .alert)
+        let cancel = UIAlertAction(title: CancelButtonTitle, style: .cancel) { _ in
+            // Do nothing
+        }
+        let useName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
+            if let newName = alert.textFields?.first?.text {
+                let state = vc.saveGameState()
+                let ok = savedSetups.storeEntry(newName, state, false)
+                if !ok {
+                    Logger.logDismiss(alert, host: vc, animated: true)
+                    self.promptForOverwrite(vc, newName, state)
+                }
+            }
+        }
+        alert.addTextField() { field in
+            field.placeholder = ChooseNameMessage
+        }
+        alert.addAction(cancel)
+        alert.addAction(useName)
+        Logger.logPresent(alert, host: vc, animated: true)
+    }
+
+    // Secondary prompt if a saved setup would overwrite an existing one
+    func promptForOverwrite(_ vc: ViewController, _ name: String, _ state: GameState) {
+        let overwriteMessage = String(format: OverwriteSetupTemplate, name)
+        let alert = UIAlertController(title: OverwriteSetupTitle, message: overwriteMessage, preferredStyle: .alert)
+        let cancel = UIAlertAction(title: CancelButtonTitle, style: .cancel) { _ in
+            // Do nothing
+        }
+        let useName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
+             savedSetups.storeEntry(name, state, true)
+        }
+        alert.addAction(cancel)
+        alert.addAction(useName)
+        Logger.logPresent(alert, host: vc, animated: true)
     }
 }

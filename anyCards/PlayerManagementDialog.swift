@@ -308,7 +308,7 @@ class PlayerManagementDialog : UIViewController {
         editNickName.placeholder = NickNamePlaceholder
         editToken.placeholder = TokenPlaceholder
         settings.communication = .MultiPeer // until a valid token is available
-        rememberForgetButton.setTitle(SaveTitle, for: .normal)
+        rememberForgetButton.setTitle(SaveTokenTitle, for: .normal)
     }
 
     // Show the appropriate initial token (assuming remote and that the labels are showing)

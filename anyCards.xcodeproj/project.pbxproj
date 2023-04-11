@@ -15,6 +15,9 @@
 		EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5329D36C2600BEC774 /* GameSetup.swift */; };
 		EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */; };
 		EE71CA5A29E3088E00BEC774 /* ModifyGridBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */; };
+		EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5D29E4473800BEC774 /* TableDialogController.swift */; };
+		EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5F29E448F900BEC774 /* SavedSetups.swift */; };
+		EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */; };
 		EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8D1E2E270B013900958060 /* ServerExchange.swift */; };
 		EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */; };
 		EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */; };
@@ -51,6 +54,9 @@
 		EE71CA5329D36C2600BEC774 /* GameSetup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameSetup.swift; sourceTree = "<group>"; };
 		EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridBoxMenu.swift; sourceTree = "<group>"; };
 		EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModifyGridBox.swift; sourceTree = "<group>"; };
+		EE71CA5D29E4473800BEC774 /* TableDialogController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableDialogController.swift; sourceTree = "<group>"; };
+		EE71CA5F29E448F900BEC774 /* SavedSetups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSetups.swift; sourceTree = "<group>"; };
+		EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreSetupDialog.swift; sourceTree = "<group>"; };
 		EE8D1E2E270B013900958060 /* ServerExchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerExchange.swift; sourceTree = "<group>"; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE9028EC26DE962700F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -139,10 +145,13 @@
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
 				EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */,
 				EE90291B26DEE3B100F87FF8 /* Promotions.swift */,
+				EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */,
+				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
 				EEEF9B6E270DCE9B005994FB /* Secrets.swift */,
 				EE8D1E2E270B013900958060 /* ServerExchange.swift */,
 				EEEF9B702716DFAE005994FB /* ServerGames.swift */,
 				EE90292026DEE6A100F87FF8 /* Stepper.swift */,
+				EE71CA5D29E4473800BEC774 /* TableDialogController.swift */,
 				EE90291A26DEE3B100F87FF8 /* TouchableView.swift */,
 				EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */,
 				EE90291826DEE31200F87FF8 /* Useful.swift */,
@@ -243,6 +252,7 @@
 				EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */,
 				EE90291926DEE31200F87FF8 /* Useful.swift in Sources */,
 				EE90291D26DEE3B100F87FF8 /* Promotions.swift in Sources */,
+				EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */,
 				EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */,
 				EE90292126DEE6A100F87FF8 /* Stepper.swift in Sources */,
 				EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */,
@@ -254,7 +264,9 @@
 				EE90291126DEDF7A00F87FF8 /* ViewController.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
 				EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */,
+				EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */,
 				EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */,
+				EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */,
 				EEEF9B712716DFAE005994FB /* ServerGames.swift in Sources */,
 				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,

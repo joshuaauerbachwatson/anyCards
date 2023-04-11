@@ -853,6 +853,23 @@ extension ViewController : CommunicatorDelegate {
         }
     }
 
+    // Restore a saved game state
+    func restoreGameState(_ gameState: GameState) {
+        if let deckType = gameState.deckType {
+            settings.deckType = deckType
+            cards = makePlayingDeck(deck, deckType)
+        }
+        settings.hasHands = gameState.handArea
+        setupPublicArea(gameState.handArea)
+        removePublicCardsAndBoxes()
+        doLayout(gameState)
+    }
+
+    // Save the current game state
+    func saveGameState() -> GameState {
+        return GameState(deckType: settings.deckType, handArea: settings.hasHands, yielding: false, playingArea: playingArea, publicArea: publicArea)
+    }
+
     // React to lost peer by ending the game with a short dialog
     func lostPlayer(_ playerID: String) {
         var player = getPlayer(playerID)
