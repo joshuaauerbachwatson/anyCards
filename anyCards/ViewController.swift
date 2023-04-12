@@ -778,11 +778,11 @@ extension ViewController : CommunicatorDelegate {
     private func doGameChanged(_ gameState: GameState) {
         if gameState.players.count > 0 {
             // Phase 1 transfer: determining player list.  First, determine whether the sending player has provided
-            //   a new numPlayers value (only the "lead" player should do this).
+            //   a new numPlayers value (only the "lead" player "should" do this but because of the echoing logic when
+            //   the player list changes, the value can appear in other contexts.  It is harmless to do a label configuration).
             var changed = false
             if gameState.numPlayers > 0 {
                 configurePlayerLabels(gameState.numPlayers)
-                changed = true
             }
             // Then, if the incoming list differs from the local list, merge the lists and notify the communicator.
             // Only the multipeer communicator actually needs or uses this notification.
@@ -828,6 +828,7 @@ extension ViewController : CommunicatorDelegate {
             // information.  It seems that when we use MPC this extra sharing step is needed sometimes.  Things should quiesce because
             // if nothing changed, nothing is transmitted.
             if changed {
+                Logger.log("Sending because 'changed' in players logic")
                 communicator?.send(GameState(players: players, numPlayers: numPlayers))
             }
         } else {
