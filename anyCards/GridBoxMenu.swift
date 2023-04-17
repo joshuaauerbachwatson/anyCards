@@ -130,9 +130,9 @@ class GridBoxMenu : UIViewController {
     @objc func turnOverTouched() {
         switch box.kind {
         case .Discard:
-            box.turnFaceDown()
+            box.kind = .Deck
         case .Deck:
-            box.turnFaceUp()
+            box.kind = .Discard
         case .General:
             break // should be ruled out by hiding the control
         }

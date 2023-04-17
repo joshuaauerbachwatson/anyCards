@@ -24,7 +24,11 @@ class Card : UIView {
     let index : Int
 
     // Says whether the card is face up or not
-    var isFaceUp : Bool
+    var isFaceUp = false
+
+    // Says whether the card is allowed to turn over.  A card that belongs to a .Deck or .Discard box may not be turned
+    // over until it is dragged from the box.
+    var mayTurnOver = true
 
     // Store the two images
     private let front: UIImage
@@ -35,7 +39,6 @@ class Card : UIView {
         self.index = index
         self.front = front
         self.back = back
-        isFaceUp = false
         super.init(frame: CGRect.zero)
         addSubview(makeImageView(back))
     }
@@ -63,9 +66,12 @@ class Card : UIView {
         }
     }
 
-    // Determine which GridBoxes should snap up this card (if any) and execute the snap action
-    func maybeBeSnapped(_ boxes: [GridBox]) {
-        let overlap : (CGRect, CGRect) -> CGFloat = { (r1, r2) in
+    // Determine which GridBoxes should snap up this card (if any) and execute the snap action.
+    // If the card is snapped, returns an empty array.  If the card is not snapped, returns
+    // the sequence of .Deck boxes (ineligible for snapping) that are overlapped by the card.
+    @discardableResult
+    func maybeBeSnapped(_ boxes: [GridBox]) -> [GridBox] {
+        func overlapArea(_ r1: CGRect, _ r2: CGRect) -> CGFloat {
             let intersect = r1.intersection(r2)
             if intersect.width > SnapThreshhold || intersect.height > SnapThreshhold {
                 return intersect.width * intersect.height
@@ -73,35 +79,75 @@ class Card : UIView {
                 return 0
             }
         }
-        let overlaps = boxes.map { overlap($0.snapFrame, frame) }
-        let maxOverlap = overlaps.max()
-        if maxOverlap == 0 {
-            return
+        func overlaps(_ r1: CGRect, _ r2: CGRect) -> Bool {
+            let intersect = r1.intersection(r2)
+            return intersect.width > SnapThreshhold || intersect.height > SnapThreshhold
         }
-        for (box, overlap) in zip(boxes, overlaps) {
+        let snapBoxes = boxes.filter { $0.kind != .Deck } // Cannot snap to a deck
+        let overlapAreas = snapBoxes.map { overlapArea($0.snapFrame, self.frame) }
+        let maxOverlap = overlapAreas.max()
+        if maxOverlap == 0 {
+            return []
+        }
+        for (box, overlap) in zip(boxes, overlapAreas) {
             if overlap == maxOverlap {
                 box.snapUp(self)
-                return
+                if box.kind != .General {
+                    mayTurnOver = false
+                }
+                return []
             }
         }
+        let deckBoxes = boxes.filter { $0.kind == .Deck }
+        return deckBoxes.filter { overlaps($0.snapFrame, self.frame) }
     }
 
     // Turn the card face down.  Does nothing if the card is already face down.
-    func turnFaceDown(_ animated: Bool = false) {
+    // The byUser flag says whether the turn was user initiated.
+    func turnFaceDown(_ byUser: Bool = false) {
         if isFaceUp {
-            let duration = animated ? FlipTime : 0
+            guard let duration = checkUserInitiated(byUser) else {
+                return
+            }
             UIView.transition(from: subviews[0], to: makeImageView(back), duration: duration, options: .transitionFlipFromRight)
             isFaceUp = false
         }
     }
 
     // Turn the card face up.  Does nothing if the card is already face up.
-    func turnFaceUp(_ animated: Bool = false) {
+    // The byUser flag says whether the turn was user initiated.
+    func turnFaceUp(_ byUser: Bool = false) {
         if !isFaceUp {
-            let duration = animated ? FlipTime : 0
+            guard let duration = checkUserInitiated(byUser) else {
+                return
+            }
             UIView.transition(from: subviews[0], to: makeImageView(front), duration: duration, options: .transitionFlipFromLeft)
             isFaceUp = true
         }
+    }
+
+    // Checks whether a card flip operation was user initiated and returns either an appropriate animation duration
+    // (0 will suppress animation) or nil if the card may not be flipped.
+    func checkUserInitiated(_ byUser: Bool) -> TimeInterval? {
+        if !byUser {
+            return 0 // no animation when not user initiated but always allowed
+        }
+        if mayTurnOver {
+            // If user initiated, must be allowed to turn over
+            return FlipTime
+        }
+        // User initiated and not authorized.  To show an error, we need a view controller.
+        var responder = self.next
+        var vc = responder as? UIViewController
+        while (vc == nil && responder != nil) {
+            responder = responder!.next
+            vc = responder as? UIViewController
+        }
+        if let host = vc {
+            let message = isFaceUp ? MustRemainFaceUp : MustRemainFaceDown
+            bummer(title: MayNotTurnOver, message: message, host: host)
+        }
+        return nil
     }
 
     // Make a new image view from an image, sizing it to fill the view.  The result is intended to be used as the sole subview of the card, replacing the

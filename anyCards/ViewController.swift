@@ -375,33 +375,42 @@ class ViewController: UIViewController {
         if recognizer.state == .possible || !thisPlayersTurn {
             return
         }
-        if let card = recognizer.view {
-            let newFrame = CGRect(origin: card.frame.origin + recognizer.translation(in: playingArea), size: card.frame.size)
-            if playingArea.bounds.contains(newFrame) {
-                CATransaction.withNoAnimation {
-                    card.frame = newFrame
-                }
-                recognizer.setTranslation(CGPoint.zero, in: view)
+        guard let card = recognizer.view as? Card else {
+            return
+        }
+        if card.isFaceUp && !card.mayTurnOver {
+            // Card is in a discard pile and may not be dragged
+            return
+        }
+        let newFrame = CGRect(origin: card.frame.origin + recognizer.translation(in: playingArea), size: card.frame.size)
+        if playingArea.bounds.contains(newFrame) {
+            CATransaction.withNoAnimation {
+                card.frame = newFrame
             }
+            recognizer.setTranslation(CGPoint.zero, in: view)
         }
         if recognizer.state == .ended {
-            if let card = recognizer.view as? Card {
-                // Let a box snap up card if appropriate
-                card.maybeBeSnapped(boxViews)
-                // Make sure the card isn't left straddling the hand area line
-                if !publicArea.contains(card.frame) && publicArea.intersects(card.frame) {
-                    // Card is partly in the public area and partly in the hand area
-                    var newOrigin: CGPoint
-                    if card.frame.midY < publicArea.maxY {
-                        // More than half the card is in the public area
-                        newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY - card.frame.height - border)
-                    } else {
-                        // At least half the card is in the hand area
-                        newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY + border)
-                    }
-                    // Snap the card into the most appropriate area
-                    card.frame.origin = newOrigin
+            // Let card be turned over assuming it isn't snapped up by a restrictive GridBox
+            card.mayTurnOver = true
+            // Let a box snap up card if appropriate
+            let rejectedDecks = card.maybeBeSnapped(boxViews)
+            // Make sure an unsnapped card isn't covering too much of a rejected deck
+            if rejectedDecks.count > 0 {
+                unhideDeck(card, rejectedDecks)
+            }
+            // Make sure the card isn't left straddling the hand area line
+            if !publicArea.contains(card.frame) && publicArea.intersects(card.frame) {
+                // Card is partly in the public area and partly in the hand area
+                var newOrigin: CGPoint
+                if card.frame.midY < publicArea.maxY {
+                    // More than half the card is in the public area
+                    newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY - card.frame.height - border)
+                } else {
+                    // At least half the card is in the hand area
+                    newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY + border)
                 }
+                // Place the card into the most appropriate area (public or hand)
+                card.frame.origin = newOrigin
             }
             refreshBoxCounts()
             transmit()
@@ -472,6 +481,44 @@ class ViewController: UIViewController {
     }
 
     // Other functions
+
+    // Determine if any .Deck GridBox is largely covered by a card that it couldn't snap up.  If so, move the card enough
+    // to make clear it is not part of the deck.  The 'decks' argument contains only .Deck GridBoxes which overlap the card.
+    // Here we determine if the overlap is large enough to be of concern and move the card if necessary.
+    private func unhideDeck(_ card: Card, _ decks: [GridBox]) {
+        let cardX = card.frame.minX
+        let cardY = card.frame.minY
+        for deck in decks {
+            let xDiff = cardX - deck.snapFrame.minX
+            let yDiff = cardY - deck.snapFrame.minY
+            if xDiff.magnitude < SnapThreshhold && yDiff.magnitude < SnapThreshhold {
+                // The card covers the deck or nearly so.  That is, its origin lies within a square
+                // centered at the deck's origin, with width and height of 2 * SnapThreshhold.  We can
+                // determine the quadrant of the square containing the card's origin by using the signs
+                // of xDiff and yDiff.  Then we move the card's origin to the outer corner of that quadrant.
+                var cornerShift: CGPoint
+                switch xDiff.sign {
+                case .minus:
+                    switch yDiff.sign {
+                    case .minus:
+                        cornerShift = CGPoint(x: -SnapThreshhold, y: -SnapThreshhold)
+                    case .plus:
+                        cornerShift = CGPoint(x: -SnapThreshhold, y: SnapThreshhold)
+                    }
+                case .plus:
+                    switch yDiff.sign {
+                    case .minus:
+                        cornerShift = CGPoint(x: SnapThreshhold, y: -SnapThreshhold)
+                    case .plus:
+                        cornerShift = CGPoint(x: SnapThreshhold, y: SnapThreshhold)
+                    }
+                }
+                card.frame.origin = deck.frame.origin + cornerShift
+                // Since GridBoxes cannot overlap, if the card overlapped one to such a great extent it cannot overlap others
+                return
+            }
+        }
+    }
 
     // Create a new GridBox or indicate that it can't be done.
     //   -- attempt to create a GridBox with the press at its center; if this does not overlap any other GridBox it succeeds

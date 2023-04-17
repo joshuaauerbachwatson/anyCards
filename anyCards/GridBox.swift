@@ -17,13 +17,13 @@
 import UIKit
 
 // A UIView that is larger than a Card to accommodate a name label and a count label.  Designed to go behind a stack of cards.
-// Cards that overlap a GridBox snap into it, being placed either on top of other cards (if faceup) in the GridBox or behind
+// Cards that overlap a GridBox may snap into it, being placed in accordance with the GridBox's rules.
 // if (facedown).
 class GridBox : UIView {
     enum Kind {
-        case Deck
-        case Discard
-        case General
+        case Deck     // All face down, remove only
+        case Discard  // All face up, add only
+        case General  // Potentially mixed, face up added to top and face down to bottom
 
         var label: String {
             switch self {
@@ -48,15 +48,22 @@ class GridBox : UIView {
         }
     }
 
+    var previousKind: Kind? = nil
+
     var kind: Kind = .General {
+        willSet {
+            previousKind = kind
+        }
         didSet {
             switch kind {
             case .Deck:
-                turnFaceDown()
+                makeIntoDeck()
             case .Discard:
-                turnFaceUp()
+                makeIntoDiscard()
             case .General:
-                break
+                for card in cards {
+                    card.mayTurnOver = true
+                }
             }
         }
     }
@@ -217,52 +224,40 @@ class GridBox : UIView {
         }
     }
 
-    // Turn the entire deck face down.  If the deck is already face down, no-op.  If the deck is currently face-up, the view order
-    // of the cards is reversed while turning them over so that the effect is as if the entire pile was turned over.
-    func turnFaceDown() {
-        switch kind {
-        case .Discard:
-            var newCards = [Card]()
-            for card in cards {
-                card.turnFaceDown()
-                card.removeFromSuperview()
-                newCards.append(card)
-            }
-            kind = .Deck
-            for card in newCards.reversed() {
-                host.playingArea.addSubview(card)
-            }
-        case .Deck:
-            break
-        case .General:
-            for card in cards {
-                card.turnFaceDown()
-            }
+    // Set up the box in .Deck style (all cards faceDown and unable to be turned over).  If the deck was previously
+    // a discard, then reverse the order of the cards so that it's as if the entire pile was turned over as a whole.
+    private func makeIntoDeck() {
+        for card in cards {
+            card.turnFaceDown()
+            card.mayTurnOver = false
+        }
+        if previousKind == .Discard {
+            reverseCardViews()
+         }
+    }
+
+    // Reverse the view order of the cards in the deck
+    private func reverseCardViews() {
+        var newCards = [Card]()
+        for card in cards {
+            card.removeFromSuperview()
+            newCards.append(card)
+        }
+        for card in newCards.reversed() {
+            host.playingArea.addSubview(card)
         }
     }
 
-    // Turn the entire deck face up.  If the deck is already face up, no-op.  If the deck is currently face-down, the view order
-    // of the cards is reversed while turning them over so that the effect is as if the entire pile was turned over.
-    func turnFaceUp() {
-        switch kind {
-        case .Discard:
-            break
-        case .Deck:
-            var newCards = [Card]()
-            for card in cards {
-                card.turnFaceUp()
-                card.removeFromSuperview()
-                newCards.append(card)
-            }
-            kind = .Discard
-            for card in newCards.reversed() {
-                host.playingArea.addSubview(card)
-            }
-        case .General:
-            for card in cards {
-                card.turnFaceUp()
-            }
+    // Set up the box in .Discard style (all cards faceUp and unable to be turned over).  If the discard was previously
+    // a deck, then reverse the order of the cards so that it's as if the entire pile was turned over as a whole.
+    private func makeIntoDiscard() {
+        for card in cards {
+            card.turnFaceUp()
+            card.mayTurnOver = false
         }
+        if previousKind == .Deck {
+            reverseCardViews()
+         }
     }
 
     // Refresh the displayed count in the countLabel
