@@ -693,12 +693,9 @@ class ViewController: UIViewController {
         unhide(playersButton)
         hide(endGameButton, yieldButton)
         players = []
-        // Set up new game
-        deck = DefaultDeck.deck
-        cards = makePlayingDeck(deck, settings.deckType)
         configurePlayerLabels(settings.numPlayers)
-        removeAllCardsAndBoxes()
-        shuffleAndPlace()
+        // Set up new game
+        newShuffle()
     }
 
     // Refresh the box counts in all GridBoxes
@@ -729,6 +726,7 @@ class ViewController: UIViewController {
     // Called when the deck type or hand area setting changes.  Does the initial setup for that combination of decktype and hand area.
     func newShuffle() {
         setupPublicArea(settings.hasHands)
+        deck = DefaultDeck.deck
         cards = makePlayingDeck(deck, settings.deckType)
         removeAllCardsAndBoxes()
         shuffleAndPlace()

@@ -40,7 +40,8 @@ class GameSetupDialog : UIViewController {
     let dealButton = UIButton()               // Fourth row
     let saveButton = UIButton()               // Fifth row
     let useButton = UIButton()                // Sixth row
-    let doneButton = UIButton()               // Seventh row
+    let resetButton = UIButton()              // Seventh row
+    let doneButton = UIButton()               // Eighth row
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -93,6 +94,9 @@ class GameSetupDialog : UIViewController {
             useButton.isHidden = true
         }
 
+        // Reset
+        configureButton(resetButton, title: ResetTitle, target: self, action: #selector(resetTouched), parent: view)
+
         // Done button
         configureButton(doneButton, title: DoneTitle, target: self, action: #selector(doneTouched), parent: view)
     }
@@ -102,7 +106,7 @@ class GameSetupDialog : UIViewController {
         super.viewDidAppear(animated)
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * DialogEdgeMargin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * DialogEdgeMargin
-        let ctlHeight = (fullHeight - 6 * DialogSpacer - 2 * DialogEdgeMargin) / 7
+        let ctlHeight = (fullHeight - 7 * DialogSpacer - 2 * DialogEdgeMargin) / 8
         let ctlWidth = (fullWidth - DialogSpacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
@@ -114,7 +118,8 @@ class GameSetupDialog : UIViewController {
         place(dealButton, startX, below(handArea), fullWidth, ctlHeight)
         place(saveButton, startX, below(dealButton), fullWidth, ctlHeight)
         place(useButton, startX, below(saveButton), fullWidth, ctlHeight)
-        place(doneButton, startX, below(useButton), fullWidth, ctlHeight)
+        place(resetButton, startX, below(useButton), fullWidth, ctlHeight)
+        place(doneButton, startX, below(resetButton), fullWidth, ctlHeight)
     }
 
     // Actions
@@ -162,6 +167,11 @@ class GameSetupDialog : UIViewController {
         let popup = RestoreSetupDialog(vc, size: preferredSize, anchor: anchor)
         Logger.logDismiss(self, host: vc, animated: true)
         Logger.logPresent(popup, host: vc, animated: true)
+    }
+
+    // Respond to touch of reset button.  Returns the setup to the initial state implied by decktype and hand area
+    @objc func resetTouched() {
+        vc.newShuffle()
     }
 
     // Respond to touch of done button.  Just does a self-dismiss

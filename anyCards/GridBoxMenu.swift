@@ -116,13 +116,22 @@ class GridBoxMenu : UIViewController {
         let step = (lastX - currentX) / (box.cards.count - 1)
         //Logger.log("currentX=\(currentX), lastX=\(lastX), step=\(step)")
         let fixedY = vc.handAreaMarker.frame.maxY + border  
-        // Move the cards, turning face up and fanning according to the placement points
+        // Prepare animation functions to move the cards
+        var animations = [()->Void]()
         for card in box.cards {
-            card.frame.origin = CGPoint(x: currentX, y: fixedY)
-            //Logger.log("setting card frame origin to \(card.frame.origin)")
-            card.turnFaceUp()
+            let xValue = currentX // use immutable to ensure value is captured, not reference
+            animations.append({
+                UIView.animate(withDuration: DealCardDuration, animations: {
+                    //Logger.log("card.frame.origin was \(card.frame.origin)")
+                    card.frame.origin = CGPoint(x: xValue, y: fixedY)
+                    //Logger.log("card.frame.origin is now \(card.frame.origin)")
+                    card.turnFaceUp()
+                })
+            })
             currentX += step
         }
+        // Move the cards with animation
+        runAnimationSequence(animations)
         // Delete the box
         box.removeFromSuperview()
         Logger.logDismiss(self, host: vc, animated: true)
