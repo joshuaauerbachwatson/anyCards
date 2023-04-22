@@ -215,6 +215,21 @@ func randomString(length: Int) -> String {
   return String((0..<length).map{ _ in letters.randomElement()! })
 }
 
+// Run an sequence of automations provided as an array of functions
+func runAnimationSequence(_ seq: [()->Void]) {
+    var next = 0
+    func runNextAnimation() {
+        guard next < seq.count else { return }
+        let animation = seq[next]
+        next += 1
+        CATransaction.begin()
+        CATransaction.setCompletionBlock({ runNextAnimation() })
+        animation()
+        CATransaction.commit()
+    }
+    runNextAnimation()
+}
+
 // Determine the safe area of a main view.  Since we are assuming at least iOS 11, we
 // can use the safeAreaInsets property of the view to compute the result.
 func safeAreaOf(_ view: UIView) -> CGRect {

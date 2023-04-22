@@ -21,6 +21,7 @@ import UIKit
 // Numbers
 let CardDisplayWidthRatio = CGFloat(1) / CGFloat(8)     // Ratio of card width to standard view width
 let ControlHeightRatio = CGFloat(1) / CGFloat(20) // Ratio of label or button height to safe area height
+let DealCardDuration = 0.2
 let DealingCardsDefault = 7
 let DealingCardsMax = 52
 let DealingCardsMin = 1
@@ -107,12 +108,12 @@ let InternalDealingError = "Internal error in dealing function"
 let InvalidTokenMessage = "Token must be 12 chars, letters and numbers only"
 let InvalidTokenTitle = "Invalid token"
 let LeaderStatusLabelText = "Are you leader?: "
-let LeaderText = "Yes"
 let LocalRemoteLabelText = "Players source: "
 let LocalText = "Nearby only"
 let LostPlayerTemplate = "Lost contact with '%@'"
 let LostPlayerTitle = "Lost Player"
 let MainDeckName = "Deck"
+let MayNotAccess = "May not access"
 let MayNotTurnOver = "May not turn over"
 let MissingToken = "Missing token"
 let MissingVersionMessage = "Version information not available"
@@ -127,12 +128,14 @@ let NickNamePlaceholder = "[optional]"
 let NoDealPossible = "There are no decks to deal from"
 let NoDealTitle = "No Deal"
 let NoLeadPlayersMessage = "No leader"
-let NonleaderText = "No"
+let NoText = "No"
 let NotEnoughCards = "Not enough cards"
 let NumPlayersText = "Number of players: "
 let OkButtonTitle = "Ok"
 let OverwriteSetupTitle = "Saved Setup Exists"
 let OverwriteSetupTemplate = "Overwrite the saved setup named '%@'?"
+let OwnedGridBoxTemplate = "Box is owned by '%@'"
+let OwnedTitle = "Owned: "
 let PlayerErrorTitle = "Error finding players"
 let PlayersHeaderText = "Assemble Players"
 let PlayersTitle = "Players"
@@ -155,6 +158,7 @@ let TurnOverTitle = "Turn Over"
 let UserNameText = "Your User Name: "
 let UseButtonTitle = "Use saved setup"
 let VersionPrefix = "Version: "
+let YesText = "Yes"
 let YieldTitle = "Yield"
 
 // Bug reporting

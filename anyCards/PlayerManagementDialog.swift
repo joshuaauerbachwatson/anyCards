@@ -98,7 +98,7 @@ class PlayerManagementDialog : UIViewController {
         // Leader status and its label
         configureLeftLabel(leaderStatusLabel, LeaderStatusLabelText)
         configureTouchableLabel(leaderStatus, target: self, action: #selector(leaderStatusTouched), parent: view)
-        leaderStatus.text = settings.leadPlayer ? LeaderText : NonleaderText
+        leaderStatus.text = settings.leadPlayer ? YesText : NoText
 
         // Num Players and its label
         configureLeftLabel(numPlayersLabel, NumPlayersText)
@@ -180,12 +180,12 @@ class PlayerManagementDialog : UIViewController {
         if settings.leadPlayer {
             // Was on, toggle off
             settings.leadPlayer = false
-            leaderStatus.text = NonleaderText
+            leaderStatus.text = NoText
             hide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         } else {
             // Was off, toggle on
             settings.leadPlayer = true
-            leaderStatus.text = LeaderText
+            leaderStatus.text = YesText
             unhide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         }
     }

@@ -46,7 +46,10 @@ class GridBoxMenu : UIViewController {
     let done = UIButton()
 
     // Constructor
-    init(_ box: GridBox) {
+    init?(_ box: GridBox) {
+        if !box.mayBeModified {
+            return nil
+        }
         self.box = box
         super.init(nibName: nil, bundle: nil)
         preferredContentSize = PlayerManagementSize
@@ -157,10 +160,14 @@ class GridBoxMenu : UIViewController {
         Logger.logPresent(dialog, host: vc, animated: true)
     }
 
-    // Respond to touch of new name button
+    // Respond to touch of modify button
     @objc func modifyTouched() {
-        let menu = ModifyGridBox(box)
         Logger.logDismiss(self, host: vc, animated: true)
+        guard let menu = ModifyGridBox(box) else {
+            // Shouldn't happen since this menu shouldn't have been created unless the box could be modified
+            Logger.log("ModifyGridBox constructor failed in a context where it shouldn't have")
+            return
+        }
         Logger.logPresent(menu, host: vc, animated: true)
     }
 

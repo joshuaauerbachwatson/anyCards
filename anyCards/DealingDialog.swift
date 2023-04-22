@@ -30,6 +30,7 @@ class DealingDialog : UIViewController {
     let box: GridBox
     var hands = DealingHandsDefault
     var cards = DealingCardsDefault
+    var handsAreOwned = true
 
     // Controls
     let header = UILabel()         // First row
@@ -37,9 +38,11 @@ class DealingDialog : UIViewController {
     let handsLabel = UILabel()     // Second row, second half
     let cardsStepper = Stepper()   // Third row, first half
     let cardsLabel = UILabel()     // Third row, second half
-    let errorLabel = UILabel()     // Fourth Row
-    let confirmButton = UIButton() // Fourth Row
-    let cancelButton = UIButton()  // Fifth Row
+    let ownedLabel = UILabel()     // Fourth row, left
+    let owned = TouchableLabel()   // Fourth row, right
+    let errorLabel = UILabel()     // Fifth Row
+    let confirmButton = UIButton() // Fifth Row
+    let cancelButton = UIButton()  // Sixth Row
 
     init(_ box: GridBox, _ vc: ViewController) {
         self.box = box
@@ -77,6 +80,15 @@ class DealingDialog : UIViewController {
         cardsStepper.minimumValue = DealingCardsMin
         cardsStepper.maximumValue = DealingCardsMax
 
+        // Owned indicator and its label
+        configureLabel(ownedLabel, SettingsDialogBackground, parent: view)
+        ownedLabel.text = OwnedTitle
+        ownedLabel.textAlignment = .right
+        configureTouchableLabel(owned, target: self, action: #selector(ownedTouched), parent: view)
+        owned.text = YesText
+        owned.view.font = getTextFont()
+        owned.view.backgroundColor = LabelBackground
+
         // Error label and confirm button.  Only one will show but we don't decide which yet.
         configureLabel(errorLabel, LabelBackground, parent: view)
         errorLabel.textColor = .red
@@ -93,7 +105,7 @@ class DealingDialog : UIViewController {
         let margin = DialogEdgeMargin
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * margin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * margin
-        let ctlHeight = (fullHeight - 4 * spacer - 2 * margin) / 5
+        let ctlHeight = (fullHeight - 5 * spacer - 2 * margin) / 6
         let ctlWidth = (fullWidth - spacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
@@ -102,7 +114,9 @@ class DealingDialog : UIViewController {
         place(handsLabel, after(handsStepper), below(header), ctlWidth, ctlHeight)
         place(cardsStepper, startX, below(handsStepper), ctlWidth, ctlHeight)
         place(cardsLabel, after(cardsStepper), below(handsStepper), ctlWidth, ctlHeight)
-        place(errorLabel, startX, below(cardsStepper), fullWidth, ctlHeight)
+        place(ownedLabel, startX, below(cardsLabel), ctlWidth, ctlHeight)
+        place(owned, after(ownedLabel), below(cardsStepper), ctlWidth, ctlHeight)
+        place(errorLabel, startX, below(owned), fullWidth, ctlHeight)
         confirmButton.frame = errorLabel.frame
         place(cancelButton, startX, below(confirmButton), fullWidth, ctlHeight)
         validate()
@@ -114,6 +128,17 @@ class DealingDialog : UIViewController {
     @objc func confirmTouched() {
         performDeal()
         cancelTouched()
+    }
+
+    // Respond to touching of the owned label
+    @objc func ownedTouched() {
+        if handsAreOwned {
+            handsAreOwned = false
+            owned.text = NoText
+        } else {
+            handsAreOwned = true
+            owned.text = YesText
+        }
     }
 
     // Respond to touching of the cancel button
@@ -143,22 +168,43 @@ class DealingDialog : UIViewController {
         confirmButton.isHidden = true
     }
 
+    // Make an animation function for dealing single card to a specific hand
+    private func makeOneCardDealFunction(_ hand: GridBox) -> ()->Void {
+        func once() {
+            UIView.animate(withDuration: DealCardDuration) {
+                hand.snapUp(self.box.cards[0])
+                hand.refreshCount()
+                self.box.refreshCount()
+            }
+        }
+        return once
+    }
+
     // Perform the actual deal
     private func performDeal() {
         let step = vc.dealingArea.width / hands
         let start = (step - vc.cardSize.width) / 2
         var origin = CGPoint(x: vc.dealingArea.minX + start, y: vc.dealingArea.minY)
+        var dealt = [GridBox]()
         for i in 0..<hands {
             let hand = GridBox(origin: origin, size: box.snapFrame.size, host: vc)
+            dealt.append(hand)
             origin.x += step
             vc.playingArea.addSubview(hand)
-            hand.name = "\(i+1)"
-            for _ in 0..<cards {
-                hand.snapUp(box.cards[0])
+            if handsAreOwned {
+                hand.owner = i
+                hand.name = vc.getPlayer(index: i)
+            } else {
+                hand.name = "\(i + 1)"
             }
-            hand.refreshCount()
         }
-        box.refreshCount()
+        var animations = [()->Void]()
+        for _ in 0..<cards {
+            for hand in dealt {
+                animations.append(makeOneCardDealFunction(hand))
+            }
+        }
+        runAnimationSequence(animations)
         vc.transmit()
     }
 }

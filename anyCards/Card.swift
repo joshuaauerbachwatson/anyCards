@@ -83,7 +83,7 @@ class Card : UIView {
             let intersect = r1.intersection(r2)
             return intersect.width > SnapThreshhold || intersect.height > SnapThreshhold
         }
-        let snapBoxes = boxes.filter { $0.kind != .Deck } // Cannot snap to a deck
+        let snapBoxes = boxes.filter { $0.kind != .Deck && $0.mayBeModified }
         let overlapAreas = snapBoxes.map { overlapArea($0.snapFrame, self.frame) }
         let maxOverlap = overlapAreas.max()
         if maxOverlap == 0 {
@@ -98,7 +98,7 @@ class Card : UIView {
                 return []
             }
         }
-        let deckBoxes = boxes.filter { $0.kind == .Deck }
+        let deckBoxes = boxes.filter { $0.kind == .Deck || !$0.mayBeModified }
         return deckBoxes.filter { overlaps($0.snapFrame, self.frame) }
     }
 

@@ -444,7 +444,10 @@ class ViewController: UIViewController {
         if recognizer.state == .ended {
             let location = recognizer.location(in: playingArea)
             if let box = boxViews.first(where:  { $0.frame.contains(location) }) {
-                let menu = GridBoxMenu(box)
+                guard let menu = GridBoxMenu(box) else {
+                    box.mayNotModify()
+                    return
+                }
                 Logger.logPresent(menu, host: self, animated: true)
             } else {
                 attemptNewGridBox(location)
@@ -645,13 +648,18 @@ class ViewController: UIViewController {
     }
 
     // Place a new GridBox into the playingArea after determining that it fits
+    // Note: the GridBox should still be modifiable at this point since it is newly created.
     private func placeNewGridBox(_ gridBox: GridBox) {
         playingArea.addSubview(gridBox)
         playingArea.sendSubviewToBack(gridBox)
         gridBox.maybeSnapUp(cardViews)
         gridBox.refreshCount()
         if gridBox.name == nil {
-            let menu = ModifyGridBox(gridBox)
+            guard let menu = ModifyGridBox(gridBox) else {
+                // Should not happen
+                Logger.log("ModifyGridBox constructor failed in a context where it shouldn't have")
+                return
+            }
             Logger.logPresent(menu, host: self, animated: true)
         }
     }
@@ -955,6 +963,14 @@ extension ViewController : CommunicatorDelegate {
             return possibles[0].name
         }
         return nil
+    }
+
+    // Get the player name associated with an index position or else use a helpful placeholder phrase
+    func getPlayer(index: Int) -> String {
+        if index < players.count {
+            return players[index].name
+        }
+        return "Player #\(index+1)"
     }
 
     // Make a Player object for the current player

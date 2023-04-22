@@ -18,13 +18,14 @@ import UIKit
 
 // A UIView that is larger than a Card to accommodate a name label and a count label.  Designed to go behind a stack of cards.
 // Cards that overlap a GridBox may snap into it, being placed in accordance with the GridBox's rules.
-// if (facedown).
 class GridBox : UIView {
+    // Classifies the GridBox according to the rules that apply
     enum Kind {
         case Deck     // All face down, remove only
         case Discard  // All face up, add only
         case General  // Potentially mixed, face up added to top and face down to bottom
 
+        // Convenience methods to support modification dialogs
         var label: String {
             switch self {
             case .Deck:
@@ -48,8 +49,10 @@ class GridBox : UIView {
         }
     }
 
+    // An variable to save the previous "kind" of a GridBox as it is being changed.
     var previousKind: Kind? = nil
 
+    // The current Kind of this GridBox
     var kind: Kind = .General {
         willSet {
             previousKind = kind
@@ -66,6 +69,17 @@ class GridBox : UIView {
                 }
             }
         }
+    }
+
+    // The owner of the GridBox.  This is an index into the player labels (ie. a number from 0..3).  An unowned
+    // GridBox is indicated by a special constant
+    static let Unowned = -1
+    var owner: Int = Unowned
+
+    // Indicates whether the GridBox may be modified by this player.  This is possible if the GridBox is Unowned or if
+    // it is owned by the current player
+    var mayBeModified: Bool {
+        return owner == GridBox.Unowned || owner == host.thisPlayer
     }
 
     // The "snap frame" subarea of the GridBox (where cards end up)
@@ -151,7 +165,10 @@ class GridBox : UIView {
 
     // Respond to touching of the legend
     @objc func legendTouched() {
-        let menu = GridBoxMenu(self)
+        guard let menu = GridBoxMenu(self) else {
+            mayNotModify()
+            return
+        }
         Logger.logPresent(menu, host: host, animated: true)
     }
 
@@ -263,5 +280,11 @@ class GridBox : UIView {
     // Refresh the displayed count in the countLabel
     func refreshCount() {
         countLabel.text = String(cards.count)
+    }
+
+    // Display popup when an attempt is made to modify an owned gridbox by someone who isn't the owner
+    func mayNotModify() {
+        let message = String(format: OwnedGridBoxTemplate, host.getPlayer(index: owner))
+        bummer(title: MayNotAccess, message: message, host: host)
     }
 }

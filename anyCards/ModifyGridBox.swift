@@ -17,7 +17,8 @@
 import UIKit
 
 // Menu which appears when you do a long press in an area that is not inside an existing GridBox.
-// The general contract is to create a new GridBox
+// The general contract is to create a new GridBox.  The same menu is used as a submenu of the GridBox
+// menu (which appears in response to a long press inside a GridBox or a tap in the legend area of the box).
 class ModifyGridBox : UIViewController {
 
     // Parent view controller
@@ -32,15 +33,20 @@ class ModifyGridBox : UIViewController {
     let box: GridBox
 
     // Controls
-    let header = UILabel()    // First row
-    let nameLabel = UILabel() // Second row, left
-    let name = UITextField()  // Second row, right
-    let kindLabel = UILabel() // Third row, left
-    let kind = TouchableLabel() // third row, right
-    let done = UIButton()     // Fourth row
+    let header = UILabel()       // First row
+    let nameLabel = UILabel()    // Second row, left
+    let name = UITextField()     // Second row, right
+    let kindLabel = UILabel()    // Third row, left
+    let kind = TouchableLabel()  // third row, right
+    let ownedLabel = UILabel()   // Fourth row, left
+    let owned = TouchableLabel() // Fourth row, right
+    let done = UIButton()        // Fifth row
 
     // Main initializer
-    init(_ box: GridBox) {
+    init?(_ box: GridBox) {
+        if !box.mayBeModified {
+            return nil
+        }
         self.box = box
         super.init(nibName: nil, bundle: nil)
         preferredContentSize = GameSetupSize
@@ -80,6 +86,15 @@ class ModifyGridBox : UIViewController {
         kind.view.font = getTextFont()
         kind.view.backgroundColor = LabelBackground
 
+        // Ownership and its label
+        configureLabel(ownedLabel, SettingsDialogBackground, parent: view)
+        ownedLabel.text = OwnedTitle
+        ownedLabel.textAlignment = .right
+        configureTouchableLabel(owned, target: self, action: #selector(ownedTouched), parent: view)
+        owned.text = NoText
+        owned.view.font = getTextFont()
+        owned.view.backgroundColor = LabelBackground
+
         // Done button
         configureButton(done, title: DoneTitle, target: self, action: #selector(doneTouched), parent: view)
     }
@@ -89,7 +104,7 @@ class ModifyGridBox : UIViewController {
         super.viewDidAppear(animated)
         let fullHeight = min(preferredContentSize.height, view.bounds.height) - 2 * DialogEdgeMargin
         let fullWidth = min(preferredContentSize.width, view.bounds.width) - 2 * DialogEdgeMargin
-        let ctlHeight = (fullHeight - 3 * DialogSpacer - 2 * DialogEdgeMargin) / 4
+        let ctlHeight = (fullHeight - 4 * DialogSpacer - 2 * DialogEdgeMargin) / 5
         let ctlWidth = (fullWidth - DialogSpacer) / 2
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
@@ -98,7 +113,9 @@ class ModifyGridBox : UIViewController {
         place(name, after(nameLabel), below(header), ctlWidth, ctlHeight)
         place(kindLabel, startX, below(nameLabel), ctlWidth, ctlHeight)
         place(kind, after(kindLabel), below(name), ctlWidth, ctlHeight)
-        place(done, startX, below(kindLabel), fullWidth, ctlHeight)
+        place(ownedLabel, startX, below(kindLabel), ctlWidth, ctlHeight)
+        place(owned, after(ownedLabel), below(kind), ctlWidth, ctlHeight)
+        place(done, startX, below(ownedLabel), fullWidth, ctlHeight)
     }
 
     // Actions
@@ -109,6 +126,18 @@ class ModifyGridBox : UIViewController {
         box.kind = next
         kind.text = next.label
         vc.transmit()
+    }
+
+    @objc func ownedTouched() {
+        if box.owner == GridBox.Unowned {
+            box.owner = vc.thisPlayer
+            owned.text = YesText
+        } else if box.owner == vc.thisPlayer {
+            box.owner = GridBox.Unowned
+            owned.text = NoText
+        } else {
+            Logger.logFatalError("GridBox ownership defenses have failed")
+        }
     }
 
     // Respond to touch of 'done' button
