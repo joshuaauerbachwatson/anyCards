@@ -138,7 +138,6 @@ class GameSetupDialog : UIViewController {
         let newValue = !settings.hasHands
         settings.hasHands = newValue
         handArea.text = newValue ? HandAreaYes : HandAreaNo
-        vc.newShuffle()
         vc.transmit()
     }
 
