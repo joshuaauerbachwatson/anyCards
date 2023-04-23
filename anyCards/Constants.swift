@@ -56,6 +56,7 @@ let SnapThreshhold = CGFloat(10)  // Number of points of overlap to initiate a "
 
 // Document names
 let DefaultDeckName = "DefaultCardDeck.png"
+let JokerImageName = "JokerImage.png"
 let HelpFile = "AnyCardsHelp" /* Excludes extension */
 let SavedSetupsFile = "savedSetups"
 let ServerGameFile = "serverGames"

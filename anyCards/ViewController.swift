@@ -21,8 +21,8 @@ class ViewController: UIViewController {
 
     // Model-related fields
 
-    // The Deck (source deck) in current use.
-    var deck : Deck
+    // The source deck in current use.
+    var deck : SourceDeck
 
     // The cards array for the game.  Initially holds the standard deck taken directly from deck.cards, but this may change to a different
     // agreed-upon playing deck.
@@ -359,13 +359,15 @@ class ViewController: UIViewController {
     // Respond to dragging of a card
     @objc func dragging(recognizer: UIPanGestureRecognizer) {
         if recognizer.state == .possible || !thisPlayersTurn {
+            Logger.log("Card not dragged, not eligible")
             return
         }
         guard let card = recognizer.view as? Card else {
+            Logger.log("View not dragged, not a Card")
             return
         }
         if card.isFaceUp && !card.mayTurnOver {
-            // Card is in a discard pile and may not be dragged
+            Logger.log("Card is in a discard pile and may not be dragged")
             return
         }
         if recognizer.state == .began {
@@ -667,7 +669,7 @@ class ViewController: UIViewController {
     }
 
     // Front for Deck.makePlayingDeck, ensures that every card gets a gesture recognizer, but only once.
-    private func makePlayingDeck(_ deck: Deck, _ instructions: PlayingDeckTemplate) -> [Card] {
+    private func makePlayingDeck(_ deck: SourceDeck, _ instructions: PlayingDeckTemplate) -> [Card] {
         Logger.log("making playing deck")
         let cards = deck.makePlayingDeck(instructions)
         for card in cards {
@@ -766,7 +768,7 @@ class ViewController: UIViewController {
     }
 
     // Set up the public area and the hand area marker based on the current settings
-    private func setupPublicArea(_ present: Bool) {
+    func setupPublicArea(_ present: Bool) {
         if present {
             publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height * HandAreaExpansion, right: 0))
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
