@@ -34,6 +34,10 @@ class Card : UIView {
     private let front: UIImage
     private let back: UIImage
 
+    // Place to cache the cards that are being dragged with this card (includes and starts with this card).
+    // Ignored except during a drag.
+    var dragSet: [Card] = []
+
     // Make a new card.  Typically, called as part of deck construction, after which the cards of the deck are kept in the deck array.
     init (_ index: Int, front: UIImage, back: UIImage) {
         self.index = index

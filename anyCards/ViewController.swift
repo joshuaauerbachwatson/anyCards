@@ -339,34 +339,20 @@ class ViewController: UIViewController {
 
     // Actions
 
-    // On touch we ensure the card is frontmost.  If the card was covered before, we suppress tap recognition (return false)
-    // on the assumption that bringing the card to the front and/or moving it was the intent rather than turning it over.  But,
-    // if the card "looked" frontmost to the user (not covered), we assume the intent is either to tap it or to move it.  It is
-    // still brought to the front (since, otherwise, when it is moved, it might end up behind other views).
-    private func cardTouched(_ touch: UITouch) -> Bool {
-        if !thisPlayersTurn {
-            // UI effectively disabled if not your turn
-            return false
-        }
-        if let card = touch.view {
-            let wasCovered = isCovered(card)
-            playingArea.bringSubviewToFront(card)
-            transmit()
-            return !wasCovered
-        } else {
-            Logger.logFatalError("Card gesture recognizer called with non-card")
-        }
-    }
-
-    // On "tap", which can only happen if onTouch returned true and the card is not dragged
+    // On "tap", which can only happen if card is not dragged.  Tapping a covered card brings it to the front.
+    // Tapping a non-covered card flips it over.
     private func cardTapped(_ touch: UITouch) {
         if let card = touch.view as? Card {
-            if card.isFaceUp {
+            if isCovered(card) {
+                playingArea.bringSubviewToFront(card)
+            } else if card.isFaceUp {
                 card.turnFaceDown(true)
             } else {
                 card.turnFaceUp(true)
             }
             transmit()
+        } else {
+            Logger.logFatalError("Card gesture recognizer called with non-card")
         }
     }
 
@@ -382,35 +368,52 @@ class ViewController: UIViewController {
             // Card is in a discard pile and may not be dragged
             return
         }
-        let newFrame = CGRect(origin: card.frame.origin + recognizer.translation(in: playingArea), size: card.frame.size)
-        if playingArea.bounds.contains(newFrame) {
-            CATransaction.withNoAnimation {
-                card.frame = newFrame
+        if recognizer.state == .began {
+            let dragSet = findDragSet(card)
+            playingArea.bringSubviewToFront(card)
+            dragSet.forEach() {
+                playingArea.bringSubviewToFront($0)
+            }
+            card.dragSet = dragSet
+        }
+        // In any active drag state we move all the cards in the drag set
+        let translation = recognizer.translation(in: playingArea)
+        // We allow the drag as long as the actual card is in the playing area.  We don't
+        // check the other cards, which may leave them off the screen, although when the drag ends
+        // they will be adjusted individually.
+        let primaryNewFrame = CGRect(origin: card.frame.origin + translation, size: card.frame.size)
+        if playingArea.bounds.contains(primaryNewFrame) {
+            for draggedCard in card.dragSet {
+                let newFrame = CGRect(origin: draggedCard.frame.origin + translation, size: card.frame.size)
+                draggedCard.frame = newFrame
             }
             recognizer.setTranslation(CGPoint.zero, in: view)
         }
+        // At the end, we adjust the cards individually
         if recognizer.state == .ended {
-            // Let card be turned over assuming it isn't snapped up by a restrictive GridBox
-            card.mayTurnOver = true
-            // Let a box snap up card if appropriate
-            let rejectedDecks = card.maybeBeSnapped(boxViews)
-            // Make sure an unsnapped card isn't covering too much of a rejected deck
-            if rejectedDecks.count > 0 {
-                unhideDeck(card, rejectedDecks)
-            }
-            // Make sure the card isn't left straddling the hand area line
-            if !publicArea.contains(card.frame) && publicArea.intersects(card.frame) {
-                // Card is partly in the public area and partly in the hand area
-                var newOrigin: CGPoint
-                if card.frame.midY < publicArea.maxY {
-                    // More than half the card is in the public area
-                    newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY - card.frame.height - border)
-                } else {
-                    // At least half the card is in the hand area
-                    newOrigin = CGPoint(x: card.frame.minX, y: publicArea.maxY + border)
+            for draggedCard in card.dragSet {
+                // Let card be turned over assuming it isn't snapped up by a restrictive GridBox
+                draggedCard.mayTurnOver = true
+                // Let a box snap up card if appropriate
+                let rejectedDecks = draggedCard.maybeBeSnapped(boxViews)
+                // Make sure an unsnapped card isn't covering too much of a rejected deck
+                if rejectedDecks.count > 0 {
+                    unhideDeck(draggedCard, rejectedDecks)
                 }
-                // Place the card into the most appropriate area (public or hand)
-                card.frame.origin = newOrigin
+                // Make sure the card isn't left straddling the hand area line
+                if !publicArea.contains(draggedCard.frame) && publicArea.intersects(draggedCard.frame) {
+                    // Card is partly in the public area and partly in the hand area
+                    var newOrigin: CGPoint
+                    if draggedCard.frame.midY < publicArea.maxY {
+                        // More than half the card is in the public area
+                        newOrigin = CGPoint(x: draggedCard.frame.minX, y: publicArea.maxY - draggedCard.frame.height - border)
+                    } else {
+                        // At least half the card is in the hand area
+                        newOrigin = CGPoint(x: draggedCard.frame.minX, y: publicArea.maxY + border)
+                    }
+                    // Place the card into the most appropriate area (public or hand)
+                    draggedCard.frame.origin = newOrigin
+                }
             }
             refreshBoxCounts()
             transmit()
@@ -484,6 +487,36 @@ class ViewController: UIViewController {
     }
 
     // Other functions
+
+    // Given a card, find all the other cards that cover it or that cover cards that cover it (transitive closure).
+    // The original card plus the found others constitutes the "drag set" which is going to be dragged as a whole
+    // We can find the set with a single pass over cardViews because that list is ordered back to front.  If we start where
+    // the source card is placed, all subsequent cards that intersect that card or any cards previously added to the set
+    // are in the set.
+    private func findDragSet(_ card: Card) -> [Card] {
+        var answer = [card]
+        var cardSeen = false
+        //Logger.log("finding drag set for card \(card.index)")
+        for candidate in cardViews {
+            if !cardSeen && candidate.index == card.index {
+                //Logger.log("found card in card views")
+                cardSeen = true
+            } else if cardSeen && intersectsAny(candidate, answer) {
+                //Logger.log("adding card \(candidate.index) to drag set")
+                answer.append(candidate)
+            }
+        }
+        if !cardSeen {
+            Logger.logFatalError("Dragged card not found in card views")
+        }
+        //Logger.log("have a drag set with \(answer.count) cards")
+        return answer
+    }
+
+    // Determine if a view overlaps any of a set of views
+    private func intersectsAny(_ candidate: UIView, _ others: [UIView]) -> Bool {
+        return others.contains(where: { $0.frame.intersects(candidate.frame) })
+    }
 
     // Determine if any .Deck GridBox is largely covered by a card that it couldn't snap up.  If so, move the card enough
     // to make clear it is not part of the deck.  The 'decks' argument contains only .Deck GridBoxes which overlap the card.
@@ -641,7 +674,7 @@ class ViewController: UIViewController {
             if let recognizers = card.gestureRecognizers, recognizers.count > 0 {
                 continue
             }
-            let gestureRecognizer = TouchTapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTouch: cardTouched, onTap: cardTapped)
+            let gestureRecognizer = TapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTap: cardTapped)
             card.addGestureRecognizer(gestureRecognizer)
         }
         return cards
