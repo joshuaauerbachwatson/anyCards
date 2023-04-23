@@ -128,6 +128,7 @@ class GridBoxMenu : UIViewController {
                     card.turnFaceUp()
                 })
             })
+            card.mayTurnOver = true
             currentX += step
         }
         // Move the cards with animation
