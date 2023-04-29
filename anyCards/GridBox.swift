@@ -37,6 +37,18 @@ class GridBox : UIView {
             }
         }
 
+        // Symbols for compact display of box kind
+        var symbol: String {
+            switch self {
+            case .Deck:
+                return "↓"
+            case .Discard:
+                return "↑"
+            case .General:
+                return "↑↓"
+            }
+        }
+
         var next: Kind {
             switch self {
             case .Deck:
@@ -58,6 +70,7 @@ class GridBox : UIView {
             previousKind = kind
         }
         didSet {
+            kindLabel.text = kind.symbol
             switch kind {
             case .Deck:
                 makeIntoDeck()
@@ -88,15 +101,18 @@ class GridBox : UIView {
     // A label containing the name of the GridBox
     let nameLabel : UILabel
 
+    // A label containing the symbol for the "kind" of the GridBox
+    let kindLabel : UILabel
+
     // A label containing the count of cards currently "on" this GridBox
     let countLabel : UILabel
 
     // The main view controller, to be consulted for various purposes
     let host : ViewController
 
-    // The cards that are currently "on" this GridBox.
+    // The cards that are currently "held" by this GridBox.
     var cards : [Card] {
-        return host.cardViews.filter { isOwned($0) }
+        return host.cardViews.filter { isHeld($0) }
     }
 
     // The name assigned to this GridBox or nil if none
@@ -113,9 +129,17 @@ class GridBox : UIView {
     init(origin: CGPoint, size: CGSize, host: ViewController) {
         nameLabel = UILabel()
         nameLabel.backgroundColor = LabelBackground
+        nameLabel.textAlignment = .center
+        kindLabel = UILabel()
+        kindLabel.backgroundColor = ButtonBackground
+        kindLabel.textColor = .white
+        kindLabel.textAlignment = .center
+        kindLabel.font = UIFont.boldSystemFont(ofSize: getTextFont().pointSize)
+        kindLabel.adjustsFontSizeToFitWidth = true
         countLabel = UILabel()
         countLabel.textColor = CountLabelColor
         countLabel.backgroundColor = LabelBackground
+        countLabel.textAlignment = .center
         self.host = host
         snapFrame = CGRect(origin: origin, size: size)
         let gridFrame = CGRect(x: snapFrame.minX, y: snapFrame.minY, width: snapFrame.width,
@@ -181,11 +205,15 @@ class GridBox : UIView {
         let legend = UIView(frame: CGRect(x: 0, y: snapFrame.height, width: gridFrame.width, height: legendHeight))
         // The nameLabel takes a large proportion of the legend area
         let nameWidth = snapFrame.width * GridBoxNamePortion
+        // The kindLabel takes a portion of what remains
+        let kindWidth = snapFrame.width * GridBoxKindPortion
         legend.addSubview(nameLabel)
         place(nameLabel, 0, 0, nameWidth, legendHeight)
+        legend.addSubview(kindLabel)
+        place(kindLabel, nameWidth, 0, kindWidth, legendHeight)
         // The countLabel occupies the rest of the expansion area
         legend.addSubview(countLabel)
-        place(countLabel, nameWidth, 0, legend.bounds.width - nameWidth, legendHeight)
+        place(countLabel, after(kindLabel), 0, legend.bounds.width - nameWidth - kindWidth, legendHeight)
         let touchableLegend = TouchableView(legend, target: self, action: #selector(legendTouched))
         addSubview(touchableLegend)
     }
@@ -205,9 +233,9 @@ class GridBox : UIView {
         return true
     }
 
-    // Decide if a card is "owned" by this GridBox (the card is snapped in).  We do this by comparing the Card's frame origin
+    // Decide if a card is "held" by this GridBox (the card is snapped in).  We do this by comparing the Card's frame origin
     // to the snapFrame origin; however, we do this fuzzily because the two can end up deviating by a fraction of a pixel.
-    func isOwned(_ card: UIView) -> Bool {
+    func isHeld(_ card: UIView) -> Bool {
         return abs(card.frame.minX - snapFrame.minX) < 0.5 && abs(card.frame.minY - snapFrame.minY) < 0.5
     }
 
