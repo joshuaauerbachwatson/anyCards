@@ -10,7 +10,7 @@ body {
 
 img {
 	float: left;
-	margin: 10px;
+	margin: 12px;
 }
 </style>
 </head>
@@ -26,6 +26,7 @@ img {
 	<ul>
 		<li><a href="#What">What is AnyCards?</a></li>
 		<li><a href="#Assembling">How To Assemble Players</a></li>
+        <li><a href="#Basics">Card Manipulation Basics</a></li>
 		<li><a href="#Setup">Setting up a Game</a></li>
 		<li><a href="#Playing">Playing and Ending a Game</a></li>
 		<li><a href="#Problems">Reporting Problems</a></li>
@@ -41,7 +42,9 @@ img {
 		<em>AnyCards</em> provides a virtual table-top that is shared across
 		devices. It also provides a virtual deck of cards which can be of a
 		number of different sizes (but always made up of standard cards
-		without jokers). It allows you to make boxes to hold stacks of cards.
+		with or without jokers). It allows you to move and turn over cards,
+        make boxes to hold stacks of cards, and do routine moves like dealing or
+        taking up a hand.
 	</p>
 
 	<p>The players use their separate devices to play a card game with
@@ -58,8 +61,15 @@ img {
 	<br>
 	<hr>
 	<h2>
-		<a name="Assembling" />How to Assemble Players
+		<a name="Assembling" />How to Connect Players
 	</h2>
+
+    <p>
+        AnyCards does not provide any "social" features.  Rather, players need to arrange
+        in advance to play together.
+        These instructions assume you have already identified the players who will play together
+        and now want to connect them to each other.  Each such player must have installed AnyCards
+        on a device.
 
 	<p>
 		After installing and starting the game, touch the <b>Players</b>
@@ -71,9 +81,8 @@ img {
 		The first time you do this, <b>Your User Name</b> will be whatever
 		name you gave to your device (usually not too meaningful to others).
 		Touch the white text box to bring up the keyboard and replace the name
-		with a name that you want to be known by when playing. A group of
-		players that wants to play together should be sure to choose
-		distinctive names.
+		with a name that you want to be known by when playing. Players who
+		will play together should choose distinct names.
 	</p>
 		
 	<p>
@@ -86,11 +95,12 @@ img {
 	</p>
 		  
 	<p>
-		Decide who in your group will be the leader and let that player set the number of players.
+		Decide who in your group will be the leader.  That player should select <b>Yes</b> and the others should select <b>No</b>.
+        The player who is leader should then set the number of players.
 	</p>
 		
 	<p>
-		There are two ways for players to find each other (the <b>Player source</b>), called <b>Nearby
+		There are two ways for players to connect to each other (the <b>Player source</b>), called <b>Nearby
 			only</b> and <b>Entire internet</b>. One of these modes is shown in blue.
 		Touching the blue text toggles between the two modes.  All players must select the same mode.
 	</p>
@@ -101,29 +111,32 @@ img {
 		In the <b>Nearby only</b> mode, players must be near each other
 		(within bluetooth range or on the same wifi hub). All such players are
 		assumed to be playing with each other. Once all players have set the <b>Nearby
-		only</b> mode, a single player has assumed the leader role and set the number
-		of players, all players can touch the <b>Find Players</b> button to move on
-		to the game setup phase.
+		only</b> mode, and a single player has assumed the leader role and set the number
+		of players, all players may then touch the <b>Find Players</b> button to move on
+		to actual play.
 	</p>
 
 	<h3>Entire Internet Mode</h3>
 
 	<p>
 		When you switch to <b>Entire Internet</b> mode, the players can be
-		anywhere, as long as they each have an internet connection. Some
-		additional fields and buttons will appear. At least the <b>Token</b>
+		anywhere, as long as they each have an internet connection active on
+        their device. Some additional fields and buttons will appear. At least the <b>Token</b>
 		field must be filled in.  Every player must fill in the same value.
-		Once this is true, all players can touch <b>Find Players</b> and move on to the
-		game setup phase.
+		Once this is true, all players can touch <b>Find Players</b> and move on to actual play.
 	</p>
 	<ul>
-		<li>A <em>game token</em> is a value chosen by a group of players to distinguish
-		if from other groups of players.  It is useful if it is meaningful to the group
-		but more important that it be hard to guess, so that no other AnyCards players can
-		crash your game and groups of players don't collide with each other.</li>
+        <li>The <em>token</em> is a value chosen by a group of players to distinguish
+            if from other groups of players.  It should be hard to guess, so that no other AnyCards players can
+            crash your game and groups of players don't collide with each other.</li>
 		<li>The game token must be made up of letters and numbers only.  Upper and lower
 		case letters are distinct (case is meaningful).</li>
 		<li>The game token must be exactly 12 characters long.</li>
+        <li>On the other hand, the token isn't used to protect your device or your personal data so it is
+            ok to contain words that help players remember it, as long as this doesn't make it too likely to
+            collide with other groups.  For example, <b>JohnAndAlice</b> would be a poor choice of token but
+            <b>JohnAlice657</b> is probably adequate.
+        </li>
 	</ul>
 	
 	<h4>Nicknames</h4>
@@ -140,19 +153,78 @@ img {
 		AnyCards provides the ability to remember tokens (and their associated nicknames).  
 	</p>
 	<ul>
-		<li>The <b>Show Next Token</b> button cycles through the remembered tokens.  If a remembered token is
-		showing, you can also use this button to bring up the entry area for a new token.</li>  
+		<li>The <b>Show Next Token</b> button cycles through the remembered tokens.  The cycle includes an
+            entry area for a new token.</li>
+        <ul><li>if you have remembered tokens and want to enter a new one, you must cycle through the list until you get to
+            the entry area.  It is not possible to type over the displayed remembered tokens</li></ul>
 		<li>The <b>Forget this Token</b> will drop a remembered token from the list.</li>
 		<li>As soon as you have entered a new valid token, the <b>Remember this Token</b> button will appear
 		and give you an opportunity to add it to the list.</li>
    </ul>
 
-	<br>
+    <br>
+    <hr>
+    <h2>
+        <a name="Basics">Card Manipulation Basics</a>
+    </h2>
+    <img alt="cards and boxes examples" src="./cardsAndBoxes.png">
+    <p>
+        To familiarize yourself with how to move cards and use boxes, it is helpful to go to the <b>Players</b> dialog, set yourself as leader, and set the number of players to 1 ("solitaire mode").  Then you can experiment with the features discussed here.
+    </p>
+    <p>
+        The illustration shows examples of cards (three face up and one face down) as well as one box.  The box has been given the name "Deck" and contains 48 cards.  You can reproduce this picture as an initial exercise.  The particular card faces
+            will differ from the illustration because every initial deck is shuffled randomly.  You will already have the box
+            called "Deck" with 52 cards in it.  Drag four cards off the deck (non-overlapping at first).  Tap three of the cards
+            to turn them over.  Then drag the three face-up cards so they overlap as in the illustration.
+    </p>
+    <p>Some Details follow.
+    <h3>Turning cards over</h3>
+    <p>
+        Tapping a card that is not covered by other cards will cause it to turn over, unless the card is the top card of a deck or discard box.  For the top card of a deck box, tapping simply "dislodges" it from the box, allowing it to turned over with a second tap.  The top card of a discard box cannot be removed or turned over.
+    </p>
+    <h3>Bringing cards to the front</h3>
+    <p>
+        Tapping a card that is partly covered by other cards will bring the card to the front so that it is no longer covered.
+        After that it can be tapped again to turn it over or it can be dragged by itself.  A card that is completely covered by
+        other cards (so that it cannot be tapped) remains covered until the covering cards are removed.
+    </p>
+    <h3>Dragging cards</h3>
+    <p>
+        Cards may be dragged around the table-top view as part of play.  If a card is not covered by any other card, it will be
+        dragged by itself.  If a card is partly covered by other cards, the cards covering the dragged card are dragged with it.
+        In addition, cards that cover any other card being dragged will also be dragged.  So, in the illustration, if you drag
+        the three of hearts, the seven and eight of spades will move with it.  If you drag the seven of spades, the eight will move
+        with it but the three of hearts will not.  By first tapping either of the partly covered cards you change the relationship,
+        of course.  So, if you first tap the three of hearts to bring it to the front, and then drag it, it will move by itself.
+    </p>
+    <h3>Boxes</h3>
+    <p>
+        Boxes hold cards.  They can be moved (their cards move with them) and have certain other helpful properties.  There are
+        three kinds of boxes.
+    </p>
+    <p><em>Deck</em> boxes contain only face down cards.  Cards may not be added to them.  The top card cannot be turned over in
+    place but it can be moved entirely or partially off the box, after which it becomes an ordinary card.  The deck box in the
+    illustration happens to have the name "Deck", too, but, in general, a box's name is distinct from its kind.  The main playing
+    deck of a game is called "Deck" by default.</p>
+    <p><em>Discard</em> boxes
+
+    <br>
 	<hr>
 	<h2>
 		<a name="Setup">Setting up a Game</a>
 	</h2>
-
+    <img alt="initial game setup" src="./gameSetupDialogInitial.png">
+    <p>
+        As discussed previously, exactly one player will have the role of leader.  That player will have a <b>Setup Game</b>
+        button.  This button may be used either before connecting the players or afterwards, but, in either case, it is considered
+        to be part of the leader's first turn to play (the leader always plays first).  When the leader finishes setting up,
+        the leader can yield to the next player (who then has the first real move in the game) or the leader may take that first
+        move and then yield.  Once the leader's first turn ends, the <b>Setup Game</b> button is no longer displayed.
+    </p>
+    <p>
+        If you are in the role of leader, touch <b>Setup Game</b>.  You should see something like what is shown in the
+        illustration.
+    </p>
 	<br>
 	<hr>
 	<h2>

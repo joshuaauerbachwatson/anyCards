@@ -18,6 +18,8 @@
 		EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5D29E4473800BEC774 /* TableDialogController.swift */; };
 		EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5F29E448F900BEC774 /* SavedSetups.swift */; };
 		EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */; };
+		EE7D378929FAB82A001BED96 /* gameSetupDialogInitial.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */; };
+		EE7D378B29FAB833001BED96 /* cardsAndBoxes.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */; };
 		EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8D1E2E270B013900958060 /* ServerExchange.swift */; };
 		EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */; };
 		EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */; };
@@ -57,6 +59,8 @@
 		EE71CA5D29E4473800BEC774 /* TableDialogController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableDialogController.swift; sourceTree = "<group>"; };
 		EE71CA5F29E448F900BEC774 /* SavedSetups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSetups.swift; sourceTree = "<group>"; };
 		EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreSetupDialog.swift; sourceTree = "<group>"; };
+		EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gameSetupDialogInitial.png; sourceTree = SOURCE_ROOT; };
+		EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cardsAndBoxes.png; sourceTree = SOURCE_ROOT; };
 		EE8D1E2E270B013900958060 /* ServerExchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerExchange.swift; sourceTree = "<group>"; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE9028EC26DE962700F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -124,6 +128,8 @@
 				EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */,
 				EE9028FD26DEDF7A00F87FF8 /* Base.lproj */,
 				EE9028F126DE962700F87FF8 /* Info.plist */,
+				EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */,
+				EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */,
 				EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */,
 				EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */,
 				EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */,
@@ -228,9 +234,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				EE90290C26DEDF7A00F87FF8 /* Base.lproj in Resources */,
+				EE7D378929FAB82A001BED96 /* gameSetupDialogInitial.png in Resources */,
 				EE71CA5229D3324A00BEC774 /* playerDialogInitial.png in Resources */,
 				EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */,
 				EE90290E26DEDF7A00F87FF8 /* Assets.xcassets in Resources */,
+				EE7D378B29FAB833001BED96 /* cardsAndBoxes.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
