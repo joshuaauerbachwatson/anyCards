@@ -86,33 +86,21 @@ extension SourceDeck {
         for _ in 0..<instructions.multiplier {
             cards += oneOfEach
         }
-        for i in 0..<instructions.jokers {
-            cards.append(self.cards[i + 52])
-        }
         // Use the copy constructor here to renumber the cards without mutating the original source deck
         return zip(cards, cards.indices).map { (card, index) in Card(index, card: card) }
     }
 }
 
 // List of potentially useful PlayDeckTemplates, and convenience method to cycle thorugh them
-class Decks {
+class Decks : Codable {
     static let available = [ PlayingDeckTemplate(multiplier: 1, mask: nil, jokers: 0, displayName: "Standard"),
                              PlayingDeckTemplate(multiplier: 1, mask: nil, jokers: 2, displayName: "WithJokers"),
                              PlayingDeckTemplate(multiplier: 1, omitFrom2To: 6, displayName: "Piquet"),
                              PlayingDeckTemplate(multiplier: 1, omitFrom2To: 8, displayName: "Euchre"),
                              PlayingDeckTemplate(multiplier: 2, mask: nil, jokers: 0, displayName: "Double"),
+                             PlayingDeckTemplate(multiplier: 2, mask: nil, jokers: 2, displayName: "DoubleWithJokers"),
                              PlayingDeckTemplate(multiplier: 2, omitFrom2To: 6, displayName: "Bezique"),
                              PlayingDeckTemplate(multiplier: 2, omitFrom2To: 8, displayName: "Pinochle") ]
-
-    // Provide convenient way to cycle thorugh the available decks
-    static func next(_ name: String) -> PlayingDeckTemplate {
-        if let index = available.firstIndex(where: { $0.displayName == name }) {
-            return available[(index + 1) % available.count]
-        } else {
-            Logger.log("Unexpected argument to Decks.next()")
-            return available[0] // non-fatal, attempt possibly surprising patch
-        }
-    }
 }
 
 // The default deck is from https://pixabay.com/en/card-deck-deck-cards-playing-cards-161536/

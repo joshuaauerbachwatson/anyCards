@@ -124,13 +124,12 @@ class GameSetupDialog : UIViewController {
 
     // Actions
 
-    // Respond to touch of the deck type label by cycling through the available options
+    // Respond to touch of the deck type label by displaying a selection dialog
     @objc func deckTypeTouched() {
-        let newDeckType = Decks.next(settings.deckType.displayName)
-        deckType.text = newDeckType.displayName
-        settings.deckType = newDeckType
-        vc.newShuffle()
-        vc.transmit()
+        let preferredSize = TableDialogController.getPreferredSize(Decks.available.count)
+        let anchor = CGPoint(x: deckType.frame.midX, y: deckType.frame.minY)
+        let popup = PlayingDeckDialog(self, size: preferredSize, anchor: anchor)
+        Logger.logPresent(popup, host: self, animated: true)
     }
 
     // Respond to touch of the 'hand area" touchable label by toggling between present and absent

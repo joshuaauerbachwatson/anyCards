@@ -366,10 +366,6 @@ class ViewController: UIViewController {
             Logger.log("View not dragged, not a Card")
             return
         }
-        if card.isFaceUp && !card.mayTurnOver {
-            Logger.log("Card is in a discard pile and may not be dragged")
-            return
-        }
         if recognizer.state == .began {
             let dragSet = findDragSet(card)
             playingArea.bringSubviewToFront(card)

@@ -16,16 +16,16 @@
 
 import UIKit
 
-// A UIView that is larger than a Card to accommodate a name label and a count label.  Designed to go behind a stack of cards.
-// Cards that overlap a GridBox may snap into it, being placed in accordance with the GridBox's rules.
+// A UIView that is larger than a Card to accommodate a legend area with additional information.  Designed to go behind
+// a stack of cards.  Cards that overlap a GridBox may snap into it, being placed in accordance with the GridBox's rules.
 class GridBox : UIView {
     // Classifies the GridBox according to the rules that apply
     enum Kind {
         case Deck     // All face down, remove only
-        case Discard  // All face up, add only
-        case General  // Potentially mixed, face up added to top and face down to bottom
+        case Discard  // All face up, add at top only.  Removal allowed.
+        case General  // Potentially mixed, face up added to top and face down to bottom.  Removal allowed.
 
-        // Convenience methods to support modification dialogs
+        // Convenience methods to support display and modification dialogs
         var label: String {
             switch self {
             case .Deck:
@@ -37,7 +37,6 @@ class GridBox : UIView {
             }
         }
 
-        // Symbols for compact display of box kind
         var symbol: String {
             switch self {
             case .Deck:
@@ -48,17 +47,8 @@ class GridBox : UIView {
                 return "↑↓"
             }
         }
-
-        var next: Kind {
-            switch self {
-            case .Deck:
-                return .Discard
-            case .Discard:
-                return .General
-            case .General:
-                return .Deck
-            }
-        }
+        
+        static let allKinds : [Kind] = [.Deck, .Discard, .General]
     }
 
     // An variable to save the previous "kind" of a GridBox as it is being changed.
@@ -104,13 +94,13 @@ class GridBox : UIView {
     // A label containing the symbol for the "kind" of the GridBox
     let kindLabel : UILabel
 
-    // A label containing the count of cards currently "on" this GridBox
+    // A label containing the count of cards currently held by this GridBox
     let countLabel : UILabel
 
     // The main view controller, to be consulted for various purposes
     let host : ViewController
 
-    // The cards that are currently "held" by this GridBox.
+    // The cards that are currently held by this GridBox.
     var cards : [Card] {
         return host.cardViews.filter { isHeld($0) }
     }
@@ -130,16 +120,19 @@ class GridBox : UIView {
         nameLabel = UILabel()
         nameLabel.backgroundColor = LabelBackground
         nameLabel.textAlignment = .center
+        nameLabel.adjustsFontSizeToFitWidth = true
         kindLabel = UILabel()
         kindLabel.backgroundColor = ButtonBackground
         kindLabel.textColor = .white
         kindLabel.textAlignment = .center
         kindLabel.font = UIFont.boldSystemFont(ofSize: getTextFont().pointSize)
         kindLabel.adjustsFontSizeToFitWidth = true
+        kindLabel.text = kind.symbol
         countLabel = UILabel()
         countLabel.textColor = CountLabelColor
         countLabel.backgroundColor = LabelBackground
         countLabel.textAlignment = .center
+        countLabel.adjustsFontSizeToFitWidth = true
         self.host = host
         snapFrame = CGRect(origin: origin, size: size)
         let gridFrame = CGRect(x: snapFrame.minX, y: snapFrame.minY, width: snapFrame.width,

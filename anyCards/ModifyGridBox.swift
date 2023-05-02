@@ -122,10 +122,10 @@ class ModifyGridBox : UIViewController {
 
     // Respond to touch of 'kind' field
     @objc func kindTouched() {
-        let next = box.kind.next
-        box.kind = next
-        kind.text = next.label
-        vc.transmit()
+        let preferredSize = TableDialogController.getPreferredSize(GridBox.Kind.allKinds.count)
+        let anchor = CGPoint(x: kind.frame.midX, y: kind.frame.minY)
+        let popup = BoxKindDialog(self, box, size: preferredSize, anchor: anchor)
+        Logger.logPresent(popup, host: self, animated: true)
     }
 
     @objc func ownedTouched() {

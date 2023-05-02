@@ -110,7 +110,7 @@ class Card : UIView {
     // The byUser flag says whether the turn was user initiated.
     func turnFaceDown(_ byUser: Bool = false) {
         if isFaceUp {
-            guard let duration = checkUserInitiated(byUser, false) else {
+            guard let duration = checkUserInitiated(byUser) else {
                 return
             }
             UIView.transition(from: subviews[0], to: makeImageView(back), duration: duration, options: .transitionFlipFromRight)
@@ -122,7 +122,7 @@ class Card : UIView {
     // The byUser flag says whether the turn was user initiated.
     func turnFaceUp(_ byUser: Bool = false) {
         if !isFaceUp {
-            guard let duration = checkUserInitiated(byUser, true) else {
+            guard let duration = checkUserInitiated(byUser) else {
                 return
             }
             UIView.transition(from: subviews[0], to: makeImageView(front), duration: duration, options: .transitionFlipFromLeft)
@@ -131,10 +131,9 @@ class Card : UIView {
     }
 
     // Checks whether a card flip operation was user initiated and returns either an appropriate animation duration
-    // (0 will suppress animation) or nil if the card may not be flipped.  If the card is not flipped, either an
-    // error is posted (attempting to turn over a face-up card in a .Discard box) or the card is dithered (clicking
-    // the top-most card in a .Deck box).
-    func checkUserInitiated(_ byUser: Bool, _ dither: Bool) -> TimeInterval? {
+    // (0 will suppress animation) or nil if the card may not be flipped.  If the card is not flipped, it is dithered
+    // making it no longer a part of the deck and allowing it to be turned over with a second click.
+    func checkUserInitiated(_ byUser: Bool) -> TimeInterval? {
         if !byUser {
             return 0 // no animation when not user initiated but always allowed
         }
@@ -142,22 +141,8 @@ class Card : UIView {
             // If user initiated, must be allowed to turn over
             return FlipTime
         }
-        // User initiated and not authorized.  Either dither or show an error
-        if dither {
-            ditherCard()
-            return nil
-        }
-        // To show an error, we need a view controller.
-        var responder = self.next
-        var vc = responder as? UIViewController
-        while (vc == nil && responder != nil) {
-            responder = responder!.next
-            vc = responder as? UIViewController
-        }
-        if let host = vc {
-            let message = isFaceUp ? MustRemainFaceUp : MustRemainFaceDown
-            bummer(title: MayNotTurnOver, message: message, host: host)
-        }
+        // User initiated and not authorized.  Dither the card instead of turning it over
+        ditherCard()
         return nil
     }
 
