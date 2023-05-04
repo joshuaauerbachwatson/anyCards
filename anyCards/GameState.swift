@@ -25,7 +25,7 @@ class GameState : Codable, Equatable {
     let deckType : PlayingDeckTemplate?
     let handArea : Bool
     // Fields used during play (starting with the first player's first turn)
-    let cards : [CardState]  // The state of each card in the active deck plus all GridBoxes (use empty array before play begins
+    let items : [ItemState]  // The state of each card in the active deck plus all GridBoxes (use empty array before play begins)
     let yielding : Bool      // If true, the transmitting player is yielding control to the next player in turn
     let areaSize : CGSize    // The size of the playing area of the transmitting player (used for rescaling with unlike-sized devices)
 
@@ -66,12 +66,12 @@ class GameState : Codable, Equatable {
     // General initializer, not publicly visible.
     private init(_ players: [Player], _ numPlayers: Int, _ deckType: PlayingDeckTemplate?, _ handArea: Bool,
                  _ yielding: Bool, _ playingArea: UIView?, _ publicArea:  CGRect?) {
-        let cards = playingArea?.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ CardState($0) } ?? []
+        let cards = playingArea?.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemState.make($0) } ?? []
         self.players = players
         self.numPlayers = numPlayers
         self.deckType = deckType
         self.handArea = handArea
-        self.cards = cards
+        self.items = cards
         self.yielding = yielding
         self.areaSize = playingArea?.bounds.size ?? CGSize.zero
     }
@@ -83,7 +83,7 @@ class GameState : Codable, Equatable {
         && lhs.numPlayers == rhs.numPlayers
         && lhs.deckType?.displayName == rhs.deckType?.displayName
         && lhs.handArea == rhs.handArea
-        && lhs.cards == rhs.cards
+        && lhs.items == rhs.items
         && lhs.yielding == rhs.yielding
         && lhs.areaSize == rhs.areaSize
     }
@@ -99,37 +99,95 @@ fileprivate func isEligibleCard(_ maybe: UIView, _ publicArea: CGRect?) -> Bool 
     }
 }
 
-// Represents the state of an individual Card or GridBox
-class CardState : Codable, Equatable {
-    let origin : CGPoint  // The origin of the card or of the SnapFrame for a GridBox
-    let index : Int       // For a card, -1 for a GridBox
-    let faceUp : Bool     // Ignored for a GridBox
-    let name : String?    // nil except for GridBox that has had a name assigned
-
-    // Initializer from a Card or GridBox.  The argument MUST be one of these (ensured by the GameState consructors)
-    init( _ view: UIView) {
-        if let card = view as? Card {
-            origin = card.frame.origin
-            faceUp = card.isFaceUp
-            index = card.index
-            name = nil
-        } else if let box = view as? GridBox {
-            origin = box.snapFrame.origin
-            faceUp = false
-            index = -1
-            name = box.name
-        } else {
-            Logger.logFatalError("Argument to the CardState constructor must be a Card or GridBox; got \(type(of :view)) instead")
-        }
+// Represents the transmissable state common to a Card or GridBox
+class ItemState : Codable, Equatable {
+    let origin : CGPoint // The origin at which the subview was placed by the transmitting instance
+    init(_ view: UIView) {
+        origin = view.frame.origin
     }
 
-    // Decoding initializer is auto-generated
+    static func make(_ item: UIView) -> ItemState {
+        if let card = item as? Card {
+            return CardState(card)
+        }
+        if let box = item as? GridBox {
+            return GridBoxState(box)
+        }
+        Logger.logFatalError("Attempted creation of ItemState from a view that is not a Card or GridBox")
+    }
+
+    static func == (lhs: ItemState, rhs: ItemState) -> Bool {
+        if lhs.origin != rhs.origin {
+            return false
+        }
+        if let lhcard = lhs as? CardState {
+            guard let rhcard = rhs as? CardState else {
+                return false
+            }
+            return lhcard == rhcard
+        }
+        if let lhbox = lhs as? GridBoxState {
+            guard let rhbox = rhs as? GridBoxState else {
+                return false
+            }
+            return lhbox == rhbox
+        }
+        return false
+    }
+}
+
+// Represents the transmissable state unique to a Card
+class CardState : ItemState {
+    var index : Int   // permit overwrite when reordering a restored game state used as a restored setup
+    let faceUp : Bool
+    let mayTurnOver : Bool
+
+    // Initializer from a Card
+    init( _ card: Card) {
+        faceUp = card.isFaceUp
+        index = card.index
+        mayTurnOver = card.mayTurnOver
+        super.init(card)
+    }
+
+    // Required but useless
+    required init(from decoder: Decoder) throws {
+        fatalError("init(from:) has not been implemented")
+    }
 
     // Conform to Equatable protocol
     static func == (lhs: CardState, rhs: CardState) -> Bool {
         lhs.origin == rhs.origin
         && lhs.index == rhs.index
         && lhs.faceUp == rhs.faceUp
+        && lhs.mayTurnOver == rhs.mayTurnOver
+    }
+}
+
+// Represents the transmissable state unique to a GridBox
+class GridBoxState : ItemState {
+    let name : String?
+    let kind : GridBox.Kind
+    let owner : Int
+
+    // Initializer from a GridBox
+    init( _ box: GridBox) {
+        name = box.name
+        kind = box.kind
+        owner = box.owner
+        super.init(box)
+    }
+
+    // Required but useless
+    required init(from decoder: Decoder) throws {
+        fatalError("init(from:) has not been implemented")
+    }
+
+    // Conform to Equatable protocol
+    static func == (lhs: GridBoxState, rhs: GridBoxState) -> Bool {
+        lhs.origin == rhs.origin
         && lhs.name == rhs.name
+        && lhs.kind == rhs.kind
+        && lhs.owner == rhs.owner
     }
 }

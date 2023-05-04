@@ -32,17 +32,6 @@ class SavedSetups : Codable {
         }
     }
 
-    // Get the "next" name, given a current name.  Note that the order is only stable between mutations.
-    func next(_ current: String) -> String? {
-        guard let index = setupNames.firstIndex(of: current), index < setupNames.count - 1 else {
-            Logger.log("\(current) has no 'next'")
-            return nil
-        }
-        let ans = setupNames[index + 1]
-        Logger.log("next(\(current))=\(ans)")
-        return ans
-    }
-
     // Remove item by name
     func remove(_ item: String) {
         Logger.log("remove(\(item))")
@@ -59,6 +48,7 @@ class SavedSetups : Codable {
         let dictionaryFile = getDocDirectory().appendingPathComponent(SavedSetupsFile).path
         FileManager.default.createFile(atPath: dictionaryFile, contents: encoded, attributes: nil)
         Logger.log("Setups successfully saved")
+        Logger.log("savedSetups file contents at save time: \(String(bytes: encoded, encoding: .utf8) ?? "")")
     }
 
     // Store a new entry (name, GameState) in the dictionary.  This may be protected against overwriting
@@ -78,9 +68,9 @@ var savedSetups: SavedSetups = {
     let storageFile = getDocDirectory().appendingPathComponent(SavedSetupsFile)
     do {
         let archived = try Data(contentsOf: storageFile)
+        Logger.log("savedSetups loaded from disk: \(String(bytes: archived, encoding: .utf8) ?? "")")
         let decoder = JSONDecoder()
         let ans = try decoder.decode(SavedSetups.self, from: archived)
-        Logger.log("SavedSetups instance loaded from disk with \(ans.setups.count) entries")
         return ans
     } catch {
         Logger.log("Saved setups not found, a new instance was created")

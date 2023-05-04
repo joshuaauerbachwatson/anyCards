@@ -296,15 +296,18 @@ class ViewController: UIViewController {
         if let gameState = gs {
             let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
             Logger.log("rescale is \(rescale)")
-            for cardState in gameState.cards {
+            for itemState in gameState.items {
                 let newView : UIView
-                if cardState.index >= 0 {
+                if let cardState = itemState as? CardState {
                     newView = findAndFixCard(from: cardState, rescale: rescale)
-                } else {
-                    Logger.log("cards[0].frame.size was \(cards[0].frame.size), now resized to \(cards[0].frame.size * rescale)")
-                    let box = GridBox(origin: cardState.origin * rescale, size: cards[0].frame.size, host: self)
+                } else if let boxState = itemState as? GridBoxState {
+                    let box = GridBox(origin: boxState.origin * rescale, size: cardSize, host: self)
                     newView = box
-                    box.name = cardState.name
+                    box.name = boxState.name
+                    box.owner = boxState.owner
+                    box.kind = boxState.kind
+                } else {
+                    Logger.logFatalError("ItemState must be either a CardState or a GridBoxState")
                 }
                 // Ensure that newView has sufficient pixels overlapping the playing area so as to be easily seen
                 let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
@@ -642,7 +645,8 @@ class ViewController: UIViewController {
         } else {
             card.turnFaceDown()
         }
-        card.frame.origin = from.origin * rescale
+        card.mayTurnOver = from.mayTurnOver
+        card.frame = CGRect(origin: from.origin * rescale, size: cardSize)
         // Cards don't change size, which was set once "suitable for this device."
         return card
     }
@@ -918,7 +922,7 @@ extension ViewController : CommunicatorDelegate {
         } else {
             // This is not the initial player exchange but a move by an active player.  There is a special step for the first move
             //  to determine which deck is being used and to set up the hand area if requested.
-            Logger.log("Received GameState contains \(gameState.cards.count) cards")
+            Logger.log("Received GameState contains \(gameState.items.count) items")
             if !firstYieldOccurred {
                 if let deckType = gameState.deckType {
                     cards = makePlayingDeck(deck, deckType)
@@ -947,6 +951,18 @@ extension ViewController : CommunicatorDelegate {
         settings.hasHands = gameState.handArea
         setupPublicArea(gameState.handArea)
         removePublicCardsAndBoxes()
+        // Randomize the cards in the restored state (leaving grid boxes alone)
+        let cardCount = gameState.items.reduce(into: 0) {count, item in
+            if item is CardState {
+                count += 1
+            }
+        }
+        var newIndices = shuffle(Array<Int>(0..<cardCount))
+        for item in gameState.items {
+            if let cardState = item as? CardState {
+                cardState.index = newIndices.removeFirst()
+            }
+        }
         doLayout(gameState)
     }
 
