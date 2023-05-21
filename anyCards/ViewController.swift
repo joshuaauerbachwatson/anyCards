@@ -844,8 +844,12 @@ extension ViewController : CommunicatorDelegate {
                 let communication = self.settings.communication
                 switch communication {
                 case .ServerBased(let token):
-                    serverGames.remove(token)
-                    self.settings.communication = communication.next
+                    serverTokens.remove(token)
+                    if let otherToken = serverTokens.first?.token {
+                        self.settings.communication = .ServerBased(otherToken)
+                    } else {
+                        self.settings.communication = .MultiPeer
+                    }
                 default:
                     break
                 }

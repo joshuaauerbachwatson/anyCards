@@ -91,7 +91,7 @@ extension SourceDeck {
     }
 }
 
-// List of potentially useful PlayDeckTemplates, and convenience method to cycle thorugh them
+// List of potentially useful PlayDeckTemplates
 class Decks : Codable {
     static let available = [ PlayingDeckTemplate(multiplier: 1, mask: nil, jokers: 0, displayName: "Standard"),
                              PlayingDeckTemplate(multiplier: 1, mask: nil, jokers: 2, displayName: "WithJokers"),

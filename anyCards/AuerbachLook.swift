@@ -131,3 +131,21 @@ func makeLabel(_ color: UIColor, parent: UIView) -> UILabel {
     configureLabel(label, color, parent: parent)
     return label
 }
+
+// Prompt for a string value using an alert controller
+func promptForName(_ vc: UIViewController, title: String, message: String, placeholder: String?,
+                   handler: @escaping (String?)->Void) {
+    let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+    let cancel = UIAlertAction(title: CancelButtonTitle, style: .cancel) { _ in
+        // Do nothing
+    }
+    let useName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
+        handler(alert.textFields?.first?.text)
+    }
+    alert.addTextField() { field in
+        field.placeholder = placeholder
+    }
+    alert.addAction(cancel)
+    alert.addAction(useName)
+    Logger.logPresent(alert, host: vc, animated: true)
+}

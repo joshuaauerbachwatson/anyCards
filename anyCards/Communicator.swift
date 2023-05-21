@@ -73,25 +73,6 @@ enum CommunicatorKind {
             return gameToken
         }
     }
-
-    // Get the "next" kind.  This sequences through the fixed kind (MultiPeer) and uses the server based game
-    // table to sequence through perhaps multiple server based game groups.
-    var next: CommunicatorKind {
-        switch self {
-        case .MultiPeer:
-            if let token = serverGames.pairs.first?.token {
-                return .ServerBased(token)
-            } else {
-                return .MultiPeer
-            }
-        case .ServerBased (let token):
-            if let nextToken = serverGames.next(token)?.token {
-                return .ServerBased(nextToken)
-            } else {
-                return .MultiPeer
-            }
-        }
-    }
 }
 
 // Global function to create a communicator of given kind

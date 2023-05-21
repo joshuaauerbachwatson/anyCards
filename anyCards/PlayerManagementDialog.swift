@@ -44,19 +44,15 @@ class PlayerManagementDialog : UIViewController {
     let localRemoteLabel = UILabel()    // 6th row left
     let localRemote = TouchableLabel()  // 6th row right
     let tokenLabel = UILabel()          // 7th row left
-    let token = UILabel()               // 7th row right
+    let token = TouchableLabel()        // 7th row right
     let editToken = UITextField()       // == token
-    let nickNameLabel = UILabel()       // 8th row left
-    let nickName = UILabel()            // 8th row right
-    let editNickName = UITextField()    // == nickName
-    let nextButton = UIButton()         // 9th row
-    let rememberForgetButton = UIButton() // 10th row
-    let findPlayersButton = UIButton()  // 11th row
+    let saveToken = UIButton()          // 8th row
+    let useSavedToken = UIButton()      // 9th row
+    let findPlayersButton = UIButton()  // 10th row
 
     // editable field tags
     let UserNameTag = 0
     let TokenTag = 1
-    let NicknameTag = 2
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -68,14 +64,42 @@ class PlayerManagementDialog : UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // Convenient check for whether playing is currently local or remote
-    var isRemote: Bool {
+    // Convenient check for whether playing is currently recorded as local or remote
+    var isRemoteRecorded: Bool {
         get {
             switch settings.communication {
             case .ServerBased(_):
                 return true
             case .MultiPeer:
                 return false
+            }
+        }
+    }
+
+    // Convenient check for whether playing is currently intended to be local or remote (can be true when isRemoteRecorded is
+    // false because a valid token may not exist yet).
+    var isRemoteIntended: Bool {
+        get {
+            return localRemote.text == RemoteText
+        }
+    }
+
+    // Controls whether the editing view of the token or the display view is shown
+    var isEditingToken: Bool {
+        get {
+            return !editToken.isHidden
+        }
+        set {
+            if newValue {
+                hide(token)
+                if isRemoteIntended {
+                    unhide(editToken)
+                }
+            } else {
+                hide(editToken)
+                if isRemoteIntended {
+                    unhide(token)
+                }
             }
         }
     }
@@ -114,29 +138,29 @@ class PlayerManagementDialog : UIViewController {
         // Local/remote
         configureLeftLabel(localRemoteLabel, LocalRemoteLabelText)
         configureTouchableLabel(localRemote, target:self, action: #selector(localRemoteTouched), parent: view)
-        localRemote.text = isRemote ? RemoteText : LocalText
+        localRemote.text = isRemoteRecorded ? RemoteText : LocalText
 
         // Token and its label
         configureLeftLabel(tokenLabel, TokenLabelText)
-        configureLabel(token, LabelBackground, parent: view)
+        configureTouchableLabel(token, target: self, action: #selector(tokenTouched), parent: view)
+        if case let CommunicatorKind.ServerBased(savedToken) = settings.communication {
+            token.text = serverTokens.getDisplayFromToken(savedToken)
+        }
         configureEditableField(editToken, TokenTag)
+        hide(editToken)
 
-        // Nickname and its label
-        configureLeftLabel(nickNameLabel, NickNameLabelText)
-        configureLabel(nickName, LabelBackground, parent: view)
-        configureEditableField(editNickName, NicknameTag)
+        // Save token button
+        configureButton(saveToken, title: SaveTokenTitle, target: self, action: #selector(saveTokenTouched), parent: view)
+        hide(saveToken)
 
-        // next button
-        configureButton(nextButton, title: NextTitle, target: self, action: #selector(nextTouched), parent: view)
-
-        // forget button (title will be set/reset elsewhere)
-        configureButton(rememberForgetButton, title: ForgetTitle, target: self, action: #selector(rememberForgetTouched), parent: view)
+        // Use saved token button
+        configureButton(useSavedToken, title: UseSavedTokenTitle, target: self, action: #selector(useSavedTokenTouched), parent: view)
 
         // find players button
         configureButton(findPlayersButton, title: FindPlayersTitle, target: self, action: #selector(findPlayersTouched), parent: view)
 
         // Set remote controls showing or not
-        setRemoteControlsHidden(!isRemote)
+        setRemoteControlsHidden(!isRemoteRecorded)
     }
 
     // When view appears, we do layout
@@ -164,12 +188,9 @@ class PlayerManagementDialog : UIViewController {
         place(tokenLabel, startX, below(localRemote), thirdWidth, ctlHeight)
         place(token, after(tokenLabel), below(localRemote), twoThirdsWidth,  ctlHeight)
         editToken.frame = token.frame
-        nickNameLabel.frame = tokenLabel.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        nickName.frame = token.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        editNickName.frame = nickName.frame
-        place(nextButton, startX, below(nickName), fullWidth, ctlHeight)
-        rememberForgetButton.frame = nextButton.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
-        findPlayersButton.frame = rememberForgetButton.frame.offsetBy(dx: 0, dy: ctlHeight + spacer)
+        place(saveToken, startX, below(token), fullWidth, ctlHeight)
+        place(useSavedToken, startX, below(saveToken), fullWidth, ctlHeight)
+        place(findPlayersButton, startX, below(useSavedToken), fullWidth, ctlHeight)
     }
 
     // Actions
@@ -205,22 +226,16 @@ class PlayerManagementDialog : UIViewController {
         }
     }
 
-    // Respond to touch of the next button by going to the next remembered token
-    @objc func nextTouched() {
-        nextToken()
+    // Respond to touch of the token label by replacing it with an editable text field
+    @objc func tokenTouched() {
+        isEditingToken = true
+        editToken.text = nil
+        editToken.placeholder = TokenPlaceholder
+        editToken.becomeFirstResponder()
     }
 
-    // Respond to touch of the remember / forget button
-    @objc func rememberForgetTouched() {
-        if rememberForgetButton.titleLabel?.text == ForgetTitle {
-            doForget()
-        } else {
-            doTokenSave()
-        }
-    }
-
-    // Logic for saving what the user has entered when editing a token defintion
-    func doTokenSave() {
+    // Respond to touch of the save token button
+    @objc func saveTokenTouched() {
         guard let token = editToken.text, token.count > 0 else {
             bummer(title: MissingToken, message: MissingToken, host: self)
             return
@@ -229,58 +244,27 @@ class PlayerManagementDialog : UIViewController {
             bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
             return
         }
-        serverGames.storeEntry(token, editNickName.text)
-        settings.communication = .ServerBased(token)
-        showToken(editNickName.text, token)
-        editToken.text = nil
-        editNickName.text = nil
-    }
-
-    // Logic for moving to the next token when a token is displayed (assumes the token is not being edited)
-    func nextToken() {
-        if let current = token.text, current.count > 0 {
-            if let nextPair = serverGames.next(current) {
-                showToken(nextPair.nickName, nextPair.token)
-            } else {
-                showBlankToken()
-            }
-        } else if let initialToken = serverGames.first {
-            showToken(initialToken.nickName, initialToken.token)
-        } // else no token was showing and there is no token to show so 'next' is a no-op
-    }
-
-    // Respond to touch of the rememberForget button when it's titled "forget"
-    func doForget() {
-        if token.isHidden {
-            // In edit mode, not yet saved
-            editToken.text = nil
-            editNickName.text = nil
-        } else {
-            // Delete the present entry
-            guard let current = token.text else {
-                return // strange situation, but be robust
-            }
-            nextToken()
-            serverGames.remove(current)
-            if let next = token.text {
-                settings.communication = .ServerBased(next)
-            }
+        promptForName(self, title: SaveTokenTitle, message: SaveTokenMessage, placeholder: NicknamePlaceholder) { nickName in
+            let display = serverTokens.storeEntry(token, nickName)
+            self.settings.communication = .ServerBased(token)
+            self.showToken(token, display)
+            self.editToken.text = nil
+            hide(self.saveToken)
+            self.isEditingToken = false
         }
     }
+
+    // Respond to touch of the use saved button
+    @objc func useSavedTokenTouched() {
+        let preferredSize = TableDialogController.getPreferredSize(serverTokens.pairs.count)
+        let anchor = CGPoint(x: token.frame.midX, y: token.frame.minY)
+        let popup = RestoreTokenDialog(self, size: preferredSize, anchor: anchor)
+        Logger.logPresent(popup, host: self, animated: true)
+     }
 
     // Respond to touch of the find players button
     @objc func findPlayersTouched() {
         Logger.log("Find Players Touched")
-        if !editToken.isHidden && editToken.isFirstResponder {
-            // The button was touched right after entering text; first make sure the
-            // end-of-editing event happens.  This could cause an error dialog.
-            editToken.resignFirstResponder()
-            // Then make sure it succeeded in updating the communication
-            if !isRemote {
-                Logger.log("Find players nullified because token editing was incomplete")
-                return
-            }
-        }
         vc.startPlayerSearch()
         Logger.logDismiss(self, host: vc, animated: true)
     }
@@ -288,45 +272,39 @@ class PlayerManagementDialog : UIViewController {
     // Subroutines
 
     // Show a specific token in this dialog (assumes isRemote is true and that the labels are showing)
-    func showToken(_ name: String?, _ tokenText: String) {
-        unhide(nickName, token, rememberForgetButton)
-        hide(editNickName, editToken)
-        editNickName.text = nil
-        editToken.text = nil
-        nickName.text = name
-        token.text = tokenText
-        settings.communication = .ServerBased(tokenText)
-        rememberForgetButton.setTitle(ForgetTitle, for: .normal)
+    // Arguments are the token and the display value (which may be the same as the token or may incorporate a nickname).
+    func showToken(_ tokenArg: String, _ displayArg: String) {
+        unhide(useSavedToken)
+        token.text = displayArg
+        settings.communication = .ServerBased(tokenArg)
     }
 
     // Show a blank token to be filled in by the user (assumes remote and that the labels are showing)
     func showBlankToken() {
-        unhide(editNickName, editToken)
-        hide(nickName, token, rememberForgetButton) // rememberForget will unhide when there is a valid token
-        nickName.text = nil
+        unhide(useSavedToken)
         token.text = nil
-        editNickName.placeholder = NickNamePlaceholder
-        editToken.placeholder = TokenPlaceholder
         settings.communication = .MultiPeer // until a valid token is available
-        rememberForgetButton.setTitle(SaveTokenTitle, for: .normal)
     }
 
     // Show the appropriate initial token (assuming remote and that the labels are showing)
     func showInitialToken() {
-        if let pair = serverGames.first {
-            showToken(pair.nickName, pair.token)
+        if let pair = serverTokens.first {
+            showToken(pair.token, pair.display)
+            unhide(useSavedToken)
         } else {
             // settings not modified in this case; will be modified later when editing completes
             showBlankToken()
+            hide(saveToken)
+            useSavedToken.isHidden = serverTokens.first == nil
         }
     }
 
     // Set the remote controls hidden or not
     func setRemoteControlsHidden(_ hidden: Bool) {
         if hidden {
-            hide(token, nickName, tokenLabel, nickNameLabel, editNickName, editToken, nextButton, rememberForgetButton)
+            hide(token, editToken, tokenLabel, saveToken, useSavedToken)
         } else {
-            unhide(tokenLabel, nickNameLabel, nextButton, rememberForgetButton)
+            unhide(token, tokenLabel)
             showInitialToken()
         }
     }
@@ -390,9 +368,9 @@ extension PlayerManagementDialog: UITextFieldDelegate {
             return false
         }
         if newLen == GameTokenLength {
-            unhide(rememberForgetButton)
+            unhide(saveToken)
         } else {
-            hide(rememberForgetButton)
+            hide(saveToken)
         }
         return true
     }
@@ -402,10 +380,10 @@ extension PlayerManagementDialog: UITextFieldDelegate {
         if field.tag != TokenTag {
             return true
         }
-        hide(rememberForgetButton)
+        hide(saveToken)
         if let token = field.text, token.count > 0 {
             if validToken(token) {
-                unhide(rememberForgetButton)
+                unhide(saveToken)
                 settings.communication = .ServerBased(token)
             } else {
                 bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
@@ -415,14 +393,16 @@ extension PlayerManagementDialog: UITextFieldDelegate {
         return true
     }
 
-    // Store new value of the player name field
+    // Store new value of the player name field and/or end token editing
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        if textField.tag != UserNameTag {
-            return
-        }
-        if let newText = textField.text, reason == .committed {
-            settings.userName = newText
-            vc.configurePlayerLabels(settings.numPlayers)
+        if textField.tag == UserNameTag {
+            if let newText = textField.text, reason == .committed {
+                settings.userName = newText
+                vc.configurePlayerLabels(settings.numPlayers)
+            }
+        } else {
+            // Assume token
+            isEditingToken = false
         }
     }
 

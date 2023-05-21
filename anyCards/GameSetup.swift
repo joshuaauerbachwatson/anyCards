@@ -182,7 +182,8 @@ class GameSetupDialog : UIViewController {
 
     // Prompt for a saved setup name.  Storing the saved setup will first fail if the name conflicts with an existing
     // saved setup.  In that case there is a second prompt asking if you want to overwrite and the setup will be saved
-    // (overwriting) if you agree.
+    // (overwriting) if you agree.  Note: this shares logic with anyCards.promptForName defined as a utility elsewhere.
+    // However, it is too difficult to reuse that dialog here due to the need to cascade when saving fails.
     func promptForName(_ vc: ViewController) {
         let alert = UIAlertController(title: SaveSetupTitle, message: ChooseNameMessage, preferredStyle: .alert)
         let cancel = UIAlertAction(title: CancelButtonTitle, style: .cancel) { _ in

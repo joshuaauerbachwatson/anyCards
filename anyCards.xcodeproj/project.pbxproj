@@ -22,6 +22,7 @@
 		EE7D378B29FAB833001BED96 /* cardsAndBoxes.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */; };
 		EE7D378D29FEB093001BED96 /* BoxKindDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */; };
 		EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */; };
+		EE7D37932A13C21F001BED96 /* RestoreTokenDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */; };
 		EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8D1E2E270B013900958060 /* ServerExchange.swift */; };
 		EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */; };
 		EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */; };
@@ -45,7 +46,7 @@
 		EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */; };
 		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
 		EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B6E270DCE9B005994FB /* Secrets.swift */; };
-		EEEF9B712716DFAE005994FB /* ServerGames.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* ServerGames.swift */; };
+		EEEF9B712716DFAE005994FB /* ServerTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* ServerTokens.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +66,7 @@
 		EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cardsAndBoxes.png; sourceTree = SOURCE_ROOT; };
 		EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxKindDialog.swift; sourceTree = "<group>"; };
 		EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayingDeckDialog.swift; sourceTree = "<group>"; };
+		EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreTokenDialog.swift; sourceTree = "<group>"; };
 		EE8D1E2E270B013900958060 /* ServerExchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerExchange.swift; sourceTree = "<group>"; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE9028EC26DE962700F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -91,7 +93,7 @@
 		EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTapAndDragRecognizer.swift; sourceTree = "<group>"; };
 		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
 		EEEF9B6E270DCE9B005994FB /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
-		EEEF9B702716DFAE005994FB /* ServerGames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerGames.swift; sourceTree = "<group>"; };
+		EEEF9B702716DFAE005994FB /* ServerTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerTokens.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,10 +159,11 @@
 				EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */,
 				EE90291B26DEE3B100F87FF8 /* Promotions.swift */,
 				EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */,
+				EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */,
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
 				EEEF9B6E270DCE9B005994FB /* Secrets.swift */,
 				EE8D1E2E270B013900958060 /* ServerExchange.swift */,
-				EEEF9B702716DFAE005994FB /* ServerGames.swift */,
+				EEEF9B702716DFAE005994FB /* ServerTokens.swift */,
 				EE90292026DEE6A100F87FF8 /* Stepper.swift */,
 				EE71CA5D29E4473800BEC774 /* TableDialogController.swift */,
 				EE90291A26DEE3B100F87FF8 /* TouchableView.swift */,
@@ -275,6 +278,7 @@
 				EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */,
 				EE90291526DEDF7A00F87FF8 /* MultiPeer.swift in Sources */,
 				EE71CA5029CA1B1300BEC774 /* PlayerManagementDialog.swift in Sources */,
+				EE7D37932A13C21F001BED96 /* RestoreTokenDialog.swift in Sources */,
 				EE90291F26DEE69200F87FF8 /* AuerbachLook.swift in Sources */,
 				EE90291126DEDF7A00F87FF8 /* ViewController.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
@@ -282,7 +286,7 @@
 				EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */,
 				EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */,
 				EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */,
-				EEEF9B712716DFAE005994FB /* ServerGames.swift in Sources */,
+				EEEF9B712716DFAE005994FB /* ServerTokens.swift in Sources */,
 				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
 				EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */,
