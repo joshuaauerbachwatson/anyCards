@@ -140,13 +140,11 @@ class ItemState : Codable, Equatable {
 class CardState : ItemState {
     var index : Int   // permit overwrite when reordering a restored game state used as a restored setup
     let faceUp : Bool
-    let mayTurnOver : Bool
 
     // Initializer from a Card
     init( _ card: Card) {
         faceUp = card.isFaceUp
         index = card.index
-        mayTurnOver = card.mayTurnOver
         super.init(card)
     }
 
@@ -160,7 +158,6 @@ class CardState : ItemState {
         lhs.origin == rhs.origin
         && lhs.index == rhs.index
         && lhs.faceUp == rhs.faceUp
-        && lhs.mayTurnOver == rhs.mayTurnOver
     }
 }
 

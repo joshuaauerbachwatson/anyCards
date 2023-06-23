@@ -67,9 +67,7 @@ class GridBox : UIView {
             case .Discard:
                 makeIntoDiscard()
             case .General:
-                for card in cards {
-                    card.mayTurnOver = true
-                }
+                break
             }
         }
     }
@@ -267,7 +265,6 @@ class GridBox : UIView {
     private func makeIntoDeck() {
         for card in cards {
             card.turnFaceDown()
-            card.mayTurnOver = false
         }
         if previousKind == .Discard {
             reverseCardViews()
@@ -291,7 +288,6 @@ class GridBox : UIView {
     private func makeIntoDiscard() {
         for card in cards {
             card.turnFaceUp()
-            card.mayTurnOver = false
         }
         if previousKind == .Deck {
             reverseCardViews()

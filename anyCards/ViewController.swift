@@ -369,6 +369,10 @@ class ViewController: UIViewController {
             Logger.log("View not dragged, not a Card")
             return
         }
+        if let box = card.box, !box.mayBeModified {
+            box.mayNotModify()
+            return
+        }
         if recognizer.state == .began {
             let dragSet = findDragSet(card)
             playingArea.bringSubviewToFront(card)
@@ -393,8 +397,6 @@ class ViewController: UIViewController {
         // At the end, we adjust the cards individually
         if recognizer.state == .ended {
             for draggedCard in card.dragSet {
-                // Let card be turned over assuming it isn't snapped up by a restrictive GridBox
-                draggedCard.mayTurnOver = true
                 // Let a box snap up card if appropriate
                 let rejectedDecks = draggedCard.maybeBeSnapped(boxViews)
                 // Make sure an unsnapped card isn't covering too much of a rejected deck
@@ -645,7 +647,6 @@ class ViewController: UIViewController {
         } else {
             card.turnFaceDown()
         }
-        card.mayTurnOver = from.mayTurnOver
         card.frame = CGRect(origin: from.origin * rescale, size: cardSize)
         // Cards don't change size, which was set once "suitable for this device."
         return card

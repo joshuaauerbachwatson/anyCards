@@ -26,9 +26,26 @@ class Card : UIView {
     // Says whether the card is face up or not
     var isFaceUp = false
 
+    // Provide the owning box or nil if none
+    var box: GridBox? {
+        guard let playingArea = self.superview else {
+            return nil
+        }
+        if let subview = playingArea.subviews.first(where: {
+            $0 is GridBox && self.frame.origin == ($0 as? GridBox)?.snapFrame.origin }) {
+            return subview as? GridBox
+        }
+        return nil
+    }
+
     // Says whether the card is allowed to turn over.  A card that belongs to a .Deck or .Discard box may not be turned
     // over until it is dragged from the box.
-    var mayTurnOver = true
+    var mayTurnOver: Bool {
+        if let box = box {
+            return box.kind == .General
+        }
+        return true
+    }
 
     // Store the two images
     private let front: UIImage
@@ -96,9 +113,6 @@ class Card : UIView {
         for (box, overlap) in zip(boxes, overlapAreas) {
             if overlap == maxOverlap {
                 box.snapUp(self)
-                if box.kind != .General {
-                    mayTurnOver = false
-                }
                 return []
             }
         }
@@ -137,6 +151,10 @@ class Card : UIView {
         if !byUser {
             return 0 // no animation when not user initiated but always allowed
         }
+        if let box = box, !box.mayBeModified {
+            box.mayNotModify()
+            return nil
+        }
         if mayTurnOver {
             // If user initiated, must be allowed to turn over
             return FlipTime
@@ -150,7 +168,6 @@ class Card : UIView {
     // after which it is eligible to turn over
     func ditherCard() {
         frame.origin = frame.origin + CGPoint(x: SnapThreshhold, y: SnapThreshhold)
-        mayTurnOver = true
     }
 
     // Make a new image view from an image, sizing it to fill the view.  The result is intended to be used as the sole subview of the card, replacing the
