@@ -10,7 +10,7 @@ body {
 
 img {
 	float: left;
-	margin: 12px;
+	margin: 15px;
 }
 </style>
 </head>
@@ -39,10 +39,8 @@ img {
 	</h2>
 
 	<p>
-		<em>AnyCards</em> provides a virtual table-top that is shared across
-		devices. It also provides a virtual deck of cards which can be of a
-		number of different sizes (but always made up of standard cards
-		with or without jokers). It allows you to move and turn over cards,
+		<em>AnyCards</em> provides a virtual cardtable surface that is shared across
+		devices, and a virtual deck of cards.  It allows you to move and turn over cards,
         make boxes to hold stacks of cards, and do routine moves like dealing or
         taking up a hand.
 	</p>
@@ -90,7 +88,7 @@ img {
 		game (deal out the cards, do whatever else is required).  The leader also sets the number of players
 		that are expected. Touch the blue text to the right of the <b>Are you leader?</b> label to
 		toggle back and forth between being the leader and not.  Notice that the <b>Number of players</b>
-		stepper appears and disappears accordingly, as does the <b>Game Setup</b> button at the top of
+		stepper appears and disappears accordingly, as does the <b>Setup Game</b> button at the top of
 		the app window (not shown in the picture).
 	</p>
 		  
@@ -100,7 +98,7 @@ img {
 	</p>
 		
 	<p>
-		There are two ways for players to connect to each other (the <b>Player source</b>), called <b>Nearby
+		There are two ways for players to connect to each other (the <b>Players source</b>), called <b>Nearby
 			only</b> and <b>Entire internet</b>. One of these modes is shown in blue.
 		Touching the blue text toggles between the two modes.  All players must select the same mode.
 	</p>
@@ -121,8 +119,10 @@ img {
 	<p>
 		When you switch to <b>Entire Internet</b> mode, the players can be
 		anywhere, as long as they each have an internet connection active on
-        their device. Some additional fields and buttons will appear. At least the <b>Token</b>
-		field must be filled in.  Every player must fill in the same value.
+        their device. An additional <b>Token</b> field (and sometimes additional buttons) will appear as
+        in the picture. <img
+            alt="entire internet mode" src="./playerDialogInternet.png">
+		All players must touch the token field and then fill it in using the same value.
 		Once this is true, all players can touch <b>Find Players</b> and move on to actual play.
 	</p>
 	<ul>
@@ -131,36 +131,41 @@ img {
             crash your game and groups of players don't collide with each other.</li>
 		<li>The game token must be made up of letters and numbers only.  Upper and lower
 		case letters are distinct (case is meaningful).</li>
-		<li>The game token must be exactly 12 characters long.</li>
-        <li>On the other hand, the token isn't used to protect your device or your personal data so it is
-            ok to contain words that help players remember it, as long as this doesn't make it too likely to
-            collide with other groups.  For example, <b>JohnAndAlice</b> would be a poor choice of token but
-            <b>JohnAlice657</b> is probably adequate.
+        <li>The token must be exactly 12 characters long.  The entry field will stop accepting new characters when 12
+            have been entered.  If there are too few, there will be an error popup when you exit text entry or press the
+        <b>Find Players</b> button.</li>
         </li>
 	</ul>
-	
-	<h4>Nicknames</h4>
-	<p>
-		You will also have an opportunity to enter your own nickname for the token.  This text is
-		not transmitted and other players don't have to choose the same nickname or any nickname
-		at all.  This optional field is provided to aid the process of remembering and retrieving
-		tokens.
-	</p>
-	
 	<h4>Remembering and retrieving tokens</h4>
 	<p>
 		Since it takes some effort for a group to come up with a token and for all players to enter it,
-		AnyCards provides the ability to remember tokens (and their associated nicknames).  
+		AnyCards provides the ability to remember tokens.  A remembered token can have a "nickname" to help you remember
+        its purpose.
+        <img alt="remember token dialog" src="./rememberTokenDialog.png">
 	</p>
 	<ul>
-		<li>The <b>Show Next Token</b> button cycles through the remembered tokens.  The cycle includes an
-            entry area for a new token.</li>
-        <ul><li>if you have remembered tokens and want to enter a new one, you must cycle through the list until you get to
-            the entry area.  It is not possible to type over the displayed remembered tokens</li></ul>
-		<li>The <b>Forget this Token</b> will drop a remembered token from the list.</li>
-		<li>As soon as you have entered a new valid token, the <b>Remember this Token</b> button will appear
-		and give you an opportunity to add it to the list.</li>
-   </ul>
+		<li>When a valid and complete token has been entered, an
+			additional <b>Remember this Token</b> button will appear. If you
+			touch this button, you will get a confirmation dialog that looks like
+			the picture. Touch <b>Confirm</b> to remember the token.  If you wish, you can
+			first enter text in the optional "nickname" field.  This will associate a nickname
+			to remind you of the purpose of the token. You can remember multiple tokens.
+		</li>
+		<li>If you have any remembered tokens, one of them will appear in
+			the <b>Token</b> field the next time you open the <b>Players</b>
+			dialog. There will also be another button labelled <b>Use saved
+				token</b>. Touching this button will bring up a selection list from
+			which you can select any of your saved tokens. You can also delete
+			saved tokens from this selection list by sliding the selection left
+			to reveal a delete button.
+		</li>
+		<li>When tokens have assigned nicknames, they appear in the <b>Token</b>
+			field (and in the selection list for using saved tokens) with the
+			nickname before the token, separated by a colon (e.g. <b>Bilbo:
+				Bilbobaggins</b>). Only the token is shared with other players, however.
+			The nickname is just for your private use and is always optional.
+		</li>
+	</ul>
 
     <br>
     <hr>
@@ -168,68 +173,317 @@ img {
         <a name="Basics">Card Manipulation Basics</a>
     </h2>
     <img alt="cards and boxes examples" src="./cardsAndBoxes.png">
-    <p>
-        To familiarize yourself with how to move cards and use boxes, it is helpful to go to the <b>Players</b> dialog, set yourself as leader, and set the number of players to 1 ("solitaire mode").  Then you can experiment with the features discussed here.
-    </p>
-    <p>
-        The illustration shows examples of cards (three face up and one face down) as well as one box.  The box has been given the name "Deck" and contains 48 cards.  You can reproduce this picture as an initial exercise.  The particular card faces
-            will differ from the illustration because every initial deck is shuffled randomly.  You will already have the box
-            called "Deck" with 52 cards in it.  Drag four cards off the deck (non-overlapping at first).  Tap three of the cards
-            to turn them over.  Then drag the three face-up cards so they overlap as in the illustration.
-    </p>
-    <p>Some Details follow.
-    <h3>Turning cards over</h3>
-    <p>
-        Tapping a card that is not covered by other cards will cause it to turn over, unless the card is the top card of a deck or discard box.  For the top card of a deck box, tapping simply "dislodges" it from the box, allowing it to turned over with a second tap.  The top card of a discard box cannot be removed or turned over.
-    </p>
-    <h3>Bringing cards to the front</h3>
-    <p>
-        Tapping a card that is partly covered by other cards will bring the card to the front so that it is no longer covered.
-        After that it can be tapped again to turn it over or it can be dragged by itself.  A card that is completely covered by
-        other cards (so that it cannot be tapped) remains covered until the covering cards are removed.
-    </p>
-    <h3>Dragging cards</h3>
-    <p>
-        Cards may be dragged around the table-top view as part of play.  If a card is not covered by any other card, it will be
-        dragged by itself.  If a card is partly covered by other cards, the cards covering the dragged card are dragged with it.
-        In addition, cards that cover any other card being dragged will also be dragged.  So, in the illustration, if you drag
-        the three of hearts, the seven and eight of spades will move with it.  If you drag the seven of spades, the eight will move
-        with it but the three of hearts will not.  By first tapping either of the partly covered cards you change the relationship,
-        of course.  So, if you first tap the three of hearts to bring it to the front, and then drag it, it will move by itself.
-    </p>
-    <h3>Boxes</h3>
-    <p>
-        Boxes hold cards.  They can be moved (their cards move with them) and have certain other helpful properties.  There are
-        three kinds of boxes.
-    </p>
-    <p><em>Deck</em> boxes contain only face down cards.  Cards may not be added to them.  The top card cannot be turned over in
-    place but it can be moved entirely or partially off the box, after which it becomes an ordinary card.  The deck box in the
-    illustration happens to have the name "Deck", too, but, in general, a box's name is distinct from its kind.  The main playing
-    deck of a game is called "Deck" by default.</p>
-    <p><em>Discard</em> boxes
+	<p>
+		To familiarize yourself with how to move cards and use boxes, it is
+		helpful to go to the <b>Players</b> dialog, set yourself as leader,
+		and set the number of players to 1 ("solitaire mode"). Then you can
+		experiment with the features discussed here.
+	</p>
+	<p>The illustration shows examples of cards (both face up and face
+		down) and boxes which contain cards. As you work through the details
+		of this section, you should eventually be able to reproduce the
+		illustration pretty closely (suits and denominations will differ
+		because cards are always shuffled randomly).</p>
+	<p>Some Details follow.
+	
+	<h3>Turning cards over</h3>
+	<p>Tapping a card that is not covered by other cards will cause it
+		to turn over, unless the card is the top card of a deck or discard
+		box. For those specical cases, tapping the top card simply "dislodges"
+		it from the box, allowing it to turned over with a second tap or moved
+		away.</p>
+	<h3>Bringing cards to the front</h3>
+	<p>Tapping a card that is partly covered by other cards will bring
+		the card to the front so that it is no longer covered. After that it
+		can be tapped again to turn it over or it can be dragged by itself. A
+		card that is completely covered by other cards (so that it cannot be
+		tapped) remains covered until the covering cards are removed.</p>
+	<h3>Dragging cards</h3>
+	<p>Cards may be dragged around the table-top view as part of play.
+		If a card is not covered by any other card, it will be dragged by
+		itself. If a card is partly covered by other cards, the cards covering
+		the dragged card are dragged with it. In addition, cards that cover
+		any other card being dragged will also be dragged. So, in the
+		illustration, if you drag the nine of diamonds, the king and seven of
+		diamonds move with it. If you drag the king, the seven will move with
+		it but the nine will not. By first tapping either of the partly
+		covered cards you change the relationship, of course. So, if you first
+		tap the nine to bring it to the front, and then drag it, it will move
+		by itself.</p>
 
-    <br>
+	<h3>Boxes</h3>
+
+	<p>Boxes hold cards. They also have a "legend" containing an
+		optional name label, an access-style indicator (up and/or down arrows),
+		and a number (in red) indicating how many cards the box is currently
+		holding.  The access-style indicator is explained below.</p>
+
+	<p>Cards are added by dragging them until they partially overlap
+		the box, at which point they "snap in." Boxes can be moved (their
+		cards move with them). To move a box, grab it in the legend area
+		(grabbing the card area is interpreted as grabbing the top card).</p>
+
+	<p>
+		The leader's initial view of a game, prior to setup, always includes a
+		box called "Deck" with all the cards of the playing deck in it. Other
+		boxes are produced by <em>dealing</em> and by requesting creation of a
+		box (see below).
+	</p>
+
+	<h4>Box access styles</h4>
+
+	<p>The access-style indicator consists of an arrow pointing toward the
+		cards, an arrow pointing away from the cards, or both. Roughly, these
+		indicate that you would mostly be adding cards, mostly removing cards,
+		or both. But, the rules are a little more complex, with the purpose of
+		avoiding common playing errors.</p>
+
+	<p>
+		A box with just the "away" pointing arrow is called a <em>Deck</em>.
+		It may contain only face down cards. Cards may not be added to it. The
+		top card cannot be turned over in place but it can be moved entirely
+		or partially off the box, after which it becomes an ordinary card. The
+		deck box in the illustration happens to have the name "Deck", too,
+		but, in general, a box's name is distinct from its access-style.
+	</p>
+
+	<p>
+		A box with just the "toward" pointing arrow is called a <em>Discard</em>
+		box. It may contain only face-up cards. Cards may be added by dragging
+		them onto the box (and will automatically turn face up). The top card
+		may also be dragged off (but not turned over in place). In most games,
+		removing a card from a discard box is an unusual move but it isn't
+		forbidden.
+	</p>
+
+	<p>
+		The presence of both arrows indicates a <em>General</em> box. It may
+		contain both face up and face down cards. If face up cards are added
+		they go to the top of the pile and remain face up. If face down cards
+		are added they go to the bottom and remain face down.
+	</p>
+	
+	<h4>Box ownership</h4>
+
+	<p>In some games, after a deal, there may be a box for each player.
+		A common error in such games is drawing or turning over a card from
+		the wrong box. To avoid these errors, a box may be owned by a specific
+		player. Only that player may add or remove cards, turn over the top
+		card, or change the box's characteristics. Boxes become owned as a
+		result of dealing (this feature can be turned off in the dealing
+		dialog), at creation time (in which case they are owned by the
+		creator), or in the box modification dialog.</p>
+		
+	<h4>Creating and modifying boxes</h4>
+    <img alt="box modify dialog" src="./boxModifyDialog.png">
+
+	<p>You can create a box using a long press in an area where there
+		is room for the box. There will usually be room unless there are
+		multiple other boxes nearby. Only other boxes can interfere with box
+		creation; if there are cards overlapping the new box they are
+		immediately "snapped" up into the box.</p>
+
+	<p>Before actualy creating the box, you will be presented with a
+		dialog that looks like the picture. You can set the access style (or
+		"kind of box") to "General", "Deck", or "Discard". You can also
+		specify the name of the box, and indicate whether you want to own the
+		box.</p>
+
+	<img alt="box menu dialog" src="./boxMenu.png">
+	<p>Once a box is created (unless it is owned by another player),
+		you can access special actions for it by tapping in the legend. A long
+		press on the cards will also bring up the dialog. The result will look
+		something like the nearby picture. Not all of the buttons in the
+		picture will necessarily appear, depending on the state of the box and
+		of the game.</p>
+
+	<p>The <b>Take Hand</b> action only appears if the game has been set up with a private
+	hand area.  The result is to move all the cards of the box into the private hand area and
+	delete the box.  This action is typically performed by each player after a deal in a game that
+	has private hands.</p>
+	
+	<p>The <b>Turn Over</b> action applies only to "Deck" and "Discard" boxes.  It changes the former
+	into the latter (and vice versa) while reversing the order of the cards, exactly as if you turned
+	the pile of cards over in its entirety.</p>
+	
+	<p>The <b>Shuffle</b> action randomizes the order of cards in the box without changing anything else
+	about it.  Note that the initial "Deck" box at the start of a game is already shuffled.  But, shuffling
+	may be appropriate at other times.</p>
+	
+	<img alt="dealing dialog" src="./dealingDialog.png">
+	
+	<p>
+		The <b>Deal</b> action produces new boxes from some or all of the
+		contents of an existing one. The details of the deal are guided by a
+		secondary dialog as shown in the picture.  The <b>Deal</b> action is not
+		offered if the area where cards are normally dealt contains any cards or boxes.
+		This area will always be empty at the start of the setup phase of a game.  The
+		area is at the bottom of playing area (above the private hand area if there is one)
+		and occupies the width of the screen for the height necessary fit boxes.</p>
+
+	<p>Use the
+		first stepper to set the number of hands and the second one to set the size of each hand.
+		The <b>Owned</b> indicator defaults to <b>Yes</b> but you can set it to <b>No</b> if 
+		you do not want the resulting hands (which are in the form of boxes) to be owned by individual
+		players.</p>
+
+	<p>
+		The <b>Modify</b> action brings up the dialog shown earlier for box
+		creation. it allows you to change a box's name, access style, or <b>Owned</b>
+		indicator. But, note that you will not be able to get to this point if
+		the box is owned by a player other than you. So, in practice this
+		allows you give up ownership if you own the box, or to take ownership
+		of an unowned box.
+	</p>
+
+	<p>
+		The <b>Delete</b> action deletes a box. Note that this does not delete
+		the cards that are in the box. They are left in place in an ordinary
+		"pile" from which they can then be moved in accordance with the
+		general rules for cards. To undo this action, a long press on the pile
+		of cards will bring up the box creation dialog and cause the cards
+		left in the pile to belong to the new box (a newly created box always
+		"snaps up" cards that it overlaps).
+	</p>
+	
+	<h3>Private hands</h3>
+
+	<p>Depending on how the game is set up, there may be a private hand
+		area at the bottom of the screen (separated from the playing area by a
+		horizonal line). You can drag cards into and out of this area. A card
+		will "snap into" the private area if more than half its height falls
+		within that area or will "snap out" (back into the public area) if
+		less than half its height is there. Cards in the private area are not
+		visible to other players. Bear in mind that cards do not turn over
+		automatically when snapping in or out of the private area (if they are
+		face up they remain face up). Often you will want to drag a card into
+		the private area while it is face down and only turn it over once it
+		is in the private area.</p>
+
+	<p>
+		Dealing produces boxes of face down cards rather than immediately populating
+		the private area. In some games (e.g. War) players play from piles
+		(boxes) of cards and not from hands per se. The <b>Take Hand</b>
+		action in the box action dialog will transfer an entire box of cards
+		to the private area while fanning them out and turning them over. This
+		is typically done by each player in turn after a deal.
+	</p>
+
+	<br>
 	<hr>
 	<h2>
 		<a name="Setup">Setting up a Game</a>
 	</h2>
     <img alt="initial game setup" src="./gameSetupDialogInitial.png">
-    <p>
-        As discussed previously, exactly one player will have the role of leader.  That player will have a <b>Setup Game</b>
-        button.  This button may be used either before connecting the players or afterwards, but, in either case, it is considered
-        to be part of the leader's first turn to play (the leader always plays first).  When the leader finishes setting up,
-        the leader can yield to the next player (who then has the first real move in the game) or the leader may take that first
-        move and then yield.  Once the leader's first turn ends, the <b>Setup Game</b> button is no longer displayed.
-    </p>
-    <p>
-        If you are in the role of leader, touch <b>Setup Game</b>.  You should see something like what is shown in the
-        illustration.
-    </p>
+
+	<p>
+		As discussed previously, exactly one player will have the role of
+		leader. That player will have a <b>Setup Game</b> button. Touching
+		this button brings up a dialog, as shown. The actions in the dialog
+		may be only part of what it means to set up the game. Other chores
+		might consist of making additional boxes and arranging both cards and
+		boxes in the appropriate configuration for the game.
+	</p>
+
+	<p>
+		Setting up a game may be done either before connecting the players or
+		afterwards, but, in either case, the setup phase is considered to be
+		part of the leader's first turn to play (the leader always plays
+		first). When the leader finishes setting up, the leader can yield to
+		the next player (who then has the first real move in the game) or the
+		leader may take that first move and then yield. Once the leader's
+		first turn ends, the <b>Setup Game</b> button is no longer displayed.
+	</p>
+
+	<p>
+		The <b>Deck Type</b> decides the repertoire of cards that will be part
+		of the game. The <b>Standard</b> deck consists of the 52 cards, ace
+		through king, of suites spades, hearts, diamonds and clubs, with no
+		jokers. In general, the playing deck can have any subset of these
+		cards and up to two jokers. The repertoire can then be multiplied,
+		duplicating each card the desired number of times.
+	</p>
+	
+	<p>
+		In practice, the capability to design an arbitrary deck is not
+		exposed to users, so you have to select from a set of named decks,
+		which you can do by first touching the current selection to bring up
+		the complete list, then touching the desired selection.
+		<dl>
+		<dt>WithJokers</dt><dd>adds two jokers to the standard deck</dd>
+		<dt>Double</dt><dd>has two of each card in the standard deck</dd>
+		<dt>DoubleWithJokers</dt><dd>has two of each card in the <b>WithJokers</b> deck</dd>
+		<dt>Piquet</dt><dd>omits the face cards two through six from the standard deck, leaving 32
+		cards, as in the game of Piquet</dd>
+		<dt>Euchre</dt><dd>omits the face cards two through eight from the standard deck, leaving 24
+		cards, as in the game of Euchre</dd>
+		<dt>Bezique</dt><dd>the <b>Piquet</b> deck with two of each card (64 cards, as in the game of
+		Bezique)</dd>
+		<dt>Pinochle</dt><dd>the <b>Euchre</b> deck with two of each card (48 cards, as in the game of
+		Pinochle)</dd>
+		</dl>
+		In the future, we will add more deck types, and will likely add the ability to
+		design your own decks, but the details are not decided yet.
+	</p>
+	
+	<p>
+		The <b>Private Hand Area</b> control determines whether there is an area reserved at the
+		bottom of the screen that is private to each player and not shared.  Touch the current
+		setting to toggle between <b>Present</b> and <b>Absent</b>.
+	</p>
+
+	<p>
+		The <b>Deal</b> action opens the dealing dialog on the one box on the
+		screen that has the name "Deck" (this box is always present in a new game
+		that has not yet been set up). It allows you to create new deck boxes
+		containing the "hands" for the game.  These may be left as boxes or converted
+		into actual hands (in the private hand area) by each player on his first turn.
+	</p>
+
+	<p>
+		The <b>Save As</b> action permits you to save the current game setup
+		for later use, assigning it a name to remember it by. Note that the
+		entire state of the screen is saved, not just the attributes
+		controlled by this dialog. So, a common practice is to first use the
+		dialog to establish the deck type and private hand setting and to deal
+		the cards. Then, exit the dialog and perform other actions (like
+		creating discard boxes and positioning things on the screen). Then
+		return to the setup dialog and save the setup.
+	</p>
+
+	<p>
+		The <b>Use Saved Setup</b> action brings up a list of saved setups which you can
+		select by name.  The saved setup will replace current game state.  This dialog
+		also allows you delete saved setups by sliding entries to the left to reveal a delete
+		button (a common iOS interaction paradigm).
+	</p>
+	
+	<p>
+		It is useful to understand what is and isn't saved and restored when you use this capability.
+		The exact card denominations are <em>not</em> restored as such (otherwise you would be playing
+		the identical shuffle and deal over and over again).  Rather, the positions of all the cards and boxes,
+		the properties of the boxes, and which cards are face up or face down are restored, but then the
+		actual cards are re-shuffled within this framework so that you are always playing with a fresh
+		shuffle and deal.  
+	</p>
+	
+	<p>
+		The <b>Reset</b> action restores the playing area to its state prior to dealing or moving any 
+		cards.  This is useful if you make a hard-to-undo mistake while setting up a game.
+	</p>
+	
 	<br>
 	<hr>
 	<h2>
 		<a name="Playing">Playing and Ending a Game</a>
 	</h2>
+
+    <img alt="leader's first turn" src="./firstTurn.png">
+    <img alt="another player's turn" src="./secondTurn.png">
+
+	<p>Once the players have found each other, the top area of the
+	leader's screen will look like the first picture and other players will have a top area that looks
+	more like the second picture.
 
     <br>
 	<hr>

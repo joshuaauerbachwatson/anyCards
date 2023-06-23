@@ -23,6 +23,8 @@
 		EE7D378D29FEB093001BED96 /* BoxKindDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */; };
 		EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */; };
 		EE7D37932A13C21F001BED96 /* RestoreTokenDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */; };
+		EE7D37952A1BCE8F001BED96 /* playerDialogInternet.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D37942A1BCE8F001BED96 /* playerDialogInternet.png */; };
+		EE7D37972A1BE0F2001BED96 /* rememberTokenDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D37962A1BE0F2001BED96 /* rememberTokenDialog.png */; };
 		EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8D1E2E270B013900958060 /* ServerExchange.swift */; };
 		EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */; };
 		EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */; };
@@ -47,6 +49,9 @@
 		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
 		EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B6E270DCE9B005994FB /* Secrets.swift */; };
 		EEEF9B712716DFAE005994FB /* ServerTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* ServerTokens.swift */; };
+		EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */; };
+		EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C62A30B91D00226F07 /* boxMenu.png */; };
+		EEF0E7C92A3B812500226F07 /* dealingDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C82A3B812500226F07 /* dealingDialog.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -67,6 +72,8 @@
 		EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxKindDialog.swift; sourceTree = "<group>"; };
 		EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayingDeckDialog.swift; sourceTree = "<group>"; };
 		EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreTokenDialog.swift; sourceTree = "<group>"; };
+		EE7D37942A1BCE8F001BED96 /* playerDialogInternet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playerDialogInternet.png; sourceTree = SOURCE_ROOT; };
+		EE7D37962A1BE0F2001BED96 /* rememberTokenDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rememberTokenDialog.png; sourceTree = SOURCE_ROOT; };
 		EE8D1E2E270B013900958060 /* ServerExchange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerExchange.swift; sourceTree = "<group>"; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE9028EC26DE962700F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -94,6 +101,9 @@
 		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
 		EEEF9B6E270DCE9B005994FB /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		EEEF9B702716DFAE005994FB /* ServerTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerTokens.swift; sourceTree = "<group>"; };
+		EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxModifyDialog.png; sourceTree = SOURCE_ROOT; };
+		EEF0E7C62A30B91D00226F07 /* boxMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxMenu.png; sourceTree = SOURCE_ROOT; };
+		EEF0E7C82A3B812500226F07 /* dealingDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dealingDialog.png; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,9 +144,14 @@
 				EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */,
 				EE9028FD26DEDF7A00F87FF8 /* Base.lproj */,
 				EE9028F126DE962700F87FF8 /* Info.plist */,
+				EEF0E7C62A30B91D00226F07 /* boxMenu.png */,
+				EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */,
 				EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */,
 				EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */,
 				EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */,
+				EEF0E7C82A3B812500226F07 /* dealingDialog.png */,
+				EE7D37962A1BE0F2001BED96 /* rememberTokenDialog.png */,
+				EE7D37942A1BCE8F001BED96 /* playerDialogInternet.png */,
 				EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */,
 				EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */,
 				EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */,
@@ -242,11 +257,16 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE7D37952A1BCE8F001BED96 /* playerDialogInternet.png in Resources */,
 				EE90290C26DEDF7A00F87FF8 /* Base.lproj in Resources */,
+				EE7D37972A1BE0F2001BED96 /* rememberTokenDialog.png in Resources */,
+				EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */,
 				EE7D378929FAB82A001BED96 /* gameSetupDialogInitial.png in Resources */,
+				EEF0E7C92A3B812500226F07 /* dealingDialog.png in Resources */,
 				EE71CA5229D3324A00BEC774 /* playerDialogInitial.png in Resources */,
 				EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */,
 				EE90290E26DEDF7A00F87FF8 /* Assets.xcassets in Resources */,
+				EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */,
 				EE7D378B29FAB833001BED96 /* cardsAndBoxes.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
