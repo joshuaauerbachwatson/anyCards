@@ -296,18 +296,17 @@ class ViewController: UIViewController {
         if let gameState = gs {
             let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
             Logger.log("rescale is \(rescale)")
-            for itemState in gameState.items {
+            for itemHolder in gameState.items {
                 let newView : UIView
-                if let cardState = itemState as? CardState {
+                switch (itemHolder) {
+                case .Card(let cardState):
                     newView = findAndFixCard(from: cardState, rescale: rescale)
-                } else if let boxState = itemState as? GridBoxState {
+                case .Box(let boxState):
                     let box = GridBox(origin: boxState.origin * rescale, size: cardSize, host: self)
                     newView = box
                     box.name = boxState.name
                     box.owner = boxState.owner
                     box.kind = boxState.kind
-                } else {
-                    Logger.logFatalError("ItemState must be either a CardState or a GridBoxState")
                 }
                 // Ensure that newView has sufficient pixels overlapping the playing area so as to be easily seen
                 let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
@@ -958,14 +957,20 @@ extension ViewController : CommunicatorDelegate {
         removePublicCardsAndBoxes()
         // Randomize the cards in the restored state (leaving grid boxes alone)
         let cardCount = gameState.items.reduce(into: 0) {count, item in
-            if item is CardState {
+            switch(item) {
+            case .Card:
                 count += 1
+            case .Box:
+                break
             }
         }
         var newIndices = shuffle(Array<Int>(0..<cardCount))
         for item in gameState.items {
-            if let cardState = item as? CardState {
+            switch item {
+            case .Card(let cardState):
                 cardState.index = newIndices.removeFirst()
+            case .Box:
+                break
             }
         }
         doLayout(gameState)

@@ -25,7 +25,7 @@ class GameState : Codable, Equatable {
     let deckType : PlayingDeckTemplate?
     let handArea : Bool
     // Fields used during play (starting with the first player's first turn)
-    let items : [ItemState]  // The state of each card in the active deck plus all GridBoxes (use empty array before play begins)
+    let items : [ItemHolder]  // The state of each card in the active deck plus all GridBoxes (use empty array before play begins)
     let yielding : Bool      // If true, the transmitting player is yielding control to the next player in turn
     let areaSize : CGSize    // The size of the playing area of the transmitting player (used for rescaling with unlike-sized devices)
 
@@ -66,7 +66,7 @@ class GameState : Codable, Equatable {
     // General initializer, not publicly visible.
     private init(_ players: [Player], _ numPlayers: Int, _ deckType: PlayingDeckTemplate?, _ handArea: Bool,
                  _ yielding: Bool, _ playingArea: UIView?, _ publicArea:  CGRect?) {
-        let cards = playingArea?.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemState.make($0) } ?? []
+        let cards = playingArea?.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemHolder.make($0) } ?? []
         self.players = players
         self.numPlayers = numPlayers
         self.deckType = deckType
@@ -99,45 +99,44 @@ fileprivate func isEligibleCard(_ maybe: UIView, _ publicArea: CGRect?) -> Bool 
     }
 }
 
-// Represents the transmissable state common to a Card or GridBox
-class ItemState : Codable, Equatable {
-    let origin : CGPoint // The origin at which the subview was placed by the transmitting instance
-    init(_ view: UIView) {
-        origin = view.frame.origin
-    }
+enum ItemHolder: Codable, Equatable {
+    case Box(GridBoxState)
+    case Card(CardState)
 
-    static func make(_ item: UIView) -> ItemState {
+    static func make(_ item: UIView) -> ItemHolder {
         if let card = item as? Card {
-            return CardState(card)
+            return .Card(CardState(card))
         }
         if let box = item as? GridBox {
-            return GridBoxState(box)
+            return .Box(GridBoxState(box))
         }
-        Logger.logFatalError("Attempted creation of ItemState from a view that is not a Card or GridBox")
+        Logger.logFatalError("Attempted creation of ItemHolder from a view that is not a Card or GridBox")
     }
 
-    static func == (lhs: ItemState, rhs: ItemState) -> Bool {
-        if lhs.origin != rhs.origin {
-            return false
-        }
-        if let lhcard = lhs as? CardState {
-            guard let rhcard = rhs as? CardState else {
+    // Conform to Equatable protocol
+    static func == (lhs: ItemHolder, rhs: ItemHolder) -> Bool {
+        switch lhs {
+        case .Box(let boxState1):
+            switch rhs {
+            case .Box(let boxState2):
+                return boxState1 == boxState2
+            default:
                 return false
             }
-            return lhcard == rhcard
-        }
-        if let lhbox = lhs as? GridBoxState {
-            guard let rhbox = rhs as? GridBoxState else {
+        case .Card(let cardState1):
+            switch rhs {
+            case .Card(let cardState2):
+                return cardState1 == cardState2
+            default:
                 return false
             }
-            return lhbox == rhbox
         }
-        return false
     }
 }
 
 // Represents the transmissable state unique to a Card
-class CardState : ItemState {
+final class CardState : Codable, Equatable {
+    let origin : CGPoint
     var index : Int   // permit overwrite when reordering a restored game state used as a restored setup
     let faceUp : Bool
 
@@ -145,12 +144,7 @@ class CardState : ItemState {
     init( _ card: Card) {
         faceUp = card.isFaceUp
         index = card.index
-        super.init(card)
-    }
-
-    // Required but useless
-    required init(from decoder: Decoder) throws {
-        fatalError("init(from:) has not been implemented")
+        origin = card.frame.origin
     }
 
     // Conform to Equatable protocol
@@ -162,7 +156,8 @@ class CardState : ItemState {
 }
 
 // Represents the transmissable state unique to a GridBox
-class GridBoxState : ItemState {
+final class GridBoxState : Codable, Equatable {
+    let origin : CGPoint
     let name : String?
     let kind : GridBox.Kind
     let owner : Int
@@ -172,12 +167,7 @@ class GridBoxState : ItemState {
         name = box.name
         kind = box.kind
         owner = box.owner
-        super.init(box)
-    }
-
-    // Required but useless
-    required init(from decoder: Decoder) throws {
-        fatalError("init(from:) has not been implemented")
+        origin = box.frame.origin
     }
 
     // Conform to Equatable protocol
