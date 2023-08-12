@@ -614,6 +614,7 @@ class ViewController: UIViewController {
             let text = String(format: ThisPlayerTemplate, playerName)
             label.attributedText = NSAttributedString(string: text, attributes: attribs)
         } else {
+            label.attributedText = nil
             label.text = playerName
         }
         label.textColor = (playBegun && playerIndex == activePlayer) ? ActivePlayerColor : NormalTextColor
@@ -800,13 +801,7 @@ class ViewController: UIViewController {
             return // Make it possible to call this without worrying.
         }
         let gameState : GameState
-        if !firstYieldOccurred && thisPlayer == 0 {
-            gameState = GameState(deckType: settings.deckType, handArea: settings.hasHands, yielding: yielding,
-                                  playingArea: playingArea, publicArea: publicArea)
-            setFirstYieldOccurred(yielding, gameState.areaSize.landscape)
-        } else {
-            gameState = GameState(yielding: yielding, playingArea: playingArea, publicArea: publicArea)
-        }
+        gameState = GameState(players: players, numPlayers: numPlayers, yielding: yielding, playingArea: playingArea, publicArea: publicArea)
         communicator?.send(gameState)
     }
 }
@@ -978,7 +973,7 @@ extension ViewController : CommunicatorDelegate {
 
     // Save the current game state
     func saveGameState() -> GameState {
-        return GameState(deckType: settings.deckType, handArea: settings.hasHands, yielding: false, playingArea: playingArea, publicArea: publicArea)
+        return GameState(players: [], numPlayers: -1, yielding: false, playingArea: playingArea, publicArea: publicArea)
     }
 
     // React to lost peer by ending the game with a short dialog

@@ -21,17 +21,18 @@ class GameState : Codable, Equatable {
     // In initial setup, only the player list is transmitted, along with the intended number of players
     let players : [Player]   // The list of players, ordered by 'order' fields (ascending).  Eventually, all players must agree on the list
     let numPlayers : Int     // The number of players needed to play (must be agreed upon)
-    // As part of first player's first show or yield the PlayingDeckTemplate and handArea values are transmitted (ignored at other times)
+    // Until the first player's turn is over, the deckType and handArea values are respected if received.  For consistency
+    // they are always transmitted.
     let deckType : PlayingDeckTemplate?
     let handArea : Bool
-    // Fields used during play (starting with the first player's first turn)
-    let items : [ItemHolder]  // The state of each card in the active deck plus all GridBoxes (use empty array before play begins)
+    // Other fields
+    let items : [ItemHolder] // The positions of all the cards and boxes
     let yielding : Bool      // If true, the transmitting player is yielding control to the next player in turn
-    let areaSize : CGSize    // The size of the playing area of the transmitting player (used for rescaling with unlike-sized devices)
+    let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
 
-    // Initializer from current playing area view used when simply performing layout (initially or in response to a size change).  Only the
-    // playingArea is important and everything in the playing area is processed (even if there is a hand area).  This is indicated by passing
-    // a nil publicArea
+    // Initializer from current playing area view used when simply performing layout (initially or in response to a size change).
+    // Only the playingArea is important and everything in the playing area is processed (even if there is a hand area).  This is
+    // indicated by passing a nil publicArea.
     convenience init(_ playingArea: UIView) {
         self.init([], -1, nil, false, false, playingArea, nil)
     }
@@ -41,14 +42,9 @@ class GameState : Codable, Equatable {
         self.init(players, numPlayers, nil, false, false, nil, nil)
     }
 
-    // Initializer used by the first player on or prior to his first yield; includes the deckType and handArea arguments
-    convenience init(deckType: PlayingDeckTemplate, handArea: Bool, yielding: Bool, playingArea: UIView, publicArea: CGRect) {
-        self.init([], -1, deckType, handArea, yielding, playingArea, publicArea)
-    }
-
-    // Initializer used for all moves once the first player has yielded
-    convenience init(yielding: Bool, playingArea: UIView, publicArea: CGRect) {
-        self.init([], -1, nil, OptionSettings.instance.hasHands, yielding, playingArea, publicArea)
+    // Initializer used for all exchanges once the player list has been established.
+    convenience init(players: [Player], numPlayers: Int, yielding: Bool, playingArea: UIView, publicArea: CGRect) {
+        self.init(players, numPlayers, OptionSettings.instance.deckType, OptionSettings.instance.hasHands, yielding, playingArea, publicArea)
     }
     
     // Initializer from Dictionary (accept new game state sent from the server)
