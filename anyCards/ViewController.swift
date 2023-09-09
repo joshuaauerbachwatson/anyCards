@@ -19,20 +19,84 @@ import UIKit
 // Main ViewController for the AnyCards Game app
 class ViewController: UIViewController {
 
+    // Shadow values for all of the settings
+    var userName : String {
+        get {
+            return OptionSettings.instance.userName
+        }
+        set {
+            OptionSettings.instance.userName = newValue
+        }
+    }
+    var communication : CommunicatorKind {
+        get {
+            return OptionSettings.instance.communication
+        }
+        set {
+            OptionSettings.instance.communication = newValue
+        }
+    }
+    var deckType : PlayingDeckTemplate {
+        get {
+            return OptionSettings.instance.deckType
+        }
+        set {
+            OptionSettings.instance.deckType = newValue
+            cards = makePlayingDeck(Deck, deckType)
+            // Changes to deckType should propagate eagerly
+            transmit()
+        }
+    }
+    var hasHands : Bool {
+        get {
+            return OptionSettings.instance.hasHands
+        }
+        set {
+            OptionSettings.instance.hasHands = newValue
+            // Changes to hasHands should propagate eagerly
+            transmit()
+        }
+    }
+    var numPlayers : Int {
+        get {
+            return OptionSettings.instance.numPlayers
+        }
+        set {
+            OptionSettings.instance.numPlayers = newValue
+            // Changes to numPlayers should propagate eagerly
+            transmit()
+        }
+    }
+    var leadPlayer : Bool {
+        get {
+            return OptionSettings.instance.leadPlayer
+        }
+        set {
+            OptionSettings.instance.leadPlayer = newValue
+            if newValue {
+                // On becoming leader, transmit state
+                transmit()
+            }
+        }
+    }
+
+
     // Model-related fields
 
     // The source deck in current use.
-    var deck : SourceDeck
+    // TODO this is not yet settable.   When it does become settable, then changes to it should be handled dynamically
+    // just like changes to the deck type.
+    let Deck = DefaultDeck.deck
 
-    // The cards array for the game.  Initially holds the standard deck taken directly from deck.cards, but this may change to a different
-    // agreed-upon playing deck.
-    var cards : [Card]
+    // The cards array for the game.  This depends on the values of Deck and deckType but is kept up to date with them.
+    var cards : [Card] = []
 
-    // The list of players (always starts with just 'this' player but expands during discovery until play starts.  The array is ordered by
+    // The list of players (always starts with just 'this' player but expands during discovery until play starts.
+    // The array is ordered by
     // the order fields, ascending)
     var players = [Player]()
 
-    // The index in the players array assigned to 'this' player (the user of the present device)
+    // The index in the players array assigned to 'this' player (the user of the present device).  Initially zero.
     var thisPlayer : Int = 0    // Index may change since the order of players is determined by their order fields.
 
     // The index of the player whose turn it is (moves are allowed iff thisPlayer and activePlayer are the same)
@@ -46,25 +110,13 @@ class ViewController: UIViewController {
     // The Communicator (nil until player search begins; remains non-nil during actual play)
     var communicator : Communicator? = nil
 
-    // Indicates that play has begun.  If communicator is non-nil and playBegun is false, the player list is still being constructed.
-    // Game turns may not occur until play officially begins
+    // Indicates that play has begun.  If communicator is non-nil and playBegun is false, the player list is still being
+    // constructed.  Game turns may not occur until play officially begins
     var playBegun = false
 
     // Indicates that the first yield by a player has occurred.  Until this happens, the first player is allowed to change the
-    // deck type and the 'hasHands' setting.  Afterwards, these aspects are fixed.  On each receipt of a new game state, if this
-    // flag is false, the incoming deck type and hasHands settings are processed to match the first player's wishes.
-    // Otherwise they are ignored.
+    // setup.  Afterwards, the setup is fixed.
     var firstYieldOccurred = false
-
-    // The value for the number of players, often (but not always) taken from the OptionSettings (once player list exchanges begin,
-    // changes to the OptionSettings have no effect on the current game but information received from other players can raise or lower
-    // this value)
-    var numPlayers = -1    // To be properly initialized in configurePlayerLabels().
-
-    // Convenient terse finder for settings
-    var settings : OptionSettings {
-        return OptionSettings.instance
-    }
 
     // View-related fields
 
@@ -112,7 +164,7 @@ class ViewController: UIViewController {
     // Label subviews for the (up to) maxPlayers players in the game
     var playerLabels = [UILabel]()
 
-    // Buttons and button-sized labels
+    // Buttons
     let yieldButton = UIButton()
     let playersButton = UIButton()
     let endGameButton = UIButton()
@@ -133,19 +185,15 @@ class ViewController: UIViewController {
     // The expected size of a card in the current layout
     var cardSize: CGSize {
         let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
-        let cardHeight = cardWidth / deck.aspectRatio
+        let cardHeight = cardWidth / Deck.aspectRatio
         return CGSize(width: cardWidth, height: cardHeight)
     }
 
     // Initializers
 
-    // Get the deck source and cards based on current config.  Note: at present, there is only one set of card "visuals" (known as
-    // DefaultDeck).  In the future this might be taken from the settings.
+    // Main initializer, bypass builder stuff
     init() {
-        deck = DefaultDeck.deck
-        cards = []
         super.init(nibName: nil, bundle: nil)
-        cards = makePlayingDeck(deck, settings.deckType)
     }
 
     // Useless but required
@@ -168,7 +216,7 @@ class ViewController: UIViewController {
         // as absent
         playingArea.addSubview(handAreaMarker)
         handAreaMarker.backgroundColor = UIColor.black
-        handAreaMarker.isHidden = !settings.hasHands
+        handAreaMarker.isHidden = !hasHands
 
         // Initialize Labels and buttons
         for i in 0..<4 {
@@ -200,7 +248,7 @@ class ViewController: UIViewController {
         if notYetInitialized {
             notYetInitialized = false // don't repeat this sequence
             doLayout(nil)
-            configurePlayerLabels(settings.numPlayers)
+            configurePlayerLabels()
             Logger.log("Game initialized")
         }
     }
@@ -233,7 +281,7 @@ class ViewController: UIViewController {
             bummer(title: "Rotation error", message: "Rotation should have been forbidden", host: self)
             return
         }
-        let gameState = GameState(playingArea)
+        let gameState = GameState(self)
         coordinator.animate(alongsideTransition: nil) {_ in
             self.removeAllCardsAndBoxes()
             self.doLayout(gameState)
@@ -291,7 +339,7 @@ class ViewController: UIViewController {
         Logger.log("Safe area is \(safeArea)")
         Logger.log("Playing area frame is \(playingArea.frame)")
         // We can now define the extent of the public area based on the playing area and whether or not there's a private area
-        setupPublicArea(settings.hasHands)
+        setupPublicArea()
         // Now place the cards and GridBoxes, with possible rescaling
         if let gameState = gs {
             let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
@@ -432,9 +480,9 @@ class ViewController: UIViewController {
     // Start the search for players
     func startPlayerSearch() {
         if players.count == 0 {
-            players.append(makePlayer(settings))
+            players.append(makePlayer())
         }
-        guard let communicator = makeCommunicator(settings.communication, players[0], self, self) else { return }
+        guard let communicator = makeCommunicator(communication, players[0], self, self) else { return }
         self.communicator = communicator
         hide(playersButton)
         unhide(endGameButton)
@@ -478,7 +526,7 @@ class ViewController: UIViewController {
         Logger.log("Yield Touched")
         transmit(true)
         activePlayer = (thisPlayer + 1) % players.count
-        configurePlayerLabels(numPlayers)
+        configurePlayerLabels()
         checkTurnToPlay()
     }
 
@@ -621,8 +669,7 @@ class ViewController: UIViewController {
     }
 
     // Configure the player labels according to latest information.
-    func configurePlayerLabels(_ num: Int) {
-        numPlayers = num
+    func configurePlayerLabels() {
         for i in 0..<playerLabels.count {
             let label = playerLabels[i]
             unhide(label)
@@ -630,8 +677,8 @@ class ViewController: UIViewController {
                 configurePlayer(label, players[i].name, i)
             } else if i == 0 {
                 // Implies player.count == 0, meaning the game has not started.  Just fill in current player
-                configurePlayer(label, settings.userName, i)
-            } else if i < num {
+                configurePlayer(label, userName, i)
+            } else if i < numPlayers {
                 label.text = communicator == nil ? MustFind : Searching
             } else {
                 hide(label)
@@ -729,7 +776,7 @@ class ViewController: UIViewController {
         unhide(playersButton)
         hide(endGameButton, yieldButton)
         players = []
-        configurePlayerLabels(settings.numPlayers)
+        configurePlayerLabels()
         // Set up new game
         newShuffle()
     }
@@ -761,16 +808,14 @@ class ViewController: UIViewController {
 
     // Called when the deck type or hand area setting changes.  Does the initial setup for that combination of decktype and hand area.
     func newShuffle() {
-        setupPublicArea(settings.hasHands)
-        deck = DefaultDeck.deck
-        cards = makePlayingDeck(deck, settings.deckType)
+        setupPublicArea()
         removeAllCardsAndBoxes()
         shuffleAndPlace()
     }
 
     // Set up the public area and the hand area marker based on the current settings
-    func setupPublicArea(_ present: Bool) {
-        if present {
+    func setupPublicArea() {
+        if hasHands {
             publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height * HandAreaExpansion, right: 0))
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
             unhide(handAreaMarker)
@@ -800,8 +845,7 @@ class ViewController: UIViewController {
         guard thisPlayersTurn && communicator != nil else {
             return // Make it possible to call this without worrying.
         }
-        let gameState : GameState
-        gameState = GameState(players: players, numPlayers: numPlayers, yielding: yielding, playingArea: playingArea, publicArea: publicArea)
+        let gameState = GameState(self, yielding: yielding)
         communicator?.send(gameState)
     }
 }
@@ -813,8 +857,8 @@ extension ViewController : CommunicatorDelegate {
     func connectedDevicesChanged(_ numConnectedDevices: Int) {
         Logger.log("connectedDevicesChanged, now \(numConnectedDevices)")
         if players.count < numPlayers {
-            let playerCount = settings.leadPlayer ? numPlayers : -1
-            communicator?.send(GameState(players: players, numPlayers: playerCount))
+            let playerCount = leadPlayer ? numPlayers : -1
+            communicator?.send(GameState(self))
         }
     }
 
@@ -836,14 +880,13 @@ extension ViewController : CommunicatorDelegate {
             }
             let stopPlaying = UIAlertAction(title: stopTitle, style: .cancel) { _ in
                 self.communicator?.shutdown()
-                let communication = self.settings.communication
-                switch communication {
+                switch self.communication {
                 case .ServerBased(let token):
                     serverTokens.remove(token)
                     if let otherToken = serverTokens.first?.token {
-                        self.settings.communication = .ServerBased(otherToken)
+                        self.communication = .ServerBased(otherToken)
                     } else {
-                        self.settings.communication = .MultiPeer
+                        self.communication = .MultiPeer
                     }
                 default:
                     break
@@ -869,7 +912,7 @@ extension ViewController : CommunicatorDelegate {
             //   the player list changes, the value can appear in other contexts.  It is harmless to do a label configuration).
             var changed = false
             if gameState.numPlayers > 0 {
-                configurePlayerLabels(gameState.numPlayers)
+                configurePlayerLabels()
             }
             // Then, if the incoming list differs from the local list, merge the lists and notify the communicator.
             // Only the multipeer communicator actually needs or uses this notification.
@@ -916,7 +959,7 @@ extension ViewController : CommunicatorDelegate {
             // if nothing changed, nothing is transmitted.
             if changed {
                 Logger.log("Sending because 'changed' in players logic")
-                communicator?.send(GameState(players: players, numPlayers: numPlayers))
+                communicator?.send(GameState(self))
             }
         } else {
             // This is not the initial player exchange but a move by an active player.  There is a special step for the first move
@@ -924,9 +967,9 @@ extension ViewController : CommunicatorDelegate {
             Logger.log("Received GameState contains \(gameState.items.count) items")
             if !firstYieldOccurred {
                 if let deckType = gameState.deckType {
-                    cards = makePlayingDeck(deck, deckType)
+                    cards = makePlayingDeck(Deck, deckType)
                 }
-                setupPublicArea(gameState.handArea)
+                setupPublicArea()
                 setFirstYieldOccurred(true, gameState.areaSize.landscape)
             }
             removePublicCardsAndBoxes()
@@ -944,11 +987,11 @@ extension ViewController : CommunicatorDelegate {
     // Restore a saved game state
     func restoreGameState(_ gameState: GameState) {
         if let deckType = gameState.deckType {
-            settings.deckType = deckType
-            cards = makePlayingDeck(deck, deckType)
+            self.deckType = deckType
+            cards = makePlayingDeck(Deck, deckType)
         }
-        settings.hasHands = gameState.handArea
-        setupPublicArea(gameState.handArea)
+        hasHands = gameState.handArea
+        setupPublicArea()
         removePublicCardsAndBoxes()
         // Randomize the cards in the restored state (leaving grid boxes alone)
         let cardCount = gameState.items.reduce(into: 0) {count, item in
@@ -969,11 +1012,6 @@ extension ViewController : CommunicatorDelegate {
             }
         }
         doLayout(gameState)
-    }
-
-    // Save the current game state
-    func saveGameState() -> GameState {
-        return GameState(players: [], numPlayers: -1, yielding: false, playingArea: playingArea, publicArea: publicArea)
     }
 
     // React to lost peer by ending the game with a short dialog
@@ -1024,7 +1062,7 @@ extension ViewController : CommunicatorDelegate {
     }
 
     // Make a Player object for the current player
-    func makePlayer(_ settings: OptionSettings) -> Player {
-        return Player(settings.userName, settings.leadPlayer)
+    func makePlayer() -> Player {
+        return Player(userName, leadPlayer)
     }
 }

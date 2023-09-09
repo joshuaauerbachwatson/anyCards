@@ -16,10 +16,11 @@
 
 import UIKit
 
-// Model the UserDefaults keys and types that we use in the game.  By convention we read directly from UserDefaults and write through to UserDefaults
-// on any change.  This is yields the simplest maintenance.   Make this single-instance to make it easy to access and to ensure there is only one
-// instance of UserSettings in the app.  Apple says changes are asynchronous so, with more than one instance of UserSettings, there could be race
-// conditions.  With a single instance, there is a consistent view within the app, even if the disk's view is lagging.
+// Model the UserDefaults keys and types that we use in the game.  By convention we read directly from UserDefaults
+// and write through to UserDefaults on any change.  This yields the simplest maintenance.  Make this single-instance
+// to make it easy to access and to ensure there is only one instance of UserSettings in the app.  Apple says changes
+// are asynchronous, so, with more than one instance of UserSettings, there could be race conditions.  With a single
+// instance, there is a consistent view within the app, even if the disk's view is lagging.
 class OptionSettings {
     // Preference keys
     private static let UserNameKey = "UserName"
@@ -98,13 +99,7 @@ class OptionSettings {
 
     var numPlayers : Int {
         get {
-            let stored = UserDefaults.standard.integer(forKey: OptionSettings.NumPlayersKey)
-            if stored > 0 {
-                return stored
-            }
-            // Never stored, use static default
-            UserDefaults.standard.set(NumPlayersDefault, forKey: OptionSettings.NumPlayersKey)
-            return NumPlayersDefault
+            return UserDefaults.standard.integer(forKey: OptionSettings.NumPlayersKey) // might be zero
         }
         set {
             // We assume dialogs allow only reasonable values through so no checking here

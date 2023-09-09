@@ -18,11 +18,8 @@ import UIKit
 
 // Represents the state of a game.  Transmitted between devices.   Also used to facilitate layout within a single device.
 class GameState : Codable, Equatable {
-    // In initial setup, only the player list is transmitted, along with the intended number of players
-    let players : [Player]   // The list of players, ordered by 'order' fields (ascending).  Eventually, all players must agree on the list
-    let numPlayers : Int     // The number of players needed to play (must be agreed upon)
-    // Until the first player's turn is over, the deckType and handArea values are respected if received.  For consistency
-    // they are always transmitted.
+    let players : [Player]   // The list of players, ordered by 'order' fields (ascending).
+    let numPlayers : Int     // The number of players needed to play (dictated by leader, accepted by others)
     let deckType : PlayingDeckTemplate?
     let handArea : Bool
     // Other fields
@@ -30,23 +27,15 @@ class GameState : Codable, Equatable {
     let yielding : Bool      // If true, the transmitting player is yielding control to the next player in turn
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
 
-    // Initializer from current playing area view used when simply performing layout (initially or in response to a size change).
-    // Only the playingArea is important and everything in the playing area is processed (even if there is a hand area).  This is
-    // indicated by passing a nil publicArea.
-    convenience init(_ playingArea: UIView) {
-        self.init([], -1, nil, false, false, playingArea, nil)
+    // Initializer from local ViewController state.
+    // THe 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
+    // done with transmitting but is done when simply using the GameState to facilitate layout.
+    convenience init(_ controller: ViewController, yielding: Bool = false, includeHandArea: Bool = false) {
+        self.init(controller.players, controller.numPlayers, controller.deckType, controller.hasHands, yielding,
+                  controller.playingArea, includeHandArea ? controller.publicArea : nil)
+
     }
 
-    // Initializer used for initial exchanges while establishing the player list.  Just players and the desired number of players are important
-    convenience init(players: [Player], numPlayers: Int) {
-        self.init(players, numPlayers, nil, false, false, nil, nil)
-    }
-
-    // Initializer used for all exchanges once the player list has been established.
-    convenience init(players: [Player], numPlayers: Int, yielding: Bool, playingArea: UIView, publicArea: CGRect) {
-        self.init(players, numPlayers, OptionSettings.instance.deckType, OptionSettings.instance.hasHands, yielding, playingArea, publicArea)
-    }
-    
     // Initializer from Dictionary (accept new game state sent from the server)
     convenience init(_ newState: Dictionary<String,Any>) {
         let players = newState["players"] as? [Player] ?? []

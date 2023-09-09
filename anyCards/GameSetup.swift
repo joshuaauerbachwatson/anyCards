@@ -26,11 +26,6 @@ class GameSetupDialog : UIViewController {
         Logger.logFatalError("Could not retrieve ViewController within GameSetupDialog")
     }
 
-    // Terser reference to settings
-    var settings : OptionSettings {
-        return OptionSettings.instance
-    }
-
     // Controls
     let header = UILabel()                    // First Row
     let deckTypeLabel = UILabel()             // Second row, left
@@ -66,7 +61,7 @@ class GameSetupDialog : UIViewController {
         deckTypeLabel.text = DeckTypeText
         deckTypeLabel.textAlignment = .right
         configureTouchableLabel(deckType, target: self, action: #selector(deckTypeTouched), parent: view)
-        deckType.text = settings.deckType.displayName
+        deckType.text = vc.deckType.displayName
         deckType.view.font = getTextFont()
         deckType.view.backgroundColor = LabelBackground
 
@@ -75,7 +70,7 @@ class GameSetupDialog : UIViewController {
         handAreaLabel.text = HandAreaText
         handAreaLabel.textAlignment = .right
         configureTouchableLabel(handArea, target: self, action: #selector(handAreaTouched), parent: view)
-        handArea.text = settings.hasHands ? HandAreaYes : HandAreaNo
+        handArea.text = vc.hasHands ? HandAreaYes : HandAreaNo
         handArea.view.font = getTextFont()
         handArea.view.backgroundColor = LabelBackground
 
@@ -134,10 +129,10 @@ class GameSetupDialog : UIViewController {
 
     // Respond to touch of the 'hand area" touchable label by toggling between present and absent
     @objc func handAreaTouched() {
-        let newValue = !settings.hasHands
-        settings.hasHands = newValue
+        let newValue = !vc.hasHands
+        vc.hasHands = newValue
         handArea.text = newValue ? HandAreaYes : HandAreaNo
-        vc.setupPublicArea(newValue)
+        vc.setupPublicArea()
         vc.transmit()
     }
 
@@ -191,7 +186,7 @@ class GameSetupDialog : UIViewController {
         }
         let useName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
             if let newName = alert.textFields?.first?.text {
-                let state = vc.saveGameState()
+                let state = GameState(vc)
                 let ok = savedSetups.storeEntry(newName, state, false)
                 if !ok {
                     Logger.logDismiss(alert, host: vc, animated: true)

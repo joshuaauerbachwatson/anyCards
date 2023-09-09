@@ -27,11 +27,6 @@ class PlayerManagementDialog : UIViewController {
         Logger.logFatalError("Could not retrieve ViewController within PlayerManagementDialog")
     }
 
-    // Terser reference to settings
-    var settings : OptionSettings {
-        return OptionSettings.instance
-    }
-
     // Controls
     let header = UILabel()              // 1st row
     let version = UILabel()             // 2nd row
@@ -67,7 +62,7 @@ class PlayerManagementDialog : UIViewController {
     // Convenient check for whether playing is currently recorded as local or remote
     var isRemoteRecorded: Bool {
         get {
-            switch settings.communication {
+            switch vc.communication {
             case .ServerBased(_):
                 return true
             case .MultiPeer:
@@ -117,19 +112,19 @@ class PlayerManagementDialog : UIViewController {
         // userName and label
         configureLeftLabel(userNameLabel, UserNameText)
         configureEditableField(userName, UserNameTag)
-        userName.text = settings.userName
+        userName.text = vc.userName
 
         // Leader status and its label
         configureLeftLabel(leaderStatusLabel, LeaderStatusLabelText)
         configureTouchableLabel(leaderStatus, target: self, action: #selector(leaderStatusTouched), parent: view)
-        leaderStatus.text = settings.leadPlayer ? YesText : NoText
+        leaderStatus.text = vc.leadPlayer ? YesText : NoText
 
         // Num Players and its label
         configureLeftLabel(numPlayersLabel, NumPlayersText)
-        configureStepper(numPlayers, delegate: self, value: settings.numPlayers, parent: view)
+        configureStepper(numPlayers, delegate: self, value: vc.numPlayers, parent: view)
         numPlayers.minimumValue = PlayersMin
         numPlayers.maximumValue = PlayersMax
-        if settings.leadPlayer {
+        if vc.leadPlayer {
             unhide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         } else {
             hide(vc.gameSetupButton, numPlayersLabel, numPlayers)
@@ -143,7 +138,7 @@ class PlayerManagementDialog : UIViewController {
         // Token and its label
         configureLeftLabel(tokenLabel, TokenLabelText)
         configureTouchableLabel(token, target: self, action: #selector(tokenTouched), parent: view)
-        if case let CommunicatorKind.ServerBased(savedToken) = settings.communication {
+        if case let CommunicatorKind.ServerBased(savedToken) = vc.communication {
             token.text = serverTokens.getDisplayFromToken(savedToken)
         }
         configureEditableField(editToken, TokenTag)
@@ -198,14 +193,14 @@ class PlayerManagementDialog : UIViewController {
     // Respond to touch of the leaderStatus control by changing the value in the control and the settings and adjusting other elements
     // of the game accordingly
     @objc func leaderStatusTouched() {
-        if settings.leadPlayer {
+        if vc.leadPlayer {
             // Was on, toggle off
-            settings.leadPlayer = false
+            vc.leadPlayer = false
             leaderStatus.text = NoText
             hide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         } else {
             // Was off, toggle on
-            settings.leadPlayer = true
+            vc.leadPlayer = true
             leaderStatus.text = YesText
             unhide(vc.gameSetupButton, numPlayersLabel, numPlayers)
         }
@@ -216,7 +211,7 @@ class PlayerManagementDialog : UIViewController {
     @objc func localRemoteTouched() {
         if localRemote.text == RemoteText {
             // Was remote, toggle to local
-            settings.communication = .MultiPeer
+            vc.communication = .MultiPeer
             setRemoteControlsHidden(true)
             localRemote.text = LocalText
         } else {
@@ -246,7 +241,7 @@ class PlayerManagementDialog : UIViewController {
         }
         promptForName(self, title: SaveTokenTitle, message: SaveTokenMessage, placeholder: NicknamePlaceholder) { nickName in
             let display = serverTokens.storeEntry(token, nickName)
-            self.settings.communication = .ServerBased(token)
+            self.vc.communication = .ServerBased(token)
             self.showToken(token, display)
             self.editToken.text = nil
             hide(self.saveToken)
@@ -276,14 +271,14 @@ class PlayerManagementDialog : UIViewController {
     func showToken(_ tokenArg: String, _ displayArg: String) {
         unhide(useSavedToken)
         token.text = displayArg
-        settings.communication = .ServerBased(tokenArg)
+        vc.communication = .ServerBased(tokenArg)
     }
 
     // Show a blank token to be filled in by the user (assumes remote and that the labels are showing)
     func showBlankToken() {
         unhide(useSavedToken)
         token.text = nil
-        settings.communication = .MultiPeer // until a valid token is available
+        vc.communication = .MultiPeer // until a valid token is available
     }
 
     // Show the appropriate initial token (assuming remote and that the labels are showing)
@@ -384,7 +379,7 @@ extension PlayerManagementDialog: UITextFieldDelegate {
         if let token = field.text, token.count > 0 {
             if validToken(token) {
                 unhide(saveToken)
-                settings.communication = .ServerBased(token)
+                vc.communication = .ServerBased(token)
             } else {
                 bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
                 return false
@@ -397,8 +392,8 @@ extension PlayerManagementDialog: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
         if textField.tag == UserNameTag {
             if let newText = textField.text, reason == .committed {
-                settings.userName = newText
-                vc.configurePlayerLabels(settings.numPlayers)
+                vc.userName = newText
+                vc.configurePlayerLabels()
             }
         } else {
             // Assume token
@@ -416,9 +411,9 @@ extension PlayerManagementDialog: UITextFieldDelegate {
 // Conform to StepperDelegate
 extension PlayerManagementDialog: StepperDelegate {
     func valueChanged(_ stepper: Stepper) {
-        settings.numPlayers = stepper.value
-        findPlayersButton.isHidden = settings.numPlayers < 2
-        vc.configurePlayerLabels(stepper.value)
+        vc.numPlayers = stepper.value
+        findPlayersButton.isHidden = vc.numPlayers < 2
+        vc.configurePlayerLabels()
     }
 
     func displayText(_ value: Int) -> String {

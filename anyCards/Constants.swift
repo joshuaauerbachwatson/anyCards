@@ -46,7 +46,6 @@ let HandAreaExpansion = CGFloat(1.2) // Allow some headroom for moving cards ins
 let LayoutAreaRatioLandscape = CGFloat(1366) / CGFloat(980) // H/W to use for layout in landscape (== iPad 12.9" safe area shapes)
 let LayoutAreaRatioPortrait = CGFloat(1322) / CGFloat(1024) // H/W to use for layout in portrait (== iPad 12.9" safe area shape)
 let MinCardPixels = CGFloat(5) // Minimum number of pixels of a card's width or height that must be within the playing area
-let NumPlayersDefault = 2
 let PlayerManagementSize = CGSize(width:480, height: 600)
 let PlayersMax = 4
 let PlayersMin = 1
