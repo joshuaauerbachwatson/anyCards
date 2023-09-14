@@ -857,8 +857,7 @@ extension ViewController : CommunicatorDelegate {
     func connectedDevicesChanged(_ numConnectedDevices: Int) {
         Logger.log("connectedDevicesChanged, now \(numConnectedDevices)")
         if players.count < numPlayers {
-            let playerCount = leadPlayer ? numPlayers : -1
-            communicator?.send(GameState(self))
+            transmit()  
         }
     }
 
