@@ -194,6 +194,7 @@ class ViewController: UIViewController {
     // Main initializer, bypass builder stuff
     init() {
         super.init(nibName: nil, bundle: nil)
+        cards = makePlayingDeck(Deck, deckType)
     }
 
     // Useless but required
