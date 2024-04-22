@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287DD2CB2BD2E7780020FB46 /* ChatController.swift */; };
 		EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290B9E2A4B478A0028D364 /* firstTurn.png */; };
 		EE290BA12A4B479A0028D364 /* secondTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290BA02A4B479A0028D364 /* secondTurn.png */; };
 		EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE68816729B7BCC7003F4831 /* HelpController.swift */; };
@@ -57,6 +58,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		287DD2CB2BD2E7780020FB46 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		EE290B9E2A4B478A0028D364 /* firstTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = firstTurn.png; sourceTree = SOURCE_ROOT; };
 		EE290BA02A4B479A0028D364 /* secondTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = secondTurn.png; sourceTree = SOURCE_ROOT; };
 		EE68816729B7BCC7003F4831 /* HelpController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HelpController.swift; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 				EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */,
 				EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */,
 				EE90290026DEDF7A00F87FF8 /* Card.swift */,
+				287DD2CB2BD2E7780020FB46 /* ChatController.swift */,
 				EE90290526DEDF7A00F87FF8 /* Communicator.swift */,
 				EE90290126DEDF7A00F87FF8 /* Constants.swift */,
 				EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */,
@@ -309,6 +312,7 @@
 				EE7D37932A13C21F001BED96 /* RestoreTokenDialog.swift in Sources */,
 				EE90291F26DEE69200F87FF8 /* AuerbachLook.swift in Sources */,
 				EE90291126DEDF7A00F87FF8 /* ViewController.swift in Sources */,
+				287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
 				EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */,
 				EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */,

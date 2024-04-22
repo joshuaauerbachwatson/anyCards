@@ -170,6 +170,7 @@ class ViewController: UIViewController {
     let endGameButton = UIButton()
     let gameSetupButton = UIButton()
     let helpButton = UIButton()
+    let chatButton = UIButton()
 
     // The subset of the playingArea subviews that are cards.  Normally, the contents of this array is the same as that of the cards
     // array but the order is the subview order rather than index order.
@@ -233,6 +234,7 @@ class ViewController: UIViewController {
         hide(endGameButton, yieldButton)
         configureButton(gameSetupButton, title: GameSetupTitle, target: self, action: #selector(gameSetupTouched), parent: self.view)
         configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
+        configureButton(chatButton, title: ChatTitle, target: self, action: #selector(chatTouched), parent: self.view)
 
         // Add GridBox-making and destroying recognizer to the playingArea view
         let gridBoxRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressDetected))
@@ -327,7 +329,8 @@ class ViewController: UIViewController {
         endGameButton.frame = playersButton.frame
         gameSetupButton.frame = playersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
         yieldButton.frame = gameSetupButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        helpButton.frame = yieldButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
+        place(helpButton, after(yieldButton), buttonY, ctlWidth/2, controlHeight)
+        place(chatButton, after(helpButton), buttonY, ctlWidth/2, controlHeight)
 
         // The playingArea frame is positioned below the buttons and labels with the fixed aspect ratio determined by the
         // orientation but limited by the available space (in landscape the natural height might not quite fit).
@@ -535,6 +538,12 @@ class ViewController: UIViewController {
     @objc func helpTouched() {
         let helpControl = HelpController(HelpFile, ReturnText)
         Logger.logPresent(helpControl, host: self, animated: true)
+    }
+    
+    // Respond to touch of the chat button.  Open the chat view
+    @objc func chatTouched() {
+        let chatWindow = ChatController()
+        Logger.logPresent(chatWindow, host: self, animated: true)
     }
 
     // Other functions
