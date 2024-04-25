@@ -250,6 +250,7 @@ class ViewController: UIViewController {
         super.viewDidAppear(animated)
         if notYetInitialized {
             notYetInitialized = false // don't repeat this sequence
+//            CredentialStore.instance.loginIfNeeded()
             doLayout(nil)
             configurePlayerLabels()
             Logger.log("Game initialized")

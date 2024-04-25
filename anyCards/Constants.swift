@@ -60,6 +60,7 @@ let JokerImageName = "JokerImage.png"
 let HelpFile = "AnyCardsHelp" /* Excludes extension */
 let SavedSetupsFile = "savedSetups"
 let ServerGameFile = "serverGames"
+let CredentialsFile = "credentials"
 
 // Colors
 let ActivePlayerColor = UIColor(60, 180, 75)

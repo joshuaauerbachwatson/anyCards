@@ -3,11 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		280065C32BD94BCD003A520D /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = 280065C22BD94BCD003A520D /* Auth0.plist */; };
+		280065C52BD962E1003A520D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280065C42BD962E1003A520D /* CredentialStore.swift */; };
 		287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287DD2CB2BD2E7780020FB46 /* ChatController.swift */; };
+		28C61D122BD949F800A8A89C /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 28C61D112BD949F800A8A89C /* Auth0 */; };
 		EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290B9E2A4B478A0028D364 /* firstTurn.png */; };
 		EE290BA12A4B479A0028D364 /* secondTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290BA02A4B479A0028D364 /* secondTurn.png */; };
 		EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE68816729B7BCC7003F4831 /* HelpController.swift */; };
@@ -58,6 +61,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		280065C12BD94B2E003A520D /* anyCards.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = anyCards.entitlements; sourceTree = "<group>"; };
+		280065C22BD94BCD003A520D /* Auth0.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
+		280065C42BD962E1003A520D /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
 		287DD2CB2BD2E7780020FB46 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		EE290B9E2A4B478A0028D364 /* firstTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = firstTurn.png; sourceTree = SOURCE_ROOT; };
 		EE290BA02A4B479A0028D364 /* secondTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = secondTurn.png; sourceTree = SOURCE_ROOT; };
@@ -117,6 +123,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				28C61D122BD949F800A8A89C /* Auth0 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -147,7 +154,9 @@
 		EE9028E726DE962400F87FF8 /* anyCards */ = {
 			isa = PBXGroup;
 			children = (
+				280065C12BD94B2E003A520D /* anyCards.entitlements */,
 				EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */,
+				280065C22BD94BCD003A520D /* Auth0.plist */,
 				EE9028FD26DEDF7A00F87FF8 /* Base.lproj */,
 				EE9028F126DE962700F87FF8 /* Info.plist */,
 				EEF0E7C62A30B91D00226F07 /* boxMenu.png */,
@@ -167,6 +176,7 @@
 				287DD2CB2BD2E7780020FB46 /* ChatController.swift */,
 				EE90290526DEDF7A00F87FF8 /* Communicator.swift */,
 				EE90290126DEDF7A00F87FF8 /* Constants.swift */,
+				280065C42BD962E1003A520D /* CredentialStore.swift */,
 				EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */,
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
 				EE68816929B7CB99003F4831 /* Feedback.swift */,
@@ -218,6 +228,9 @@
 			dependencies = (
 			);
 			name = anyCards;
+			packageProductDependencies = (
+				28C61D112BD949F800A8A89C /* Auth0 */,
+			);
 			productName = anyCards;
 			productReference = EE9028E526DE962400F87FF8 /* anyCards.app */;
 			productType = "com.apple.product-type.application";
@@ -246,6 +259,9 @@
 				Base,
 			);
 			mainGroup = EE9028DC26DE962400F87FF8;
+			packageReferences = (
+				28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */,
+			);
 			productRefGroup = EE9028E626DE962400F87FF8 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
@@ -279,6 +295,7 @@
 				EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */,
 				EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */,
 				EE7D378B29FAB833001BED96 /* cardsAndBoxes.png in Resources */,
+				280065C32BD94BCD003A520D /* Auth0.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,6 +306,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				280065C52BD962E1003A520D /* CredentialStore.swift in Sources */,
 				EE90291C26DEE3B100F87FF8 /* TouchableView.swift in Sources */,
 				EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */,
 				EE68816A29B7CB99003F4831 /* Feedback.swift in Sources */,
@@ -452,6 +470,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = anyCards/anyCards.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -466,6 +486,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jsauerbach.anyCards;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -481,6 +502,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = anyCards/anyCards.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "";
@@ -495,6 +518,7 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.jsauerbach.anyCards;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -525,6 +549,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/auth0/Auth0.swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		28C61D112BD949F800A8A89C /* Auth0 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */;
+			productName = Auth0;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = EE9028DD26DE962400F87FF8 /* Project object */;
 }
