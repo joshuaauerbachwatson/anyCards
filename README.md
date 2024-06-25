@@ -18,11 +18,7 @@ To build the server, you need `go` version (at least) `1.19`.  Simply build it w
 
 ## Obtaining the game from me and using my server
 
-The game has been registered for beta distribution using Apple's TestFlight.  You can install via this link: 
-
-https://testflight.apple.com/join/gUaWTdMC
-
-The beta release is built with an appropriate version of `Secrets.swift` to use a server that I deploy using DigitalOcean's App Platform.
+For a while I had a beta of this app available in TestFlight.  However, that build has expired.  Since I am not actively working on the app, I decided not to push out new builds under the beta for a while.   Once I resume doing that, it will be possible to install via TestFlight.  The beta app will use a secret compatible with a copy of the server that I have deployed.  If you are interested in trying the app as a user, let me know.
 
 ## Evolutionary Thoughts
 
