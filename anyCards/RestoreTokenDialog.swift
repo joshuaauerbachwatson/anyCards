@@ -35,7 +35,7 @@ class RestoreTokenDialog : TableDialogController {
     // Override getCurrentRow.  If the PlayerManagementDialog.token.text matches a stored row, use that index.
     // Otherwise, use zero.
     override func getCurrentRow() -> Int {
-        if let row = serverTokens.displays.firstIndex(where: { $0 == host.token.text }) {
+        if let row = gameTokens.displays.firstIndex(where: { $0 == host.token.text }) {
             return row
         }
         return 0
@@ -43,24 +43,24 @@ class RestoreTokenDialog : TableDialogController {
 
     // Override the number of rows to use the size of serverTokens.pairs
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return serverTokens.pairs.count
+        return gameTokens.pairs.count
     }
 
     // Override initializeRow to use the serverTokens values
     override func initializeRow(_ label: UILabel, _ row: Int) {
-        label.text = serverTokens.displays[row]
+        label.text = gameTokens.displays[row]
     }
 
     // Override rowSelected to handle the appropriate action for restoring a tokens
     override func rowSelected(_ row: Int) -> Bool {
-        let pair = serverTokens.pairs[row]
+        let pair = gameTokens.pairs[row]
         host.showToken(pair.token, pair.display)
         return true
     }
 
     // Override deleteRow to handle the appropriate action for deleting a stored token
     override func deleteRow(_ row: Int) {
-        let removed = serverTokens.remove(at: row)
+        let removed = gameTokens.remove(at: row)
         if host.token.text == removed {
             host.showInitialToken()
         }

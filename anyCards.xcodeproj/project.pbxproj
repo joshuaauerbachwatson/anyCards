@@ -54,7 +54,7 @@
 		EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */; };
 		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
 		EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B6E270DCE9B005994FB /* Secrets.swift */; };
-		EEEF9B712716DFAE005994FB /* ServerTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* ServerTokens.swift */; };
+		EEEF9B712716DFAE005994FB /* GameTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* GameTokens.swift */; };
 		EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */; };
 		EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C62A30B91D00226F07 /* boxMenu.png */; };
 		EEF0E7C92A3B812500226F07 /* dealingDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C82A3B812500226F07 /* dealingDialog.png */; };
@@ -112,7 +112,7 @@
 		EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTapAndDragRecognizer.swift; sourceTree = "<group>"; };
 		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
 		EEEF9B6E270DCE9B005994FB /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
-		EEEF9B702716DFAE005994FB /* ServerTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerTokens.swift; sourceTree = "<group>"; };
+		EEEF9B702716DFAE005994FB /* GameTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameTokens.swift; sourceTree = "<group>"; };
 		EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxModifyDialog.png; sourceTree = SOURCE_ROOT; };
 		EEF0E7C62A30B91D00226F07 /* boxMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxMenu.png; sourceTree = SOURCE_ROOT; };
 		EEF0E7C82A3B812500226F07 /* dealingDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dealingDialog.png; sourceTree = SOURCE_ROOT; };
@@ -182,6 +182,7 @@
 				EE68816929B7CB99003F4831 /* Feedback.swift */,
 				EE71CA5329D36C2600BEC774 /* GameSetup.swift */,
 				EE9028FC26DEDF7A00F87FF8 /* GameState.swift */,
+				EEEF9B702716DFAE005994FB /* GameTokens.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
 				EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */,
 				EE68816729B7BCC7003F4831 /* HelpController.swift */,
@@ -197,7 +198,6 @@
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
 				EEEF9B6E270DCE9B005994FB /* Secrets.swift */,
 				EE8D1E2E270B013900958060 /* ServerExchange.swift */,
-				EEEF9B702716DFAE005994FB /* ServerTokens.swift */,
 				EE90292026DEE6A100F87FF8 /* Stepper.swift */,
 				EE71CA5D29E4473800BEC774 /* TableDialogController.swift */,
 				EE90291A26DEE3B100F87FF8 /* TouchableView.swift */,
@@ -336,7 +336,7 @@
 				EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */,
 				EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */,
 				EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */,
-				EEEF9B712716DFAE005994FB /* ServerTokens.swift in Sources */,
+				EEEF9B712716DFAE005994FB /* GameTokens.swift in Sources */,
 				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
 				EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */,

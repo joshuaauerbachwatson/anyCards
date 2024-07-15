@@ -135,11 +135,11 @@ class PlayerManagementDialog : UIViewController {
         configureTouchableLabel(localRemote, target:self, action: #selector(localRemoteTouched), parent: view)
         localRemote.text = isRemoteRecorded ? RemoteText : LocalText
 
-        // Token and its label
+        // Game Token and its label
         configureLeftLabel(tokenLabel, TokenLabelText)
         configureTouchableLabel(token, target: self, action: #selector(tokenTouched), parent: view)
         if case let CommunicatorKind.ServerBased(savedToken) = vc.communication {
-            token.text = serverTokens.getDisplayFromToken(savedToken)
+            token.text = gameTokens.getDisplayFromToken(savedToken)
         }
         configureEditableField(editToken, TokenTag)
         hide(editToken)
@@ -240,7 +240,7 @@ class PlayerManagementDialog : UIViewController {
             return
         }
         promptForName(self, title: SaveTokenTitle, message: SaveTokenMessage, placeholder: NicknamePlaceholder) { nickName in
-            let display = serverTokens.storeEntry(token, nickName)
+            let display = gameTokens.storeEntry(token, nickName)
             self.vc.communication = .ServerBased(token)
             self.showToken(token, display)
             self.editToken.text = nil
@@ -251,7 +251,7 @@ class PlayerManagementDialog : UIViewController {
 
     // Respond to touch of the use saved button
     @objc func useSavedTokenTouched() {
-        let preferredSize = TableDialogController.getPreferredSize(serverTokens.pairs.count)
+        let preferredSize = TableDialogController.getPreferredSize(gameTokens.pairs.count)
         let anchor = CGPoint(x: token.frame.midX, y: token.frame.minY)
         let popup = RestoreTokenDialog(self, size: preferredSize, anchor: anchor)
         Logger.logPresent(popup, host: self, animated: true)
@@ -260,6 +260,20 @@ class PlayerManagementDialog : UIViewController {
     // Respond to touch of the find players button
     @objc func findPlayersTouched() {
         Logger.log("Find Players Touched")
+        if isRemoteIntended {
+            // Make sure token editing is terminated and in a valid state
+            if isEditingToken {
+                token.text = editToken.text
+                isEditingToken = false
+            }
+            let currentToken = token.text ?? ""
+            if validToken(currentToken) {
+                vc.communication = .ServerBased(currentToken)
+            } else {
+                bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
+                return
+            }
+        }
         vc.startPlayerSearch()
         Logger.logDismiss(self, host: vc, animated: true)
     }
@@ -276,21 +290,19 @@ class PlayerManagementDialog : UIViewController {
 
     // Show a blank token to be filled in by the user (assumes remote and that the labels are showing)
     func showBlankToken() {
-        unhide(useSavedToken)
         token.text = nil
-        vc.communication = .MultiPeer // until a valid token is available
+        isEditingToken = true
     }
 
     // Show the appropriate initial token (assuming remote and that the labels are showing)
     func showInitialToken() {
-        if let pair = serverTokens.first {
+        if let pair = gameTokens.first {
             showToken(pair.token, pair.display)
             unhide(useSavedToken)
         } else {
-            // settings not modified in this case; will be modified later when editing completes
             showBlankToken()
             hide(saveToken)
-            useSavedToken.isHidden = serverTokens.first == nil
+            hide(useSavedToken)
         }
     }
 

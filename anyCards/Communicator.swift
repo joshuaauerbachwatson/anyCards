@@ -22,7 +22,6 @@ import UIKit
 
 // The protocol implemented by all Communicator implementations
 protocol Communicator {
-    init(_ player: Player, _ delegate: CommunicatorDelegate)
     func send(_ gameState: GameState)
     func shutdown()
     func updatePlayers(_ players: [Player])
@@ -40,6 +39,12 @@ protocol CommunicatorDelegate {
 // with different game tokens different "kinds".
 enum CommunicatorKind {
     case MultiPeer, ServerBased(String)
+    
+    // Value for a .ServerBased CommunicatorKind whose game token has been deleted
+    static let DeletedGameToken = " Deleted"
+
+    // Value for a tag, stored in OptionSettings, that denotes .MultiPeer rather than a game token
+    private static let MultiPeerTag = " MultiPeer"
 
     // Construct CommunicatorKind from a tag value (e.g. one stored in UserDefaults).
     static func from(_ tag: String?) -> CommunicatorKind {
@@ -47,10 +52,10 @@ enum CommunicatorKind {
             return .MultiPeer
         }
         switch name {
-            // ServerBased group tokens must not begin with blank
-        case " MultiPeer":
+        case MultiPeerTag:
             return .MultiPeer
-        default: return .ServerBased(name)
+        default:
+            return .ServerBased(name)
         }
     }
 
@@ -58,7 +63,7 @@ enum CommunicatorKind {
     var tag : String {
         switch self {
         case .MultiPeer:
-            return " MultiPeer"
+            return Self.MultiPeerTag
         case .ServerBased (let gameToken):
             return gameToken
         }
@@ -76,12 +81,20 @@ enum CommunicatorKind {
 }
 
 // Global function to create a communicator of given kind
-func makeCommunicator(_ kind: CommunicatorKind, _ player: Player, _ delegate: CommunicatorDelegate,
-                      _ host: UIViewController) -> Communicator? {
+func makeCommunicator(_ kind: CommunicatorKind, player: Player, delegate: CommunicatorDelegate,
+                      host: UIViewController, handler: @escaping (Communicator?, LocalizedError?)->Void) {
     switch kind {
     case .MultiPeer:
-        return MultiPeerCommunicator(player, delegate)
+        handler(MultiPeerCommunicator(player, delegate), nil)
     case .ServerBased(let gameToken):
-        return ServerBasedCommunicator(gameToken, player, delegate)
+        CredentialStore.instance.loginIfNeeded() { (credentials, error) in
+            if let accessToken = credentials?.accessToken {
+                handler(ServerBasedCommunicator(accessToken, gameToken: gameToken, player: player, delegate: delegate), nil)
+            } else if let error = error {
+                handler(nil, error)
+            } else {
+                Logger.logFatalError("Login result was neither credentials nor error")
+            }
+        }
     }
 }

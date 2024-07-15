@@ -22,7 +22,6 @@ let pathDelete   = "/delete"
 let pathNewState = "/newstate"
 let pathPoll     = "/poll"
 let pathWithdraw = "/withdraw"
-let argAppToken  = "appToken"
 let argGameToken = "gameToken"
 let argPlayer    = "player"
 let argPlayers   = "players"
@@ -32,36 +31,33 @@ let argError     = "argError"
 // This communicator is temporarily using a strategy designed for a serverless implementation.   In that case there was an
 // impedence mismatch for what is, conceptually, a multi-cast group.  We use a 2-second repeating timer to poll for any
 // changes that would otherwise be pushed out upon occurance.
-// The plan is to stop using http and start using a connection based protocol in which we can do true push notifications
-// from the group.
+// TODO The plan is to augment http with websockets, the latter being used for push notifications as well as a chat channel.
 class ServerBasedCommunicator : NSObject, Communicator {
     let playerID: String
     let delegate: CommunicatorDelegate
     let encoder: JSONEncoder
     let decoder: JSONDecoder
-    var gameToken: String?
+    var gameToken: String
+    var accessToken: String
     var timer: DispatchSourceTimer? = nil
     var lastGameState: GameState? = nil
     var lastPlayerList: Set<String> = Set<String>()
 
     // The initializer to use for this Communicator.  Accepts a gameToken and player and starts listening
-    convenience init(_ gameToken: String, _ player: Player, _ delegate: CommunicatorDelegate) {
-        self.init(player, delegate)
+    init(_ accessToken: String, gameToken: String, player: Player, delegate: CommunicatorDelegate) {
+        self.accessToken = accessToken
         self.gameToken = gameToken
-        let poll = Poll(appToken: AppToken, gameToken: gameToken, player: playerID)
-        guard let encoded = try? encoder.encode(poll) else {
-            Logger.logFatalError("Unexpected failure to encode gameToken and player")
-        }
-        startListening(encoded)
-    }
-
-    // Standard initializer specified by protocol (not directly useful for this class)
-    required init(_ player: Player, _ delegate: CommunicatorDelegate) {
         self.playerID = String(player.order)
         self.delegate = delegate
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
         super.init()
+        // TODO poll is slated for removal once we can use websocket as an alternative
+        let poll = Poll(gameToken: gameToken, player: playerID)
+        guard let encoded = try? encoder.encode(poll) else {
+            Logger.logFatalError("Unexpected failure to encode gameToken and player")
+        }
+        startListening(encoded)
     }
 
     // Starts the "listening" process (invocations of 'poll' at 2 second intervals)
@@ -71,7 +67,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
         self.timer = timer
         timer.schedule(deadline: .now(), repeating: .seconds(2), leeway: .milliseconds(100))
         timer.setEventHandler {
-            postAnAction(pathPoll, args, self.newState)
+            postAnAction(pathPoll, self.accessToken, args, self.newState)
         }
         timer.resume()
     }
@@ -115,13 +111,14 @@ class ServerBasedCommunicator : NSObject, Communicator {
     func send(_ gameState: GameState) {
         var arg: Data
         do {
-            let msg = SentState(appToken: AppToken, gameToken: self.gameToken!, player: self.playerID, gameState: gameState)
+            let msg = SentState(gameToken: self.gameToken, player: self.playerID,
+                                gameState: gameState)
             arg = try encoder.encode(msg)
         } catch {
             delegate.error(error, false)
             return
         }
-        postAnAction(pathNewState, arg) { (data, response, err) in
+        postAnAction(pathNewState, accessToken, arg) { (data, response, err) in
             _ = validateResponse(data, response, err, Dictionary<String,String>.self, self.delegate.error)
         }
     }
@@ -129,11 +126,11 @@ class ServerBasedCommunicator : NSObject, Communicator {
     // Shutdown this communicator.  First stop the polling, then try to withdraw from the game (silently)
     func shutdown() {
         self.timer?.cancel()
-        guard let arg = try? encoder.encode([ argAppToken: AppToken, argGameToken: gameToken, argPlayer: playerID ]) else {
+        guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
         // ignore error and stop trying to withdraw
             return
         }
-        postAnAction(pathWithdraw, arg) { (data, response, err) in return } // ignore errors
+        postAnAction(pathWithdraw, accessToken, arg) { (data, response, err) in return } // ignore errors
     }
 
     // Update the players list.  Not used for server based.  The remote player list is maintained by
@@ -147,7 +144,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
 
 typealias HttpCompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
-func postAnAction(_ action: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
+func postAnAction(_ action: String, _ token: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
     guard let url = URL(string: ActionRoot + action) else {
         Logger.logFatalError("Unable to form request URL")
     }
@@ -156,6 +153,7 @@ func postAnAction(_ action: String, _ input: Data?, _ handler: @escaping HttpCom
     request.httpBody = input
     request.addValue("application/json", forHTTPHeaderField: "Content-Type")
     request.addValue("application/json", forHTTPHeaderField: "Accept")
+    request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     let task = URLSession.shared.dataTask(with: request, completionHandler: handler)
     Logger.log("Posting request: \(request)")
     task.resume()
@@ -180,7 +178,6 @@ struct ServerError: Error, CustomDebugStringConvertible {
 
 // The value sent in a newstate exchange
 struct SentState: Encodable {
-    let appToken: String
     let gameToken: String
     let player: String
     let gameState: GameState
@@ -188,7 +185,6 @@ struct SentState: Encodable {
 
 // The value sent when polling
 struct Poll: Encodable {
-    let appToken: String
     let gameToken: String
     let player: String
 }

@@ -24,38 +24,57 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 // Main entry point
 func main() {
-	// Set up handlers.  Note: we are currently following the old passive multicast logic that we used in
-	// the serverless implementation.  Ultimately, the role of this server should increase to include knowledge
-	// of what game is being played and enforcement of the rules.
-	http.HandleFunc(pathNewState, func(w http.ResponseWriter, r *http.Request) {
-		if body := screenRequest(w, r); body != nil {
-			newGameState(w, *body)
-		}
-	})
-	http.HandleFunc(pathPoll, func(w http.ResponseWriter, r *http.Request) {
-		if body := screenRequest(w, r); body != nil {
-			poll(w, *body)
-		}
-	})
-	http.HandleFunc(pathWithdraw, func(w http.ResponseWriter, r *http.Request) {
-		if body := screenRequest(w, r); body != nil {
-			withdraw(w, *body)
-		}
-	})
-	http.HandleFunc(pathDump, func(w http.ResponseWriter, r *http.Request) {
-		if body := screenRequest(w, r); body != nil {
-			dump(w, *body)
-		}
-	})
-	http.HandleFunc(pathReset, func(w http.ResponseWriter, r *http.Request) {
-		if body := screenRequest(w, r); body != nil {
-			reset(w, *body)
-		}
-	})
+	// Load environment
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading the .env file: %v", err)
+	}
+
+	// Set up handlers
+	http.Handle(pathNewState, EnsureValidToken()(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if body := screenRequest(w, r); body != nil {
+				newGameState(w, *body)
+			}
+		}),
+	))
+
+	http.Handle(pathPoll, EnsureValidToken()(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if body := screenRequest(w, r); body != nil {
+				poll(w, *body)
+			}
+		}),
+	))
+
+	http.Handle(pathWithdraw, EnsureValidToken()(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if body := screenRequest(w, r); body != nil {
+				withdraw(w, *body)
+			}
+		}),
+	))
+
+	http.Handle(pathDump, EnsureValidToken()(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if body := screenRequest(w, r); body != nil {
+				dump(w, *body)
+			}
+		}),
+	))
+
+	http.Handle(pathReset, EnsureValidToken()(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if body := screenRequest(w, r); body != nil {
+				reset(w, *body)
+			}
+		}),
+	))
 
 	// Permit port override (default 80)
 	port := os.Getenv("PORT")

@@ -55,7 +55,6 @@ const (
 	gameTimeout   = 300 / cleanupPeriod
 
 	// Dictionary keys used by the various functions for inputs and outputs
-	argAppToken  = "appToken"
 	argGameToken = "gameToken"
 	argForce     = "force"
 	argGameState = "gameState"

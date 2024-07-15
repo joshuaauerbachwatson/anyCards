@@ -16,10 +16,10 @@
 
 import Foundation
 
-// Stores tokens, with optional nicknames.  Tokens are used only when using the server (with MPC,
+// Stores game tokens, with optional nicknames.  Game tokens are used only when using the server (with MPC,
 // the player group consists of those in proximity, by definition).
 
-struct StoredToken: Codable {
+struct StoredGameToken: Codable {
     let token: String
     let nickName: String?
     var display: String {
@@ -30,9 +30,13 @@ struct StoredToken: Codable {
     }
 }
 
-class ServerTokens : Codable {
+enum SavedGamesStatus {
+    case Zero, One, Many
+}
+
+class GameTokens : Codable {
     // The stored tokens themselves
-    var pairs = [StoredToken]()
+    var pairs = [StoredGameToken]()
 
     var displays: [String] {
         get {
@@ -40,16 +44,26 @@ class ServerTokens : Codable {
         }
     }
 
-    var first: StoredToken? {
+    var first: StoredGameToken? {
         get {
             return pairs.first
         }
     }
+    
+    
 
     // Remove items by token value (there should be only one such item but this will remove all in case of duplicates)
     func remove(_ item: String) {
         pairs.removeAll(where: { $0.token == item })
         save()
+        switch OptionSettings.instance.communication {
+        case .ServerBased(let gameToken):
+            if gameToken == item {
+                OptionSettings.instance.communication = .ServerBased(CommunicatorKind.DeletedGameToken)
+            }
+        default:
+            break
+        }
     }
 
     // Remove item by index position.  Returns the display value for the item.
@@ -72,7 +86,7 @@ class ServerTokens : Codable {
 
     // Store a new entry (name, token) in the dictionary.  Returns the display value for the new item.
     func storeEntry(_ token: String, _ nickName: String?) -> String {
-        let newPair = StoredToken(token: token, nickName: nickName)
+        let newPair = StoredGameToken(token: token, nickName: nickName)
         Logger.log("save game tokens updated with \(newPair.display)")
         pairs.append(newPair)
         save()
@@ -89,16 +103,16 @@ class ServerTokens : Codable {
     }
 }
 
-var serverTokens: ServerTokens = {
+var gameTokens: GameTokens = {
     let storageFile = getDocDirectory().appendingPathComponent(ServerGameFile)
     do {
         let archived = try Data(contentsOf: storageFile)
         let decoder = JSONDecoder()
-        let ans = try decoder.decode(ServerTokens.self, from: archived)
-        Logger.log("Server tokens loaded from disk with \(ans.pairs.count) entries")
+        let ans = try decoder.decode(GameTokens.self, from: archived)
+        Logger.log("Game tokens loaded from disk with \(ans.pairs.count) entries")
         return ans
     } catch {
-        Logger.log("Saved ServerTokens not found, a new one was created")
-        return ServerTokens()
+        Logger.log("Saved GameTokens not found, a new one was created")
+        return GameTokens()
     }
 }()

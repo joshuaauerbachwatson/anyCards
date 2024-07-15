@@ -43,13 +43,7 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]interface
 		indicateError(http.StatusBadRequest, "malformed request body (not JSON?)", w)
 		return nil
 	}
-	appToken := (*body)[argAppToken]
-	if appToken == anycardsAppToken {
-		return body
-	}
-	msg := fmt.Sprintf("unauthorized %s request", uri)
-	indicateError(http.StatusUnauthorized, msg, w)
-	return nil
+	return body
 }
 
 // Secondary validator for post bodies containing gameToken.  Returns the gameToken (or "") and a valid

@@ -214,8 +214,8 @@ class ViewController: UIViewController {
         view.addSubview(playingArea)
         playingArea.backgroundColor = PlayingColor
 
-        // Make the hand area marker be a subview of the playingArea and assign its color.  It is hidden if the hand area is configured
-        // as absent
+        // Make the hand area marker be a subview of the playingArea and assign its color. 
+        // It is hidden if the hand area is configured as absent.
         playingArea.addSubview(handAreaMarker)
         handAreaMarker.backgroundColor = UIColor.black
         handAreaMarker.isHidden = !hasHands
@@ -250,7 +250,6 @@ class ViewController: UIViewController {
         super.viewDidAppear(animated)
         if notYetInitialized {
             notYetInitialized = false // don't repeat this sequence
-//            CredentialStore.instance.loginIfNeeded()
             doLayout(nil)
             configurePlayerLabels()
             Logger.log("Game initialized")
@@ -487,10 +486,19 @@ class ViewController: UIViewController {
         if players.count == 0 {
             players.append(makePlayer())
         }
-        guard let communicator = makeCommunicator(communication, players[0], self, self) else { return }
-        self.communicator = communicator
-        hide(playersButton)
-        unhide(endGameButton)
+        Logger.log("Making communicator of kind \(communication.displayName)")
+        makeCommunicator(communication, player: players[0], delegate: self, host: self) { (communicator, error) in
+            if let communicator = communicator {
+                Logger.log("Got back valid communicator")
+                self.communicator = communicator
+                hide(self.playersButton)
+                unhide(self.endGameButton)
+            } else if let error = error {
+                bummer(title: "Could not establish communication", message: error.localizedDescription, host: self)
+            } else {
+                Logger.logFatalError("makeCommunicator got unexpected response")
+            }
+        }
     }
 
     // Respond to long press.  A long press within a GridBox brings up the GridBoxMenu dialog to perform various actions
@@ -872,7 +880,7 @@ extension ViewController : CommunicatorDelegate {
         }
     }
 
-    // Display communications-related error
+    // Display communications-related error and do some cleanup
     func error(_ error: Error, _ mustDeleteGame: Bool) {
         Logger.log("Communications error \(error)")
         var host: UIViewController = self
@@ -892,12 +900,10 @@ extension ViewController : CommunicatorDelegate {
                 self.communicator?.shutdown()
                 switch self.communication {
                 case .ServerBased(let token):
-                    serverTokens.remove(token)
-                    if let otherToken = serverTokens.first?.token {
+                    gameTokens.remove(token) // This also sets the saved CommunicatorKind to show a deleted game.
+                    if let otherToken = gameTokens.first?.token {
                         self.communication = .ServerBased(otherToken)
-                    } else {
-                        self.communication = .MultiPeer
-                    }
+                    } // Else the communicator kind remains .ServerBased with special value for deleted game
                 default:
                     break
                 }

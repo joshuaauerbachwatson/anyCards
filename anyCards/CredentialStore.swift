@@ -41,28 +41,35 @@ class CredentialStore {
         }
     }
     
-    // Perform login iff there are not already valid credentials present
-    // Note that this function is asynchronous (returns before the new credentials are received from Auth0).
-    // Login should occur well before credentials are actually needed.
-    // Currently, errors do not terminate the app but simply leave the credentials as nil.
-    func loginIfNeeded() {
+    // Perform login iff there are not already valid credentials present.
+    // Since the actual log handshake is asynchronous, the processing that requires the credentials
+    // should take place in the handler up to the next point where user interaction is required.
+    // Errors here do not terminate the app but report the error and leave credentials at nil.
+    // The app should still be usable but only in solitaire or "Nearby Only" mode.
+    func loginIfNeeded(handler: @escaping (Auth0.Credentials?, Auth0.WebAuthError?)->()) {
+        // Test for already present
         if let already = credentials, already.expiresIn > Date.now {
-            // Not needed
+            // Login not needed
+            Logger.log("Using credentials already stored")
+            handler(already, nil)
             return
         }
-        Auth0.webAuth().useHTTPS().start { result in
+        // Do actual login`
+        Auth0.webAuth().useHTTPS().audience("https://unigame.com").start { result in
             switch result {
             case .success(let credentials):
                 let encoder = JSONEncoder()
                 guard let encoded = try? encoder.encode(credentials) else {
-                    return Logger.log("Failed to encode Auth0 credentials")
+                    Logger.logFatalError("Failed to encode Auth0 credentials")
                 }
                 let credsFile = getDocDirectory().appendingPathComponent(CredentialsFile).path
                 FileManager.default.createFile(atPath: credsFile, contents: encoded, attributes: nil)
                 self._credentials = credentials
                 Logger.log("Credentials successfully saved")
+                handler(credentials, nil)
             case .failure(let error):
                 Logger.log("Login failed with \(error)")
+                handler(nil, error)
             }
         }
     }
