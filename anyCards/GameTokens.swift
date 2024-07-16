@@ -23,7 +23,7 @@ struct StoredGameToken: Codable {
     let token: String
     let nickName: String?
     var display: String {
-        if let nickName = nickName {
+        if let nickName = nickName, nickName.count > 0 {
             return "\(nickName): \(token)"
         }
         return token
