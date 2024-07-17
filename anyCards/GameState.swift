@@ -33,19 +33,6 @@ class GameState : Codable, Equatable {
     convenience init(_ controller: ViewController, yielding: Bool = false, includeHandArea: Bool = false) {
         self.init(controller.players, controller.numPlayers, controller.deckType, controller.hasHands, yielding,
                   controller.playingArea, includeHandArea ? controller.publicArea : nil)
-
-    }
-
-    // Initializer from Dictionary (accept new game state sent from the server)
-    convenience init(_ newState: Dictionary<String,Any>) {
-        let players = newState["players"] as? [Player] ?? []
-        let numPlayers = newState["numPlayers"] as? Int ?? -1
-        let deckType = newState["deckType"] as? PlayingDeckTemplate
-        let handArea = newState["handArea"] as? Bool ?? false
-        let yielding = newState["yielding"] as? Bool ?? false
-        let playingArea = newState["playingArea"] as? UIView
-        let publicArea = newState["publicArea"] as? CGRect
-        self.init(players, numPlayers, deckType, handArea, yielding, playingArea, publicArea)
     }
 
     // General initializer, not publicly visible.
