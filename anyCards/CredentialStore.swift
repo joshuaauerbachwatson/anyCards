@@ -10,6 +10,14 @@ import Auth0
 
 // Manage Auth0-provided credentials
 
+// Provide access to the stored expires_in value without alteration during decoding.
+// When deserializing Credentials, this expiresIn value is adjusted on the assumption it represents an interval from 'now'
+// (as specified by OAuth2) rather than an interval from the Date/Time reference point.  So, we need to re-do that
+// with the correct assumption.
+struct StoredExpiresIn: Decodable {
+    let expires_in: Date
+}
+
 class CredentialStore {
     private init() {}
     static let instance = CredentialStore()
@@ -21,16 +29,20 @@ class CredentialStore {
     // If there are no credentials in storage (of if stored credentials have expired) returns nil.
     var credentials: Auth0.Credentials? {
         if let result = _credentials, result.expiresIn > Date.now {
+            Logger.log("Using cached credentials")
             return result
         }
         let storageFile = getDocDirectory().appendingPathComponent(CredentialsFile)
         do {
             let archived = try Data(contentsOf: storageFile)
-            Logger.log("credentials loaded from disk")
+            Logger.log("Credentials loaded from disk")
             let decoder = JSONDecoder()
             let ans = try decoder.decode(Auth0.Credentials.self, from: archived)
-            guard ans.expiresIn < Date.now else {
-                Logger.log("credentials found but they have expired")
+            let storedExpiration = try decoder.decode(StoredExpiresIn.self, from: archived)
+            Logger.log("Credentials found and decoded.  They expire at \(storedExpiration.expires_in)")
+            Logger.log("Date/time now is \(Date.now)")
+            guard storedExpiration.expires_in > Date.now else {
+                Logger.log("credentials expired")
                 return nil
             }
             _credentials = ans
@@ -62,10 +74,12 @@ class CredentialStore {
                 guard let encoded = try? encoder.encode(credentials) else {
                     Logger.logFatalError("Failed to encode Auth0 credentials")
                 }
+                self._credentials = credentials
                 let credsFile = getDocDirectory().appendingPathComponent(CredentialsFile).path
                 FileManager.default.createFile(atPath: credsFile, contents: encoded, attributes: nil)
-                self._credentials = credentials
                 Logger.log("Credentials successfully saved")
+                // Note that the saved expires_in value is reset to be the interval since hte Date reference point,
+                // not the interval since "now".  This must be compensated for when re-read.
                 handler(credentials, nil)
             case .failure(let error):
                 Logger.log("Login failed with \(error)")
