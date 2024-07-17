@@ -39,8 +39,7 @@ class PlayerManagementDialog : UIViewController {
     let localRemoteLabel = UILabel()    // 6th row left
     let localRemote = TouchableLabel()  // 6th row right
     let tokenLabel = UILabel()          // 7th row left
-    let token = TouchableLabel()        // 7th row right
-    let editToken = UITextField()       // == token
+    let token = UITextField()           // 7th row right
     let saveToken = UIButton()          // 8th row
     let useSavedToken = UIButton()      // 9th row
     let findPlayersButton = UIButton()  // 10th row
@@ -76,26 +75,6 @@ class PlayerManagementDialog : UIViewController {
     var isRemoteIntended: Bool {
         get {
             return localRemote.text == RemoteText
-        }
-    }
-
-    // Controls whether the editing view of the token or the display view is shown
-    var isEditingToken: Bool {
-        get {
-            return !editToken.isHidden
-        }
-        set {
-            if newValue {
-                hide(token)
-                if isRemoteIntended {
-                    unhide(editToken)
-                }
-            } else {
-                hide(editToken)
-                if isRemoteIntended {
-                    unhide(token)
-                }
-            }
         }
     }
 
@@ -137,12 +116,10 @@ class PlayerManagementDialog : UIViewController {
 
         // Game Token and its label
         configureLeftLabel(tokenLabel, TokenLabelText)
-        configureTouchableLabel(token, target: self, action: #selector(tokenTouched), parent: view)
+        configureEditableField(token, TokenTag)
         if case let CommunicatorKind.ServerBased(savedToken) = vc.communication {
             token.text = gameTokens.getDisplayFromToken(savedToken)
         }
-        configureEditableField(editToken, TokenTag)
-        hide(editToken)
 
         // Save token button
         configureButton(saveToken, title: SaveTokenTitle, target: self, action: #selector(saveTokenTouched), parent: view)
@@ -182,7 +159,6 @@ class PlayerManagementDialog : UIViewController {
         place(localRemote,after(localRemoteLabel), below(numPlayers), twoThirdsWidth, ctlHeight)
         place(tokenLabel, startX, below(localRemote), thirdWidth, ctlHeight)
         place(token, after(tokenLabel), below(localRemote), twoThirdsWidth,  ctlHeight)
-        editToken.frame = token.frame
         place(saveToken, startX, below(token), fullWidth, ctlHeight)
         place(useSavedToken, startX, below(saveToken), fullWidth, ctlHeight)
         place(findPlayersButton, startX, below(useSavedToken), fullWidth, ctlHeight)
@@ -221,31 +197,22 @@ class PlayerManagementDialog : UIViewController {
         }
     }
 
-    // Respond to touch of the token label by replacing it with an editable text field
-    @objc func tokenTouched() {
-        isEditingToken = true
-        editToken.text = nil
-        editToken.placeholder = TokenPlaceholder
-        editToken.becomeFirstResponder()
-    }
-
     // Respond to touch of the save token button
     @objc func saveTokenTouched() {
-        guard let token = editToken.text, token.count > 0 else {
+        guard let newToken = token.text, newToken.count > 0 else {
             bummer(title: MissingToken, message: MissingToken, host: self)
             return
         }
-        if !validToken(token) {
+        if !validToken(newToken) {
             bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
             return
         }
+        token.resignFirstResponder()
         promptForName(self, title: SaveTokenTitle, message: SaveTokenMessage, placeholder: NicknamePlaceholder) { nickName in
-            let display = gameTokens.storeEntry(token, nickName)
-            self.vc.communication = .ServerBased(token)
-            self.showToken(token, display)
-            self.editToken.text = nil
+            let display = gameTokens.storeEntry(newToken, nickName)
+            self.vc.communication = .ServerBased(newToken)
+            self.showToken(newToken, display)
             hide(self.saveToken)
-            self.isEditingToken = false
         }
     }
 
@@ -254,6 +221,7 @@ class PlayerManagementDialog : UIViewController {
         let preferredSize = TableDialogController.getPreferredSize(gameTokens.pairs.count)
         let anchor = CGPoint(x: token.frame.midX, y: token.frame.minY)
         let popup = RestoreTokenDialog(self, size: preferredSize, anchor: anchor)
+        token.resignFirstResponder()
         Logger.logPresent(popup, host: self, animated: true)
      }
 
@@ -261,11 +229,7 @@ class PlayerManagementDialog : UIViewController {
     @objc func findPlayersTouched() {
         Logger.log("Find Players Touched")
         if isRemoteIntended {
-            // Make sure token editing is terminated and in a valid state
-            if isEditingToken {
-                token.text = editToken.text
-                isEditingToken = false
-            }
+            token.resignFirstResponder()
             let currentToken = token.text ?? ""
             if validToken(currentToken) {
                 vc.communication = .ServerBased(currentToken)
@@ -291,11 +255,13 @@ class PlayerManagementDialog : UIViewController {
     // Show a blank token to be filled in by the user (assumes remote and that the labels are showing)
     func showBlankToken() {
         token.text = nil
-        isEditingToken = true
+        hide(saveToken)
+        token.becomeFirstResponder()
     }
 
     // Show the appropriate initial token (assuming remote and that the labels are showing)
     func showInitialToken() {
+        unhide(token)
         if let pair = gameTokens.first {
             showToken(pair.token, pair.display)
             unhide(useSavedToken)
@@ -309,9 +275,9 @@ class PlayerManagementDialog : UIViewController {
     // Set the remote controls hidden or not
     func setRemoteControlsHidden(_ hidden: Bool) {
         if hidden {
-            hide(token, editToken, tokenLabel, saveToken, useSavedToken)
+            hide(token, tokenLabel, saveToken, useSavedToken)
         } else {
-            unhide(token, tokenLabel)
+            unhide(tokenLabel)
             showInitialToken()
         }
     }
@@ -330,6 +296,7 @@ class PlayerManagementDialog : UIViewController {
         field.font = getTextFont()
         field.tag = tag
         field.delegate = self
+        field.enablesReturnKeyAutomatically = false
     }
 
     // Generates the content of the version label based information baked into the app at build time.
@@ -407,10 +374,7 @@ extension PlayerManagementDialog: UITextFieldDelegate {
                 vc.userName = newText
                 vc.configurePlayerLabels()
             }
-        } else {
-            // Assume token
-            isEditingToken = false
-        }
+        } // Nothing to do for tokens
     }
 
     // For all fields, allow the return key to end editing
