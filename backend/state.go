@@ -46,7 +46,7 @@ var cleanupCounter int
 // Handler for an admin function to dump the entire state of the server.
 // This is an aid during development.  We might need something more sophisticated
 // for observability in the long run.
-func dump(w http.ResponseWriter, body map[string]interface{}) {
+func dump(w http.ResponseWriter) {
 	ans := DumpedState{CleanupCounter: cleanupCounter, Games: games}
 	encoded, err := json.MarshalIndent(ans, "", "  ")
 	if err != nil {
@@ -59,7 +59,7 @@ func dump(w http.ResponseWriter, body map[string]interface{}) {
 }
 
 // Handler for an admin function to reset to the empty state
-func reset(w http.ResponseWriter, body map[string]interface{}) {
+func reset() {
 	fmt.Println("reset called")
 	games = make(map[string]*Game)
 	cleanupCounter = 0

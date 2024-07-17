@@ -23,6 +23,9 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+
+	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
+	"github.com/auth0/go-jwt-middleware/v2/validator"
 )
 
 // Anycards backend utility functions
@@ -46,6 +49,17 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]interface
 	return body
 }
 
+// Special validator for admin requests
+func isAdmin(w http.ResponseWriter, r *http.Request) bool {
+	token := r.Context().Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
+	claims := token.CustomClaims.(*CustomClaims)
+	if !claims.HasScope("admin:server") {
+		indicateError(http.StatusForbidden, "You need to be an administrator to perform this operation.", w)
+		return false
+	}
+	return true
+}
+
 // Secondary validator for post bodies containing gameToken.  Returns the gameToken (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
 func validateGameToken(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
@@ -61,7 +75,7 @@ func validateGameToken(w http.ResponseWriter, body map[string]interface{}) (stri
 
 // Secondary validator for post bodies containing player.  Returns the player (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
-func validatePlayer(w http.ResponseWriter, gameToken string, body map[string]interface{}) (string, bool) {
+func validatePlayer(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
 	player, ok := body["player"].(string)
 	if ok {
 		maybe, err := strconv.Atoi(player)
@@ -89,7 +103,7 @@ func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (strin
 	if !ok {
 		return "", "", nil
 	}
-	player, ok := validatePlayer(w, gameToken, body)
+	player, ok := validatePlayer(w, body)
 	if !ok {
 		return gameToken, "", nil
 	}

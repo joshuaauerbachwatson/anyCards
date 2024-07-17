@@ -63,7 +63,9 @@ func main() {
 	http.Handle(pathDump, EnsureValidToken()(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if body := screenRequest(w, r); body != nil {
-				dump(w, *body)
+				if isAdmin(w, r) {
+					dump(w)
+				}
 			}
 		}),
 	))
@@ -71,7 +73,9 @@ func main() {
 	http.Handle(pathReset, EnsureValidToken()(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if body := screenRequest(w, r); body != nil {
-				reset(w, *body)
+				if isAdmin(w, r) {
+					reset()
+				}
 			}
 		}),
 	))

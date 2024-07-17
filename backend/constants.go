@@ -17,22 +17,9 @@
 
 package main
 
-import (
-	"os"
-)
-
 // Constants used in the backend
 
-// The required app token for creating games, stored as a secret in the environment by the App Platform deploy.
-// This is a "constant" by some definitions (immutable after initialization) but golang does not permit it to be
-// declared 'const' (initializer is not a constant expression).
-var anycardsAppToken = os.Getenv("ANYCARDS_APP_TOKEN")
-
 const (
-	// characters that are legal in a gameToken
-	gameTokenChars    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	numGameTokenChars = len(gameTokenChars)
-
 	// Length of a game token in characters
 	gameTokenLen = 12
 
