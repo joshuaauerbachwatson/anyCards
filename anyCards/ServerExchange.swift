@@ -222,8 +222,8 @@ func validateResponse<T: Decodable>(_ data: Data?, _ response: URLResponse?, _ e
     }
     var body: T? = nil
     if let data = data, data.count > 0 {
-        let showData = String(decoding: data, as: UTF8.self)
-        Logger.log("Got data: \(showData)")
+//        let showData = String(decoding: data, as: UTF8.self)
+//        Logger.log("Got data: \(showData)")
         Logger.log("Decoding message with type \(type)")
         do {
             body = try JSONDecoder().decode(T.self, from: data)
