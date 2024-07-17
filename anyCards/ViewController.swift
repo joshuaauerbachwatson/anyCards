@@ -876,7 +876,9 @@ extension ViewController : CommunicatorDelegate {
     func connectedDevicesChanged(_ numConnectedDevices: Int) {
         Logger.log("connectedDevicesChanged, now \(numConnectedDevices)")
         if players.count < numPlayers {
-            transmit()  
+            DispatchQueue.main.async {
+                self.transmit()
+            }
         }
     }
 
@@ -922,6 +924,7 @@ extension ViewController : CommunicatorDelegate {
         }
     }
     private func doGameChanged(_ gameState: GameState) {
+        Logger.log("doGameChanged invoked")
         if gameState.players.count > 0 {
             // Phase 1 transfer: determining player list.  First, determine whether the sending player has provided
             //   a new numPlayers value (only the "lead" player "should" do this but because of the echoing logic when
