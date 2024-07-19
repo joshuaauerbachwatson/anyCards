@@ -53,7 +53,7 @@ func screenRequest(w http.ResponseWriter, r *http.Request) *map[string]interface
 func isAdmin(w http.ResponseWriter, r *http.Request) bool {
 	token := r.Context().Value(jwtmiddleware.ContextKey{}).(*validator.ValidatedClaims)
 	claims := token.CustomClaims.(*CustomClaims)
-	if !claims.HasScope("admin:server") {
+	if !claims.HasPermission("admin:server") {
 		indicateError(http.StatusForbidden, "You need to be an administrator to perform this operation.", w)
 		return false
 	}

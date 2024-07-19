@@ -25,7 +25,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
@@ -35,7 +34,7 @@ import (
 
 // CustomClaims contains custom data we want from the token.
 type CustomClaims struct {
-	Scope string `json:"scope"`
+	Permissions []string `json:"permissions"`
 }
 
 // Validate does nothing for this example, but we need
@@ -87,11 +86,10 @@ func EnsureValidToken() func(next http.Handler) http.Handler {
 	}
 }
 
-// HasScope checks whether our claims have a specific scope.
-func (c CustomClaims) HasScope(expectedScope string) bool {
-	result := strings.Split(c.Scope, " ")
-	for i := range result {
-		if result[i] == expectedScope {
+// HasPermission checks whether our claims have a specific permission.
+func (c CustomClaims) HasPermission(expectedPermission string) bool {
+	for _, perm := range c.Permissions {
+		if perm == expectedPermission {
 			return true
 		}
 	}
