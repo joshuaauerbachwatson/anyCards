@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		280065C32BD94BCD003A520D /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = 280065C22BD94BCD003A520D /* Auth0.plist */; };
 		280065C52BD962E1003A520D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280065C42BD962E1003A520D /* CredentialStore.swift */; };
+		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
+		281EE38B2C4B10FE00750B72 /* launch-image.png in Resources */ = {isa = PBXBuildFile; fileRef = 281EE38A2C4B10FE00750B72 /* launch-image.png */; };
 		287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287DD2CB2BD2E7780020FB46 /* ChatController.swift */; };
 		28C61D122BD949F800A8A89C /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 28C61D112BD949F800A8A89C /* Auth0 */; };
 		EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290B9E2A4B478A0028D364 /* firstTurn.png */; };
@@ -64,6 +66,8 @@
 		280065C12BD94B2E003A520D /* anyCards.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = anyCards.entitlements; sourceTree = "<group>"; };
 		280065C22BD94BCD003A520D /* Auth0.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
 		280065C42BD962E1003A520D /* CredentialStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialStore.swift; sourceTree = "<group>"; };
+		281EE3882C4B101400750B72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = "anyCards/Base.lproj/LaunchScreen.storyboard"; sourceTree = "<group>"; };
+		281EE38A2C4B10FE00750B72 /* launch-image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "launch-image.png"; sourceTree = SOURCE_ROOT; };
 		287DD2CB2BD2E7780020FB46 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		EE290B9E2A4B478A0028D364 /* firstTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = firstTurn.png; sourceTree = SOURCE_ROOT; };
 		EE290BA02A4B479A0028D364 /* secondTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = secondTurn.png; sourceTree = SOURCE_ROOT; };
@@ -138,6 +142,7 @@
 		EE9028DC26DE962400F87FF8 = {
 			isa = PBXGroup;
 			children = (
+				281EE3872C4B101400750B72 /* LaunchScreen.storyboard */,
 				EE9028E726DE962400F87FF8 /* anyCards */,
 				EE9028E626DE962400F87FF8 /* Products */,
 			);
@@ -159,6 +164,7 @@
 				280065C22BD94BCD003A520D /* Auth0.plist */,
 				EE9028FD26DEDF7A00F87FF8 /* Base.lproj */,
 				EE9028F126DE962700F87FF8 /* Info.plist */,
+				281EE38A2C4B10FE00750B72 /* launch-image.png */,
 				EEF0E7C62A30B91D00226F07 /* boxMenu.png */,
 				EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */,
 				EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */,
@@ -285,6 +291,7 @@
 				EE7D37952A1BCE8F001BED96 /* playerDialogInternet.png in Resources */,
 				EE90290C26DEDF7A00F87FF8 /* Base.lproj in Resources */,
 				EE7D37972A1BE0F2001BED96 /* rememberTokenDialog.png in Resources */,
+				281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */,
 				EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */,
 				EE7D378929FAB82A001BED96 /* gameSetupDialogInitial.png in Resources */,
 				EEF0E7C92A3B812500226F07 /* dealingDialog.png in Resources */,
@@ -295,6 +302,7 @@
 				EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */,
 				EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */,
 				EE7D378B29FAB833001BED96 /* cardsAndBoxes.png in Resources */,
+				281EE38B2C4B10FE00750B72 /* launch-image.png in Resources */,
 				280065C32BD94BCD003A520D /* Auth0.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -346,6 +354,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		281EE3872C4B101400750B72 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				281EE3882C4B101400750B72 /* Base */,
+			);
+			name = "LaunchScreen.storyboard";
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		EE9028F226DE962700F87FF8 /* Debug */ = {
