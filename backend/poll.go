@@ -59,7 +59,7 @@ func poll(w http.ResponseWriter, body map[string]interface{}) {
 }
 
 // Subroutine to sort and encode the player numbers
-func sortAndEncode(players map[string]int) string {
+func sortAndEncode(players map[string]*Player) string {
 	keys := maps.Keys(players)
 	sort.Strings(keys)
 	return strings.Join(keys, " ")

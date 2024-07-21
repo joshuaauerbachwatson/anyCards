@@ -27,9 +27,16 @@ import (
 
 // The state of one game
 type Game struct {
-	Players   map[string]int         `json:"players"`   // key is the player's "order" string, value is the idleCount
+	Players   map[string]*Player     `json:"players"`   // key is the player's "order" string, value is the idleCount
 	IdleCount int                    `json:"idleCount"` // global idle count for the game as a whole
 	State     map[string]interface{} `json:"state"`     // the game state (not interpreted here)
+	Hub       *Hub                   // The Websocket "Hub" for the game (not serialized)
+}
+
+// The state of one Player
+type Player struct {
+	IdleCount int     `json:"idleCount"` // global idle count for the game as a whole
+	Client    *Client // The Websocket "client" for the player (not serialized)
 }
 
 type DumpedState struct {

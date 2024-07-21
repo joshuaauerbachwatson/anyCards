@@ -36,6 +36,10 @@ func main() {
 	}
 
 	// Set up handlers
+	http.Handle(pathWebsocket, EnsureValidToken()(
+		http.HandlerFunc(newWebSocket),
+	))
+
 	http.Handle(pathNewState, EnsureValidToken()(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if body := screenRequest(w, r); body != nil {

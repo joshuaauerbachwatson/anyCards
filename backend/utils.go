@@ -95,6 +95,16 @@ func indicateError(status int, msg string, w http.ResponseWriter) {
 	w.Write(errorDictionary(msg))
 }
 
+// Get a single-valued header from an http.Request, returning empty if not present or if there
+// are multiple values.
+func getHeader(r *http.Request, header string) string {
+	ans, ok := r.Header[header]
+	if !ok || len(ans) != 1 {
+		return ""
+	}
+	return ans[0]
+}
+
 // Get the gameToken, player, and game for a request.  The game need not previously exist but
 // will be created on demand.  However, either the game token or the player value may be malformed.
 // All errors result in an error response being sent and a return with a nil Game.
@@ -109,12 +119,17 @@ func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (strin
 	}
 	game := games[gameToken]
 	if game == nil {
-		game = &Game{Players: make(map[string]int), State: map[string]interface{}{}}
+		game = &Game{Players: make(map[string]*Player), State: map[string]interface{}{}, Hub: newHub()}
 		games[gameToken] = game
+		game.Hub.run()
 	} else {
 		game.IdleCount = 0
 	}
-	game.Players[player] = 0
+	if game.Players[player] == nil {
+		game.Players[player] = &Player{}
+	} else {
+		game.Players[player].IdleCount = 0
+	}
 	return gameToken, player, game // game will be nil on error
 }
 

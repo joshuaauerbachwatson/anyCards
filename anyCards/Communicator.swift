@@ -37,7 +37,7 @@ protocol CommunicatorDelegate {
 
 // Enumerate the kinds of communicators that exist.  We treat server-based communicators
 // with different game tokens different "kinds".
-enum CommunicatorKind {
+enum CommunicatorKind: Equatable {
     case MultiPeer, ServerBased(String)
     
     // Value for a .ServerBased CommunicatorKind whose game token has been deleted

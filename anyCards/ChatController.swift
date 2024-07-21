@@ -7,6 +7,10 @@
 
 import UIKit
 
+// Header fields for connection formation
+fileprivate let playerHeader = "PlayerOrder"
+fileprivate let gameHeader   = "GameToken"
+
 class ChatController : UIViewController, UITextFieldDelegate {
     let input = UITextField()
     let send = UIButton()
@@ -14,11 +18,11 @@ class ChatController : UIViewController, UITextFieldDelegate {
     let messages = UITextView()
     var channel: ChatChannel!
     
-    init() {
+    init(game: String, player: String) {
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = UIModalPresentationStyle.fullScreen
         channel = ChatChannel(messages)
-        channel.connect()
+        channel.connect(game: game, player: player)
     }
     
     required init?(coder: NSCoder) {
@@ -85,13 +89,16 @@ class ChatChannel {
         self.messages = messages
     }
     
-    func connect() {
+    func connect(game: String, player: String) {
         guard webSocketTask == nil else {
             return
         }
 
-        let url = URL(string: "wss://unigame-befsi.ondigitalocean.app/websocket/ws")!
-        webSocketTask = URLSession.shared.webSocketTask(with: url)
+        let url = URL(string: "wss://unigame-befsi.ondigitalocean.app/websocket")!
+        var request = URLRequest(url: url)
+        request.addValue(game, forHTTPHeaderField: gameHeader)
+        request.addValue(player, forHTTPHeaderField: playerHeader)
+        webSocketTask = URLSession.shared.webSocketTask(with: request)
         webSocketTask?.receive(completionHandler: onReceive)
         webSocketTask?.resume()
     }

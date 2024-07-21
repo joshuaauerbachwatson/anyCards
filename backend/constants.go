@@ -24,11 +24,12 @@ const (
 	gameTokenLen = 12
 
 	// URL paths representing verbs
-	pathNewState = "/newstate"
-	pathPoll     = "/poll"
-	pathWithdraw = "/withdraw"
-	pathReset    = "/reset"
-	pathDump     = "/dump"
+	pathNewState  = "/newstate"
+	pathPoll      = "/poll"
+	pathWithdraw  = "/withdraw"
+	pathReset     = "/reset"
+	pathDump      = "/dump"
+	pathWebsocket = "/websocket"
 
 	// Period at which the cleanup function is called, in seconds
 	cleanupPeriod = 15
@@ -47,4 +48,8 @@ const (
 	argGameState = "gameState"
 	argPlayers   = "players"
 	argState     = "state"
+
+	// Custom headers used for websocket creation
+	playerHeader = "PlayerOrder"
+	gameHeader   = "GameToken"
 )

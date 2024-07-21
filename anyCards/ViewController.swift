@@ -34,6 +34,15 @@ class ViewController: UIViewController {
         }
         set {
             OptionSettings.instance.communication = newValue
+            chatButton.isHidden = newValue == .MultiPeer
+        }
+    }
+    var gameToken : String? {
+        switch(communication) {
+        case .MultiPeer:
+            return nil
+        case .ServerBased(let gameToken):
+            return gameToken
         }
     }
     var deckType : PlayingDeckTemplate {
@@ -235,6 +244,7 @@ class ViewController: UIViewController {
         configureButton(gameSetupButton, title: GameSetupTitle, target: self, action: #selector(gameSetupTouched), parent: self.view)
         configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
         configureButton(chatButton, title: ChatTitle, target: self, action: #selector(chatTouched), parent: self.view)
+        chatButton.isHidden = gameToken == nil
 
         // Add GridBox-making and destroying recognizer to the playingArea view
         let gridBoxRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressDetected))
@@ -551,7 +561,11 @@ class ViewController: UIViewController {
     
     // Respond to touch of the chat button.  Open the chat view
     @objc func chatTouched() {
-        let chatWindow = ChatController()
+        guard let gameToken = self.gameToken else {
+            Logger.log("chat button was touched when communication was not server-based")
+            return
+        }
+        let chatWindow = ChatController(game: gameToken, player: String(players[0].order))
         Logger.logPresent(chatWindow, host: self, animated: true)
     }
 

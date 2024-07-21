@@ -45,7 +45,7 @@ func newGameState(w http.ResponseWriter, body map[string]interface{}) {
 		return
 	}
 	game.State = gameState
-	game.Players[player] = 0
+	game.Players[player].IdleCount = 0
 	fmt.Printf("New gamestate recorded for game %s\n", gameToken)
 	w.WriteHeader(http.StatusOK)
 }
