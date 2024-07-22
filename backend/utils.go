@@ -98,10 +98,17 @@ func indicateError(status int, msg string, w http.ResponseWriter) {
 // Get a single-valued header from an http.Request, returning empty if not present or if there
 // are multiple values.
 func getHeader(r *http.Request, header string) string {
+	fmt.Printf("Parsing header %s\n", header)
 	ans, ok := r.Header[header]
-	if !ok || len(ans) != 1 {
+	if !ok {
+		fmt.Println("Header not present in http.Request")
 		return ""
 	}
+	if len(ans) != 1 {
+		fmt.Printf("answer is not singular but has length %d\n", len(ans))
+		return ""
+	}
+	fmt.Printf("Parsed value is %s\n", ans[0])
 	return ans[0]
 }
 

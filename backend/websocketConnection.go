@@ -25,6 +25,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -74,6 +75,10 @@ type Client struct {
 // Destroy closes out all goroutines of this client, closes the connection, stops the ticker, will exit, the connection is closed, the hub
 // is notified with "deregister" and the destruction is recorded
 func (c *Client) Destroy() {
+	if c.terminated {
+		// Don't do this multiple times
+		return
+	}
 	c.terminated = true
 	c.hub.unregister <- c
 	c.conn.Close()
@@ -162,8 +167,9 @@ func (c *Client) writePump() {
 func newWebSocket(w http.ResponseWriter, r *http.Request) {
 	playerValue := getHeader(r, playerHeader)
 	gameToken := getHeader(r, gameHeader)
+	fmt.Printf("newWebsocket: player=%s and game=%s\n", playerValue, gameToken)
 	if playerValue == "" || gameToken == "" {
-		indicateError(http.StatusBadRequest, "Missing require header information opening websocket", w)
+		indicateError(http.StatusBadRequest, "Missing required header information for websocket", w)
 		return
 	}
 	game, ok := games[gameToken]
@@ -183,6 +189,10 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Create and remember Client
+	if player.Client != nil {
+		// Make sure old client is dead if found
+		player.Client.Destroy()
+	}
 	player.Client = &Client{hub: game.Hub, conn: conn, send: make(chan []byte, 256)}
 	game.Hub.register <- player.Client
 	player.IdleCount = 0

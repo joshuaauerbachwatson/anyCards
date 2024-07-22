@@ -565,7 +565,11 @@ class ViewController: UIViewController {
             Logger.log("chat button was touched when communication was not server-based")
             return
         }
-        let chatWindow = ChatController(game: gameToken, player: String(players[0].order))
+        guard let creds = CredentialStore.instance.credentials else {
+            Logger.log("chat attempted when not logged in")
+            return
+        }
+        let chatWindow = ChatController(game: gameToken, player: String(players[0].order), accessToken: creds.accessToken)
         Logger.logPresent(chatWindow, host: self, animated: true)
     }
 

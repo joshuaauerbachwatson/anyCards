@@ -18,11 +18,11 @@ class ChatController : UIViewController, UITextFieldDelegate {
     let messages = UITextView()
     var channel: ChatChannel!
     
-    init(game: String, player: String) {
+    init(game: String, player: String, accessToken: String) {
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = UIModalPresentationStyle.fullScreen
         channel = ChatChannel(messages)
-        channel.connect(game: game, player: player)
+        channel.connect(game: game, player: player, accessToken: accessToken)
     }
     
     required init?(coder: NSCoder) {
@@ -89,15 +89,17 @@ class ChatChannel {
         self.messages = messages
     }
     
-    func connect(game: String, player: String) {
+    func connect(game: String, player: String, accessToken: String) {
         guard webSocketTask == nil else {
             return
         }
 
+        Logger.log("New websocket connection with game=\(game), player=\(player)")
         let url = URL(string: "wss://unigame-befsi.ondigitalocean.app/websocket")!
         var request = URLRequest(url: url)
         request.addValue(game, forHTTPHeaderField: gameHeader)
         request.addValue(player, forHTTPHeaderField: playerHeader)
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         webSocketTask = URLSession.shared.webSocketTask(with: request)
         webSocketTask?.receive(completionHandler: onReceive)
         webSocketTask?.resume()
