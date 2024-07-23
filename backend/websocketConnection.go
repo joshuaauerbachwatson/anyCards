@@ -165,8 +165,8 @@ func (c *Client) writePump() {
 // already occurred but we need to parse the header information to identity the player and game
 // If there is a problem with that, we avoid the upgrade.
 func newWebSocket(w http.ResponseWriter, r *http.Request) {
-	playerValue := getHeader(r, playerHeader)
-	gameToken := getHeader(r, gameHeader)
+	playerValue := getQueryValue(r, playerHeader)
+	gameToken := getQueryValue(r, gameHeader)
 	fmt.Printf("newWebsocket: player=%s and game=%s\n", playerValue, gameToken)
 	if playerValue == "" || gameToken == "" {
 		indicateError(http.StatusBadRequest, "Missing required header information for websocket", w)

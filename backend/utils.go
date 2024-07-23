@@ -95,13 +95,13 @@ func indicateError(status int, msg string, w http.ResponseWriter) {
 	w.Write(errorDictionary(msg))
 }
 
-// Get a single-valued header from an http.Request, returning empty if not present or if there
+// Get a single-valued query value from an http.Request, returning empty string if not present or if there
 // are multiple values.
-func getHeader(r *http.Request, header string) string {
-	fmt.Printf("Parsing header %s\n", header)
-	ans, ok := r.Header[header]
+func getQueryValue(r *http.Request, key string) string {
+	fmt.Printf("Parsing query value  %s\n", key)
+	ans, ok := r.URL.Query()[key]
 	if !ok {
-		fmt.Println("Header not present in http.Request")
+		fmt.Println("Query value not present in http.Request")
 		return ""
 	}
 	if len(ans) != 1 {

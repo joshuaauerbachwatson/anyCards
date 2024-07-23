@@ -569,7 +569,14 @@ class ViewController: UIViewController {
             Logger.log("chat attempted when not logged in")
             return
         }
-        let chatWindow = ChatController(game: gameToken, player: String(players[0].order), accessToken: creds.accessToken)
+        let player: Player
+        if players.indices.contains(thisPlayer) {
+            player = players[thisPlayer]
+        } else {
+            Logger.log("chat attempted before player list established")
+            return
+        }
+        let chatWindow = ChatController(game: gameToken, player: String(player.order), accessToken: creds.accessToken)
         Logger.logPresent(chatWindow, host: self, animated: true)
     }
 

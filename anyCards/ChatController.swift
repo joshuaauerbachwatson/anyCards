@@ -95,10 +95,8 @@ class ChatChannel {
         }
 
         Logger.log("New websocket connection with game=\(game), player=\(player)")
-        let url = URL(string: "wss://unigame-befsi.ondigitalocean.app/websocket")!
+        let url = URL(string: "wss://unigame-befsi.ondigitalocean.app/websocket?\(gameHeader)=\(game)&\(playerHeader)=\(player)")!
         var request = URLRequest(url: url)
-        request.addValue(game, forHTTPHeaderField: gameHeader)
-        request.addValue(player, forHTTPHeaderField: playerHeader)
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         webSocketTask = URLSession.shared.webSocketTask(with: request)
         webSocketTask?.receive(completionHandler: onReceive)
