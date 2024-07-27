@@ -34,7 +34,7 @@ class ViewController: UIViewController {
         }
         set {
             OptionSettings.instance.communication = newValue
-            chatButton.isHidden = isChatButtonHidden
+            setChatButtonVisibility()
         }
     }
     var gameToken : String? {
@@ -89,14 +89,6 @@ class ViewController: UIViewController {
         }
     }
     
-    // Decide whether chat button should be hidden or not
-    var isChatButtonHidden: Bool {
-        if let communicator = self.communicator {
-            return communicator.isChatAvailable
-        }
-        return false
-    }
-
     // Model-related fields
 
     // The source deck in current use.
@@ -511,7 +503,7 @@ class ViewController: UIViewController {
             if let communicator = communicator {
                 Logger.log("Got back valid communicator")
                 self.communicator = communicator
-                self.chatButton.isHidden = self.isChatButtonHidden
+                self.setChatButtonVisibility()
                 hide(self.playersButton)
                 unhide(self.endGameButton)
             } else if let error = error {
@@ -580,6 +572,16 @@ class ViewController: UIViewController {
     }
 
     // Other functions
+
+    // Decide whether chat button should be hidden or not
+    func setChatButtonVisibility() {
+        if let communicator = self.communicator, communicator.isChatAvailable {
+            unhide(chatButton)
+        } else {
+            hide(chatButton)
+        }
+    }
+
 
     // Given a card, find all the other cards that cover it or that cover cards that cover it (transitive closure).
     // The original card plus the found others constitutes the "drag set" which is going to be dragged as a whole
@@ -820,7 +822,7 @@ class ViewController: UIViewController {
         hide(endGameButton, yieldButton)
         players = []
         configurePlayerLabels()
-        chatButton.isHidden = isChatButtonHidden
+        chatButton.isHidden = true
         // Set up new game
         newShuffle()
     }
@@ -959,11 +961,13 @@ extension ViewController : CommunicatorDelegate {
     private func doGameChanged(_ gameState: GameState) {
         Logger.log("doGameChanged invoked")
         if gameState.players.count > 0 {
+            Logger.log("gameState.players.count is \(gameState.players.count)")
             // Phase 1 transfer: determining player list.  First, determine whether the sending player has provided
             //   a new numPlayers value (only the "lead" player "should" do this but because of the echoing logic when
             //   the player list changes, the value can appear in other contexts.  It is harmless to do a label configuration).
             var changed = false
             if gameState.numPlayers > 0 {
+                Logger.log("configuring player labels because gameState.numPlayers is \(gameState.numPlayers)")
                 configurePlayerLabels()
             }
             // Then, if the incoming list differs from the local list, merge the lists and notify the communicator.
@@ -979,6 +983,7 @@ extension ViewController : CommunicatorDelegate {
                 guard let thisPlayer = merged.firstIndex(where: {$0.name == OptionSettings.instance.userName})
                     else { Logger.logFatalError("This player not in player list") }
                 self.thisPlayer = thisPlayer
+                Logger.log("Updating players list in communicator")
                 communicator?.updatePlayers(players)
             }
 
@@ -1002,37 +1007,44 @@ extension ViewController : CommunicatorDelegate {
                 }
                 // Player list is complete with exactly one lead player
                 playBegun = true
+                Logger.log("Player list complete, play begun")
                 checkTurnToPlay()
             }
 
             // If anything changed at all, then share the result with other players so that consensus can eventually occur.
             // Note: in the absence of communication failures this is overkill because all players actually should get the same
-            // information.  It seems that when we use MPC this extra sharing step is needed sometimes.  Things should quiesce because
-            // if nothing changed, nothing is transmitted.
+            // information.  It seems that when we use MPC this extra sharing step is needed sometimes.  Things should quiesce
+            // because if nothing changed, nothing is transmitted.
             if changed {
                 Logger.log("Sending because 'changed' in players logic")
                 communicator?.send(GameState(self))
             }
-        } else {
-            // This is not the initial player exchange but a move by an active player.  There is a special step for the first move
-            //  to determine which deck is being used and to set up the hand area if requested.
+        }
+
+        if playBegun {
+            // If player lists have quiesced and play has begun, examine the rest of the game state
             Logger.log("Received GameState contains \(gameState.items.count) items")
             if !firstYieldOccurred {
+                Logger.log("Still in initial setup, processing deck type and public area")
                 if let deckType = gameState.deckType {
                     cards = makePlayingDeck(Deck, deckType)
                 }
                 setupPublicArea()
                 setFirstYieldOccurred(true, gameState.areaSize.landscape)
             }
+            Logger.log("New layout based on received game state")
             removePublicCardsAndBoxes()
             doLayout(gameState)
             if gameState.yielding {
+                Logger.log("A player has yielded, determining next turn")
                 activePlayer = (activePlayer + 1) % players.count
                 for i in 0..<players.count {
                     configurePlayer(playerLabels[i], players[i].name, i)
                 }
                 checkTurnToPlay()
             }
+        } else {
+            Logger.log("Play has not begun so not processing complete game state")
         }
     }
 
