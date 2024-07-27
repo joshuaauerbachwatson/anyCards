@@ -35,8 +35,7 @@ class MultiPeerCommunicator : NSObject, Communicator {
     var isChatAvailable = false
     
     func sendChatMsg(_ mag: String) {
-        Logger.log("sendChatMsg should not be called on MultiPeerCommunicator")
-        // However, this is non-terminal
+        Logger.logFatalError("sendChatMsg should not be called on MultiPeerCommunicator")
     }
     
     // The session as a lazily initialized private property
@@ -60,8 +59,8 @@ class MultiPeerCommunicator : NSObject, Communicator {
         serviceBrowser.startBrowsingForPeers()
     }
 
-    // Send the game state to all peers.  A harmless no-op if there are no peers.  Handles errors (when there is at least one peer) by
-    // calling delegate.error().   Implements Communicator protocol
+    // Send the game state to all peers.  A harmless no-op if there are no peers.  Handles errors (when there is at least one 
+    // peer) by calling delegate.error().   Implements Communicator protocol
     func send(_ gameState : GameState) {
         if session.connectedPeers.count > 0 {
             Logger.log("Sending new game state")
