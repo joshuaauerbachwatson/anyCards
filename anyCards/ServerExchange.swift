@@ -18,7 +18,6 @@ import Foundation
 
 // Constants mimic those in the backend
 fileprivate let pathNewState = "/newstate"
-fileprivate let pathPoll     = "/poll"
 fileprivate let pathWithdraw = "/withdraw"
 fileprivate let argGameToken = "gameToken"
 fileprivate let argPlayer    = "player"
