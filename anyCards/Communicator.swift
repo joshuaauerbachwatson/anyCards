@@ -22,6 +22,8 @@ import UIKit
 
 // The protocol implemented by all Communicator implementations
 protocol Communicator {
+    var isChatAvailable: Bool { get }
+    func sendChatMsg(_ mag: String)
     func send(_ gameState: GameState)
     func shutdown()
     func updatePlayers(_ players: [Player])
@@ -33,6 +35,7 @@ protocol CommunicatorDelegate {
     func gameChanged(_ gameState: GameState)
     func error(_ error: Error, _ deleteGame: Bool)
     func lostPlayer(_ peer: String)
+    func newChatMsg(_ msg: String)
 }
 
 // Enumerate the kinds of communicators that exist.  We treat server-based communicators

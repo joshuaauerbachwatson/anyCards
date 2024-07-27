@@ -31,6 +31,14 @@ class MultiPeerCommunicator : NSObject, Communicator {
     // The delegate, with which we communicate critical events
     private let delegate : CommunicatorDelegate?
 
+    // The MultiPeer communicator does not support chat
+    var isChatAvailable = false
+    
+    func sendChatMsg(_ mag: String) {
+        Logger.log("sendChatMsg should not be called on MultiPeerCommunicator")
+        // However, this is non-terminal
+    }
+    
     // The session as a lazily initialized private property
     private lazy var session : MCSession = {
         let session = MCSession(peer: self.peerId, securityIdentity: nil, encryptionPreference: .none)

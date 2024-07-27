@@ -7,22 +7,21 @@
 
 import UIKit
 
-// Header fields for connection formation
-fileprivate let playerHeader = "PlayerOrder"
-fileprivate let gameHeader   = "GameToken"
-
+// UIViewController for showing the chat transcript and sending chat messages.
+// TODO on tablets this perhaps should not use .fullScreen presentation style.  But, full screen is probably
+// needed for phones and is ok to get started with in general.
 class ChatController : UIViewController, UITextFieldDelegate {
     let input = UITextField()
     let send = UIButton()
     let done = UIButton()
     let messages = UITextView()
-    var channel: ChatChannel!
+    let communicator: Communicator
     
-    init(game: String, player: String, accessToken: String) {
+    init(_ messages: String, communicator: Communicator) {
+        self.communicator = communicator
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = UIModalPresentationStyle.fullScreen
-        channel = ChatChannel(messages)
-        channel.connect(game: game, player: player, accessToken: accessToken)
+        self.messages.text = messages
     }
     
     required init?(coder: NSCoder) {
@@ -30,15 +29,12 @@ class ChatController : UIViewController, UITextFieldDelegate {
     }
     
     override func viewDidLoad() {
-        configureTextField(input, .white, parent: view)
+        configureTextField(input, UIColor.systemBackground, parent: view)
         input.delegate = self
         input.textAlignment = .left
         configureButton(send, title: SendTitle, target: self, action: #selector(sendTouched), parent: view)
         configureButton(done, title: DoneTitle, target: self, action: #selector(doneTouched), parent: view)
-        messages.font = getTextFont()
-        messages.text = ""
         messages.isEditable = false
-        messages.backgroundColor = .white
         view.addSubview(messages)
     }
     
@@ -61,13 +57,16 @@ class ChatController : UIViewController, UITextFieldDelegate {
         guard let message = input.text else {
             return
         }
-        channel.send(message)
+        communicator.sendChatMsg(message)
         input.text = nil
     }
     
     @objc func doneTouched() {
         Logger.logDismiss(self, host: (presentingViewController ?? self), animated: true)
-        channel.disconnect()
+    }
+    
+    func updateTranscript(_ messages: String) {
+        self.messages.text = messages
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -78,85 +77,4 @@ class ChatController : UIViewController, UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         sendTouched()
     }
-}
-
-// Manage the websocket connection for the chat
-class ChatChannel {
-    private var webSocketTask: URLSessionWebSocketTask?
-    let messages: UITextView
-    
-    init(_ messages: UITextView) {
-        self.messages = messages
-    }
-    
-    func connect(game: String, player: String, accessToken: String) {
-        guard webSocketTask == nil else {
-            return
-        }
-
-        Logger.log("New websocket connection with game=\(game), player=\(player)")
-        let url = URL(string: "wss://unigame-befsi.ondigitalocean.app/websocket?\(gameHeader)=\(game)&\(playerHeader)=\(player)")!
-        var request = URLRequest(url: url)
-        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-        webSocketTask = URLSession.shared.webSocketTask(with: request)
-        webSocketTask?.receive(completionHandler: onReceive)
-        webSocketTask?.resume()
-    }
-    
-    func disconnect() {
-        webSocketTask?.cancel(with: .normalClosure, reason: nil)
-    }
-    
-    // MARK: - Sending / recieving
-    private func onReceive(incoming: Result<URLSessionWebSocketTask.Message, Error>) {
-        webSocketTask?.receive(completionHandler: onReceive)
-
-        if case .success(let message) = incoming {
-            onMessage(message: message)
-        }
-        else if case .failure(let error) = incoming {
-            let nserror = error as NSError
-            if nserror.domain == NSPOSIXErrorDomain && nserror.code == POSIXError.ENOTCONN.rawValue {
-                return
-            }
-            Logger.logFatalError("Error receiving message: \(error)")
-        }
-    }
-    
-    private func onMessage(message: URLSessionWebSocketTask.Message) {
-        let toAppend: String
-        switch message {
-        case .data(let data):
-            toAppend = String(decoding: data, as: UTF8.self)
-        case .string(let text):
-            toAppend = text
-        @unknown default:
-            Logger.logFatalError("Unanticipated incoming message type")
-        }
-        DispatchQueue.main.async {
-            var transcript = self.messages.text ?? ""
-            if transcript.count > 0 {
-                transcript += "\n"
-            }
-            transcript += toAppend
-            self.messages.text = transcript
-            let range = NSRange(location: transcript.count-1, length: 1)
-            self.messages.scrollRangeToVisible(range)
-        }
-    }
-    
-    func send(_ text: String) {
-        let toSend = "[\(OptionSettings.instance.userName)] \(text)"
-        let message = URLSessionWebSocketTask.Message.string(toSend)
-        webSocketTask?.send(message) { error in
-            if let error = error {
-                Logger.logFatalError("Error sending message: \(error)")
-            }
-        }
-    }
-    
-    deinit {
-        disconnect()
-    }
-
 }

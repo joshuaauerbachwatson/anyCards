@@ -34,7 +34,7 @@ class ViewController: UIViewController {
         }
         set {
             OptionSettings.instance.communication = newValue
-            chatButton.isHidden = newValue == .MultiPeer
+            chatButton.isHidden = isChatButtonHidden
         }
     }
     var gameToken : String? {
@@ -88,7 +88,14 @@ class ViewController: UIViewController {
             }
         }
     }
-
+    
+    // Decide whether chat button should be hidden or not
+    var isChatButtonHidden: Bool {
+        if let communicator = self.communicator {
+            return communicator.isChatAvailable
+        }
+        return false
+    }
 
     // Model-related fields
 
@@ -126,6 +133,9 @@ class ViewController: UIViewController {
     // Indicates that the first yield by a player has occurred.  Until this happens, the first player is allowed to change the
     // setup.  Afterwards, the setup is fixed.
     var firstYieldOccurred = false
+    
+    // The transcript of the ongoing chat (if in use)
+    var chatTranscript = ""
 
     // View-related fields
 
@@ -244,7 +254,7 @@ class ViewController: UIViewController {
         configureButton(gameSetupButton, title: GameSetupTitle, target: self, action: #selector(gameSetupTouched), parent: self.view)
         configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
         configureButton(chatButton, title: ChatTitle, target: self, action: #selector(chatTouched), parent: self.view)
-        chatButton.isHidden = gameToken == nil
+        chatButton.isHidden = true
 
         // Add GridBox-making and destroying recognizer to the playingArea view
         let gridBoxRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressDetected))
@@ -501,6 +511,7 @@ class ViewController: UIViewController {
             if let communicator = communicator {
                 Logger.log("Got back valid communicator")
                 self.communicator = communicator
+                self.chatButton.isHidden = self.isChatButtonHidden
                 hide(self.playersButton)
                 unhide(self.endGameButton)
             } else if let error = error {
@@ -561,22 +572,10 @@ class ViewController: UIViewController {
     
     // Respond to touch of the chat button.  Open the chat view
     @objc func chatTouched() {
-        guard let gameToken = self.gameToken else {
-            Logger.log("chat button was touched when communication was not server-based")
-            return
+        guard let communicator = self.communicator else {
+            Logger.logFatalError("chat button should not have been visible with no communicator")
         }
-        guard let creds = CredentialStore.instance.credentials else {
-            Logger.log("chat attempted when not logged in")
-            return
-        }
-        let player: Player
-        if players.indices.contains(thisPlayer) {
-            player = players[thisPlayer]
-        } else {
-            Logger.log("chat attempted before player list established")
-            return
-        }
-        let chatWindow = ChatController(game: gameToken, player: String(player.order), accessToken: creds.accessToken)
+        let chatWindow = ChatController(chatTranscript, communicator: communicator)
         Logger.logPresent(chatWindow, host: self, animated: true)
     }
 
@@ -821,6 +820,7 @@ class ViewController: UIViewController {
         hide(endGameButton, yieldButton)
         players = []
         configurePlayerLabels()
+        chatButton.isHidden = isChatButtonHidden
         // Set up new game
         newShuffle()
     }
@@ -907,6 +907,14 @@ extension ViewController : CommunicatorDelegate {
         }
     }
 
+    // Handle a new chat message
+    func newChatMsg(_ msg: String) {
+        chatTranscript = chatTranscript == "" ? msg : chatTranscript + "\n" + msg
+        if let chatController = presentedViewController as? ChatController {
+            chatController.updateTranscript(chatTranscript)
+        }
+    }
+    
     // Display communications-related error and do some cleanup
     func error(_ error: Error, _ mustDeleteGame: Bool) {
         Logger.log("Communications error \(error)")

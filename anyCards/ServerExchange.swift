@@ -17,31 +17,41 @@
 import Foundation
 
 // Constants mimic those in the backend
-let pathCreate   = "/create"
-let pathDelete   = "/delete"
-let pathNewState = "/newstate"
-let pathPoll     = "/poll"
-let pathWithdraw = "/withdraw"
-let argGameToken = "gameToken"
-let argPlayer    = "player"
-let argPlayers   = "players"
-let argGameState = "gameState"
-let argError     = "argError"
+fileprivate let pathNewState = "/newstate"
+fileprivate let pathPoll     = "/poll"
+fileprivate let pathWithdraw = "/withdraw"
+fileprivate let argGameToken = "gameToken"
+fileprivate let argPlayer    = "player"
+fileprivate let argPlayers   = "players"
+fileprivate let argGameState = "gameState"
+fileprivate let argError     = "argError"
+fileprivate let playerHeader = "PlayerOrder"
+fileprivate let gameHeader   = "GameToken"
+fileprivate let websocketURL = "wss://unigame-befsi.ondigitalocean.app/websocket"
+fileprivate let typeChat = UInt8(("C" as UnicodeScalar).value)
+fileprivate let typeGame = UInt8(("G" as UnicodeScalar).value)
 
-// This communicator is temporarily using a strategy designed for a serverless implementation.   In that case there was an
-// impedence mismatch for what is, conceptually, a multi-cast group.  We use a 2-second repeating timer to poll for any
-// changes that would otherwise be pushed out upon occurance.
-// TODO The plan is to augment http with websockets, the latter being used for push notifications as well as a chat channel.
+// This communicator currently uses two means of communication, a websocket and https request/response.
+// The https mechanism may be gradually phased out.
+// Currently:  websocket is used for chat and received state.  https is used for sending gamestate and for
+// withdrawing from the game.
 class ServerBasedCommunicator : NSObject, Communicator {
-    let playerID: String
-    let delegate: CommunicatorDelegate
-    let encoder: JSONEncoder
-    let decoder: JSONDecoder
-    var gameToken: String
-    var accessToken: String
-    var timer: DispatchSourceTimer? = nil
-    var lastGameState: GameState? = nil
-    var lastPlayerList: Set<String> = Set<String>()
+    // Chat is available with this communicator.  True, it is only available when the communicator is connected.
+    // But, a Communicator connects on construction and should be rendered inaccessible on failure or termination of
+    // a game.
+    let isChatAvailable = true
+    
+    // Internal state
+    private let gameToken: String
+    private let accessToken: String
+    private let playerID: String
+    private let delegate: CommunicatorDelegate
+    private let encoder: JSONEncoder
+    private let decoder: JSONDecoder
+    private var webSocketTask: URLSessionWebSocketTask! // Initialized after super call
+
+    private var lastGameState: GameState? = nil
+    private var lastPlayerList: Set<String> = Set<String>()
 
     // The initializer to use for this Communicator.  Accepts a gameToken and player and starts listening
     init(_ accessToken: String, gameToken: String, player: Player, delegate: CommunicatorDelegate) {
@@ -52,32 +62,11 @@ class ServerBasedCommunicator : NSObject, Communicator {
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
         super.init()
-        // TODO poll is slated for removal once we can use websocket as an alternative
-        let poll = Poll(gameToken: gameToken, player: playerID)
-        guard let encoded = try? encoder.encode(poll) else {
-            Logger.logFatalError("Unexpected failure to encode gameToken and player")
-        }
-        startListening(encoded)
+        self.webSocketTask = connectWebsocket(game: gameToken, player: playerID, accessToken: accessToken)
     }
 
-    // Starts the "listening" process (invocations of 'poll' at 2 second intervals)
-    func startListening(_ args: Data) {
-        let queue = DispatchQueue.global(qos: .background)
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        self.timer = timer
-        timer.schedule(deadline: .now(), repeating: .seconds(2), leeway: .milliseconds(100))
-        timer.setEventHandler {
-            postAnAction(pathPoll, self.accessToken, args, self.newState)
-        }
-        timer.resume()
-    }
-
-    // Interpret a new state
-    func newState(_ data: Data?, _ response: URLResponse?, _ err: Error?) {
-        guard let newState = validateResponse(data, response, err, ReceivedState.self, delegate.error) else {
-            timer?.cancel()
-            return
-        }
+    // Process a new Received state
+    private func processReceivedState(_ newState: ReceivedState) {
         if let playerList = newState.players {
             let players = Set<String>(playerList.split(separator: " ").map { String($0) })
             if players != self.lastPlayerList {
@@ -93,21 +82,21 @@ class ServerBasedCommunicator : NSObject, Communicator {
             } // do nothing if no change
         } else if self.lastGameState != nil {
             // Once some GameState has been established, all polls should be returning one
-            timer?.cancel()
-            delegate.error(ServerError("No game state included in answer to poll"), false)
+            delegate.error(ServerError("No game state included in received state"), false)
         } // but if a GameState was never sent, we can assume that none exists on the server yet either
     }
 
-    // Find a player that was missing on a poll and notify so game can be terminated.  Only one lost player is reported because
-    // that report will end the game anyway.   The argument is the new player set; the old one is in self.lastPlayerList
-    func findMissingPlayers(_ players: Set<String>) {
+    // Find a player that was missing in a received state and notify so game can be terminated.
+    // Only one lost player is reported because that report will end the game anyway.
+    // The argument is the new player set; the old one is in self.lastPlayerList
+    private func findMissingPlayers(_ players: Set<String>) {
         let missing = self.lastPlayerList.subtracting(players)
         if let toReport = missing.first {
             self.delegate.lostPlayer(toReport)
         }
     }
 
-    // Send a new game state
+    // Send a new game state (part of Communicator protocol)
     func send(_ gameState: GameState) {
         var arg: Data
         do {
@@ -122,10 +111,11 @@ class ServerBasedCommunicator : NSObject, Communicator {
             _ = validateResponse(data, response, err, Dictionary<String,String>.self, self.delegate.error)
         }
     }
-
-    // Shutdown this communicator.  First stop the polling, then try to withdraw from the game (silently)
+    
+    // Shutdown this communicator.  First disconnect the websocket, then try to withdraw from the game (silently)
+    // Part of communicator protocol
     func shutdown() {
-        self.timer?.cancel()
+        disconnectWebsocket()
         guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
         // ignore error and stop trying to withdraw
             return
@@ -133,18 +123,101 @@ class ServerBasedCommunicator : NSObject, Communicator {
         postAnAction(pathWithdraw, accessToken, arg) { (data, response, err) in return } // ignore errors
     }
 
-    // Update the players list.  Not used for server based.  The remote player list is maintained by
-    // means of the multiple users polling.
+    // Update the players list.  Part of Communicator protocol but not used for server-based.
     func updatePlayers(_ players: [Player]) {
         // Do nothing
     }
+
+    // Subroutine to initialize the websocket connection
+    private func connectWebsocket(game: String, player: String, accessToken: String) -> URLSessionWebSocketTask {
+        Logger.log("New websocket connection with game=\(game), player=\(player)")
+        let url = URL(string: "\(websocketURL)?\(gameHeader)=\(game)&\(playerHeader)=\(player)")!
+        var request = URLRequest(url: url)
+        request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let webSocketTask = URLSession.shared.webSocketTask(with: request)
+        webSocketTask.receive(completionHandler: onWebsocketReceive)
+        webSocketTask.resume()
+        return webSocketTask
+    }
+    
+    // Subroutine to disconnect the websocket
+    private func disconnectWebsocket() {
+        webSocketTask.cancel(with: .normalClosure, reason: nil)
+    }
+    
+    // Completion handler for websocket receive.  Posts a new receive, then processes the present one.
+    private func onWebsocketReceive(incoming: Result<URLSessionWebSocketTask.Message, Error>) {
+        webSocketTask.receive(completionHandler: onWebsocketReceive)
+
+        if case .success(let message) = incoming {
+            onWebsocketMessage(message: message)
+        }
+        else if case .failure(let error) = incoming {
+            let nserror = error as NSError
+            if nserror.domain == NSPOSIXErrorDomain && nserror.code == POSIXError.ENOTCONN.rawValue {
+                return
+            }
+            Logger.logFatalError("Error receiving message: \(error)")
+        }
+    }
+    
+    // Handles a message received on the websocket
+    private func onWebsocketMessage(message: URLSessionWebSocketTask.Message) {
+        // The message type may be either string or data.  At the protocol level these are both just bytes
+        // but the Task code will have encoded to String if it thinks it's getting text.  We undo this here and
+        // treat everything like a byte array.
+        switch message {
+        case .data(let data):
+            processIncomingFromWebsocket(data)
+        case .string(let text):
+            if let data = text.data(using: .utf8) {
+                processIncomingFromWebsocket(data)
+            }
+        default:
+            Logger.logFatalError("Unanticipated incoming message type")
+        }
+    }
+  
+    // Process incoming information from websocket
+    private func processIncomingFromWebsocket(_ rawData: Data) {
+        let type = rawData[0]
+        let data = rawData.dropFirst()
+        if type == typeChat {
+            delegate.newChatMsg(String(decoding: data, as: UTF8.self))
+        } else if type == typeGame {
+            deliverReceivedState(data)
+        }
+    }
+    
+    // Decodes and then processes received game state
+    private func deliverReceivedState(_ data: Data) {
+        do {
+            let received = try JSONDecoder().decode(ReceivedState.self, from: data)
+            processReceivedState(received)
+        } catch {
+            Logger.log("Got decoding error: \(error)")
+            delegate.error(error, false)
+        }
+    }
+    
+    // Send a chat message.  Part of the Communicator protocol
+    func sendChatMsg(_ text: String) {
+        let toSend = "[\(OptionSettings.instance.userName)] \(text)"
+        let message = URLSessionWebSocketTask.Message.string(toSend)
+        webSocketTask.send(message) { error in
+            if let error = error {
+                Logger.logFatalError("Error sending message: \(error)")
+            }
+        }
+    }
 }
+
 
 // Subroutines for invoking actions and checking results
 
 typealias HttpCompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
-func postAnAction(_ action: String, _ token: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
+fileprivate func postAnAction(_ action: String, _ token: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
     guard let url = URL(string: ActionRoot + action) else {
         Logger.logFatalError("Unable to form request URL")
     }
@@ -183,13 +256,7 @@ struct SentState: Encodable {
     let gameState: GameState
 }
 
-// The value sent when polling
-struct Poll: Encodable {
-    let gameToken: String
-    let player: String
-}
-
-// The value received in response to a poll
+// The value received on the websocket as a push notification when the state of the server changes.
 struct ReceivedState: Decodable {
     let players: String?
     let gameState: GameState?
@@ -197,7 +264,7 @@ struct ReceivedState: Decodable {
 
 // Subroutine used by response handlers to validate the response and up-call an error if appropriate
 // Returns the result dictionary if valid or nil if error.
-func validateResponse<T: Decodable>(_ data: Data?, _ response: URLResponse?, _ err: Error?, _ type: T.Type, _ errHandler: (Error, Bool)->Void) -> T? {
+fileprivate func validateResponse<T: Decodable>(_ data: Data?, _ response: URLResponse?, _ err: Error?, _ type: T.Type, _ errHandler: (Error, Bool)->Void) -> T? {
     if let err = err {
         Logger.log("Got error return: \(err)")
         errHandler(err, false)
