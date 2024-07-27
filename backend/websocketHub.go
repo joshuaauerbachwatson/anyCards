@@ -48,6 +48,17 @@ func newHub() *Hub {
 	}
 }
 
+const gameState = 'G' // Indicates a game state
+// There is also constant 'C' for chat message, but since we pass those through without
+// examination we don't need a go declaration for it.
+
+// Send a new state to all the clients
+func (h *Hub) broadcastState(encodedState []byte) {
+	toSend := []byte{gameState}
+	toSend = append(toSend, encodedState...)
+	h.broadcast <- toSend
+}
+
 func (h *Hub) run() {
 	for {
 		select {

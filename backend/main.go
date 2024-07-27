@@ -40,6 +40,7 @@ func main() {
 		http.HandlerFunc(newWebSocket),
 	))
 
+	// TODO: this should eventually be replaced by using the websocket inbound channel for game states
 	http.Handle(pathNewState, EnsureValidToken()(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if body := screenRequest(w, r); body != nil {
@@ -48,14 +49,7 @@ func main() {
 		}),
 	))
 
-	http.Handle(pathPoll, EnsureValidToken()(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if body := screenRequest(w, r); body != nil {
-				poll(w, *body)
-			}
-		}),
-	))
-
+	// TODO this should eventually be replaced by detecting remote close of the websocket
 	http.Handle(pathWithdraw, EnsureValidToken()(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if body := screenRequest(w, r); body != nil {

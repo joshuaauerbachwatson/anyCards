@@ -25,10 +25,9 @@ import (
 // Source for the newGameState Action.
 // Inputs:
 //
-//	 appToken:  (already validated at entry)
-//		gameToken: the token giving access to the game
-//		player: the player string (random number used as ordinal)
-//		gameState - the new value for the game state as a JSON-encoded String
+//	gameToken: the token giving access to the game
+//	player: the player string (random number used as ordinal)
+//	gameState - the new value for the game state as a JSON-encoded String
 //
 // Outputs:
 //
@@ -47,5 +46,6 @@ func newGameState(w http.ResponseWriter, body map[string]interface{}) {
 	game.State = gameState
 	game.Players[player].IdleCount = 0
 	fmt.Printf("New gamestate recorded for game %s\n", gameToken)
+	sendState(game)
 	w.WriteHeader(http.StatusOK)
 }

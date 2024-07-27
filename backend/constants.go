@@ -43,11 +43,9 @@ const (
 	gameTimeout   = 300 / cleanupPeriod
 
 	// Dictionary keys used by the various functions for inputs and outputs
-	argGameToken = "gameToken"
-	argForce     = "force"
 	argGameState = "gameState"
-	argPlayers   = "players"
-	argState     = "state"
+	argGameToken = "gameToken"
+	argPlayer    = "player"
 
 	// Custom headers used for websocket creation
 	playerHeader = "PlayerOrder"

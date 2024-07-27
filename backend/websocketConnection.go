@@ -70,6 +70,9 @@ type Client struct {
 	// Termination indicator.  All goroutines should exit when they see this
 	// and the main logic should not use the Client but rather create a new one.
 	terminated bool
+
+	// Address of Player structure whose idle count can be reset on pong responses
+	player *Player
 }
 
 // Destroy closes out all goroutines of this client, closes the connection, stops the ticker, will exit, the connection is closed, the hub
@@ -95,7 +98,11 @@ func (c *Client) readPump() {
 	}()
 	c.conn.SetReadLimit(maxMessageSize)
 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
-	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	c.conn.SetPongHandler(func(string) error {
+		c.conn.SetReadDeadline(time.Now().Add(pongWait))
+		c.player.IdleCount = 0
+		return nil
+	})
 	for {
 		if c.terminated {
 			return
@@ -172,14 +179,12 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 		indicateError(http.StatusBadRequest, "Missing required header information for websocket", w)
 		return
 	}
-	game, ok := games[gameToken]
-	if !ok {
-		indicateError(http.StatusBadRequest, "Websocket cannot be opened for non-existing game", w)
+	if !isValidGameToken(gameToken) {
+		indicateError(http.StatusBadRequest, "Game token is invalid on websocket upgrade", w)
 		return
 	}
-	player, ok := game.Players[playerValue]
-	if !ok {
-		indicateError(http.StatusBadRequest, "Websocket cannot be opened until the player has joined the game", w)
+	if !isValidPlayer(playerValue) {
+		indicateError(http.StatusBadRequest, "Player id is invalid on websocket upgrade", w)
 		return
 	}
 	// We have a valid player and game so it's ok to upgrade
@@ -189,11 +194,14 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Create and remember Client
+	game, player := ensureGameAndPlayer(gameToken, playerValue)
 	if player.Client != nil {
 		// Make sure old client is dead if found
 		player.Client.Destroy()
 	}
-	player.Client = &Client{hub: game.Hub, conn: conn, send: make(chan []byte, 256)}
+	// TODO the frame size (256) is certainly adequate for chat but probably too small for game states.
+	// This needs to be tuned.
+	player.Client = &Client{hub: game.Hub, conn: conn, send: make(chan []byte, 256), player: player}
 	game.Hub.register <- player.Client
 	player.IdleCount = 0
 

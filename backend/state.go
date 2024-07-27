@@ -23,6 +23,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
+	"strings"
+
+	"golang.org/x/exp/maps"
 )
 
 // The state of one game
@@ -49,6 +53,27 @@ var games = make(map[string]*Game)
 
 // Counter for the number of times cleanup has run
 var cleanupCounter int
+
+type FullState struct { // The structure sent between client and server in both directions
+	// The GameState here is not interpreted but treated just as a map
+	GameState map[string]interface{} `json:"gameState,omitempty"`
+	Players   string                 `json:"players"`
+}
+
+// Send a new state to all the players of a game
+func sendState(game *Game) {
+	players := sortAndEncode(game.Players)
+	stateData := FullState{GameState: game.State, Players: players}
+	state, _ := json.Marshal(stateData) // are errors possible here? ... I think not
+	game.Hub.broadcastState(state)
+}
+
+// Subroutine to sort and encode the player numbers of a game
+func sortAndEncode(players map[string]*Player) string {
+	keys := maps.Keys(players)
+	sort.Strings(keys)
+	return strings.Join(keys, " ")
+}
 
 // Handler for an admin function to dump the entire state of the server.
 // This is an aid during development.  We might need something more sophisticated

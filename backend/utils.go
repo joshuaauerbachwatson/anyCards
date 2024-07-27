@@ -63,28 +63,35 @@ func isAdmin(w http.ResponseWriter, r *http.Request) bool {
 // Secondary validator for post bodies containing gameToken.  Returns the gameToken (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
 func validateGameToken(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
-	gameToken, ok := body["gameToken"].(string)
-	if ok {
-		if len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken) {
-			return gameToken, true
-		}
+	gameToken, ok := body[argGameToken].(string)
+	if ok && isValidGameToken(gameToken) {
+		return gameToken, true
 	}
 	indicateError(http.StatusBadRequest, "missing or malformed game token", w)
 	return "", false
 }
 
+// Check validity of game token
+func isValidGameToken(gameToken string) bool {
+	return len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken)
+}
+
 // Secondary validator for post bodies containing player.  Returns the player (or "") and a valid
 // indicator (bool).  Issues a response if invalid.
 func validatePlayer(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
-	player, ok := body["player"].(string)
-	if ok {
-		maybe, err := strconv.Atoi(player)
-		if err == nil && maybe >= 0 {
-			return player, true
-		}
+	player, ok := body[argPlayer].(string)
+	if ok && isValidPlayer(player) {
+		return player, true
 	}
 	indicateError(http.StatusBadRequest, "missing or malformed player value", w)
 	return "", false
+}
+
+// Check validity of player order "number" (as string).  Note that zero is never a valid order number
+// but other numbers may be randomly chosen and are not densely assigned.
+func isValidPlayer(player string) bool {
+	maybe, err := strconv.Atoi(player)
+	return err == nil && maybe >= 0
 }
 
 // Function to indicate an error, both logging it to the server console and reflecting it back to
@@ -120,10 +127,19 @@ func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (strin
 	if !ok {
 		return "", "", nil
 	}
-	player, ok := validatePlayer(w, body)
+	playerToken, ok := validatePlayer(w, body)
 	if !ok {
 		return gameToken, "", nil
 	}
+	game, _ := ensureGameAndPlayer(gameToken, playerToken)
+	return gameToken, playerToken, game // game will be nil on error
+}
+
+// Given game and player tokens that are syntactically valid but may or may not designate
+// and actual game and player, make sure that the game and player exist and return the
+// Game and Player structures.  A Game will always have a running Hub whether pre-existing or not.
+// A newly created Player may not yet have a Client.
+func ensureGameAndPlayer(gameToken string, playerToken string) (*Game, *Player) {
 	game := games[gameToken]
 	if game == nil {
 		game = &Game{Players: make(map[string]*Player), State: map[string]interface{}{}, Hub: newHub()}
@@ -132,12 +148,12 @@ func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (strin
 	} else {
 		game.IdleCount = 0
 	}
-	if game.Players[player] == nil {
-		game.Players[player] = &Player{}
+	if game.Players[playerToken] == nil {
+		game.Players[playerToken] = &Player{}
 	} else {
-		game.Players[player].IdleCount = 0
+		game.Players[playerToken].IdleCount = 0
 	}
-	return gameToken, player, game // game will be nil on error
+	return game, game.Players[playerToken]
 }
 
 // Convert an error message to an error dictionary using the key "error".

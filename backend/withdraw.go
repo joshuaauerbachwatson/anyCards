@@ -25,9 +25,8 @@ import (
 // Source for the withdraw Action.
 // Inputs:
 //
-//	 appToken: (validated previously)
-//		gameToken: the secret token for the game provided by the game's initiator (64 chars alphameric)
-//		player: the player's "order number" (a string parsable as int) which serves as a unique id
+//	gameToken: the secret token for the game provided by the game's initiator (64 chars alphameric)
+//	player: the player's "order number" (a string parsable as int) which serves as a unique id
 //
 // Outputs:
 //
