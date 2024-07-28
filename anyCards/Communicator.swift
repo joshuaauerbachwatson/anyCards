@@ -26,12 +26,11 @@ protocol Communicator {
     func sendChatMsg(_ mag: String)
     func send(_ gameState: GameState)
     func shutdown()
-    func updatePlayers(_ players: [Player])
 }
 
 // The protocol for the delegate (callbacks)
 protocol CommunicatorDelegate {
-    func connectedDevicesChanged(_ numDevices: Int)
+    func newPlayerList(_ numPlayers: Int, _ players: [Player])
     func gameChanged(_ gameState: GameState)
     func error(_ error: Error, _ deleteGame: Bool)
     func lostPlayer(_ peer: String)

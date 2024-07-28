@@ -50,7 +50,6 @@ class ServerBasedCommunicator : NSObject, Communicator {
     private var webSocketTask: URLSessionWebSocketTask! // Initialized after super call
 
     private var lastGameState: GameState? = nil
-    private var lastPlayerList: Set<String> = Set<String>()
 
     // The initializer to use for this Communicator.  Accepts a gameToken and player and starts listening
     init(_ accessToken: String, gameToken: String, player: Player, delegate: CommunicatorDelegate) {
@@ -66,13 +65,9 @@ class ServerBasedCommunicator : NSObject, Communicator {
 
     // Process a new Received state
     private func processReceivedState(_ newState: ReceivedState) {
-        if let playerList = newState.players {
-            let players = Set<String>(playerList.split(separator: " ").map { String($0) })
-            if players != self.lastPlayerList {
-                delegate.connectedDevicesChanged(players.count)
-                findMissingPlayers(players)
-                self.lastPlayerList = players
-            }
+        // Note: eventually ReceivedState goes away and we get GameState and Player list separately
+        if let playerList = newState.players, let (numPlayers, players) = decodePlayers(playerList) {
+            delegate.newPlayerList(numPlayers, players)
         }
         if let gameState = newState.gameState {
             if gameState != self.lastGameState {
@@ -83,16 +78,6 @@ class ServerBasedCommunicator : NSObject, Communicator {
             // Once some GameState has been established, all polls should be returning one
             delegate.error(ServerError("No game state included in received state"), false)
         } // but if a GameState was never sent, we can assume that none exists on the server yet either
-    }
-
-    // Find a player that was missing in a received state and notify so game can be terminated.
-    // Only one lost player is reported because that report will end the game anyway.
-    // The argument is the new player set; the old one is in self.lastPlayerList
-    private func findMissingPlayers(_ players: Set<String>) {
-        let missing = self.lastPlayerList.subtracting(players)
-        if let toReport = missing.first {
-            self.delegate.lostPlayer(toReport)
-        }
     }
 
     // Send a new game state (part of Communicator protocol)

@@ -18,29 +18,27 @@ import UIKit
 
 // Represents the state of a game.  Transmitted between devices.   Also used to facilitate layout within a single device.
 class GameState : Codable, Equatable {
-    let players : [Player]   // The list of players, ordered by 'order' fields (ascending).
-    let numPlayers : Int     // The number of players needed to play (dictated by leader, accepted by others)
+    // Examined only on first yield: part of setup performed by leader
     let deckType : PlayingDeckTemplate?
     let handArea : Bool
-    // Other fields
+    // Fields always present
     let items : [ItemHolder] // The positions of all the cards and boxes
     let yielding : Bool      // If true, the transmitting player is yielding control to the next player in turn
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
 
     // Initializer from local ViewController state.
-    // THe 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
-    // done with transmitting but is done when simply using the GameState to facilitate layout.
+    // The 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
+    // done when transmitting but is done when simply using the GameState to facilitate layout.
     convenience init(_ controller: ViewController, yielding: Bool = false, includeHandArea: Bool = false) {
-        self.init(controller.players, controller.numPlayers, controller.deckType, controller.hasHands, yielding,
-                  controller.playingArea, includeHandArea ? controller.publicArea : nil)
+        self.init(controller.deckType, controller.hasHands, yielding, controller.playingArea,
+                  includeHandArea ? controller.publicArea : nil)
     }
 
-    // General initializer, not publicly visible.
-    private init(_ players: [Player], _ numPlayers: Int, _ deckType: PlayingDeckTemplate?, _ handArea: Bool,
+    // General initializer, not publicly visible.  TODO there used to be many convenience initializers but not any more,
+    // so perhaps we can collapse this into the one remaining one.
+    private init(_ deckType: PlayingDeckTemplate?, _ handArea: Bool,
                  _ yielding: Bool, _ playingArea: UIView?, _ publicArea:  CGRect?) {
         let cards = playingArea?.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemHolder.make($0) } ?? []
-        self.players = players
-        self.numPlayers = numPlayers
         self.deckType = deckType
         self.handArea = handArea
         self.items = cards
@@ -51,9 +49,7 @@ class GameState : Codable, Equatable {
 
     // Conform to Equatable protocol
     static func == (lhs: GameState, rhs: GameState) -> Bool {
-        return lhs.players == rhs.players
-        && lhs.numPlayers == rhs.numPlayers
-        && lhs.deckType?.displayName == rhs.deckType?.displayName
+        return lhs.deckType?.displayName == rhs.deckType?.displayName
         && lhs.handArea == rhs.handArea
         && lhs.items == rhs.items
         && lhs.yielding == rhs.yielding

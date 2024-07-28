@@ -898,13 +898,42 @@ class ViewController: UIViewController {
 
 // Conform to protocol for Communicator
 extension ViewController : CommunicatorDelegate {
-    // Respond to change in membership.   Sometimes we ignore this, but if we are in the starting state we send out a game state with the
-    // player list.  Note: we don't use this to detect lost peers; we use the more specific up-call for that purpose.
-    func connectedDevicesChanged(_ numConnectedDevices: Int) {
-        Logger.log("connectedDevicesChanged, now \(numConnectedDevices)")
-        if players.count < numPlayers {
-            DispatchQueue.main.async {
-                self.transmit()
+    // Respond to a new player list during game initiation.  We do not use this call later for lost players;
+    // we use `lostPlayer` for that.
+    func newPlayerList(_ numPlayers: Int, _ players: [Player]) {
+        Logger.log("newPlayerList received")
+        if players.count > 0 {
+            Logger.log("players.count is \(players.count)")
+            if numPlayers > 0 && self.numPlayers == 0 {
+                self.numPlayers = numPlayers
+            }
+            // Recalculate thisPlayer based on new list
+            guard let thisPlayer = players.firstIndex(where: {$0.name == OptionSettings.instance.userName})
+                else { Logger.logFatalError("This player not in player list") }
+            self.thisPlayer = thisPlayer
+            configurePlayerLabels()
+            // Check whether we now have the right number of players.  It is an error to have too many.  If we have exactly the
+            // right number, check that there is exactly one lead player and indicate an error if there is none or more than one.
+            // If that test is passed, indicate that play can begin.
+            if numPlayers < players.count {
+                presentTerminalError(PlayerErrorTitle, TooManyPlayersMessage)
+                return
+            } else if numPlayers == players.count {
+                for player in 0..<numPlayers {
+                    if players[player].order == 1 {
+                        if player > 0 {
+                            presentTerminalError(PlayerErrorTitle, TooManyLeadsMessage)
+                            return
+                        }
+                    } else if player == 0 {
+                        presentTerminalError(PlayerErrorTitle, NoLeadPlayersMessage)
+                        return
+                    }
+                }
+                // Player list is complete with exactly one lead player
+                playBegun = true
+                Logger.log("Player list complete, play begun")
+                checkTurnToPlay()
             }
         }
     }
@@ -960,67 +989,6 @@ extension ViewController : CommunicatorDelegate {
     }
     private func doGameChanged(_ gameState: GameState) {
         Logger.log("doGameChanged invoked")
-        if gameState.players.count > 0 {
-            Logger.log("gameState.players.count is \(gameState.players.count)")
-            // Phase 1 transfer: determining player list.  First, determine whether the sending player has provided
-            //   a new numPlayers value (only the "lead" player "should" do this but because of the echoing logic when
-            //   the player list changes, the value can appear in other contexts.  It is harmless to do a label configuration).
-            var changed = false
-            if gameState.numPlayers > 0 {
-                Logger.log("configuring player labels because gameState.numPlayers is \(gameState.numPlayers)")
-                configurePlayerLabels()
-            }
-            // Then, if the incoming list differs from the local list, merge the lists and notify the communicator.
-            // Only the multipeer communicator actually needs or uses this notification.
-            if players != gameState.players {
-                Logger.log("Former players list was \(players)")
-                Logger.log("New players list is \(gameState.players)")
-                changed = true
-                let merged = (players + gameState.players.filter({ !players.contains($0)})).sorted { $0.order < $1.order }
-                Logger.log("Merged players list is \(merged)")
-                players = merged
-                // Reset thisPlayer since something may have merged in front of its previous location
-                guard let thisPlayer = merged.firstIndex(where: {$0.name == OptionSettings.instance.userName})
-                    else { Logger.logFatalError("This player not in player list") }
-                self.thisPlayer = thisPlayer
-                Logger.log("Updating players list in communicator")
-                communicator?.updatePlayers(players)
-            }
-
-            // Check whether we now have the right number of players.  It is an error to have too many.  If we have exactly the
-            // right number, check that there is exactly one lead player and indicate an error if there is none or more than one.
-            // If that test is passed, indicate that play can begin.
-            if numPlayers < players.count {
-                presentTerminalError(PlayerErrorTitle, TooManyPlayersMessage)
-                return
-            } else if numPlayers == players.count {
-                for player in 0..<numPlayers {
-                    if players[player].order == 1 {
-                        if player > 0 {
-                            presentTerminalError(PlayerErrorTitle, TooManyLeadsMessage)
-                            return
-                        }
-                    } else if player == 0 {
-                        presentTerminalError(PlayerErrorTitle, NoLeadPlayersMessage)
-                        return
-                    }
-                }
-                // Player list is complete with exactly one lead player
-                playBegun = true
-                Logger.log("Player list complete, play begun")
-                checkTurnToPlay()
-            }
-
-            // If anything changed at all, then share the result with other players so that consensus can eventually occur.
-            // Note: in the absence of communication failures this is overkill because all players actually should get the same
-            // information.  It seems that when we use MPC this extra sharing step is needed sometimes.  Things should quiesce
-            // because if nothing changed, nothing is transmitted.
-            if changed {
-                Logger.log("Sending because 'changed' in players logic")
-                communicator?.send(GameState(self))
-            }
-        }
-
         if playBegun {
             // If player lists have quiesced and play has begun, examine the rest of the game state
             Logger.log("Received GameState contains \(gameState.items.count) items")
