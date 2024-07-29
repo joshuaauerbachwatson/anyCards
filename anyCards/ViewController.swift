@@ -66,7 +66,7 @@ class ViewController: UIViewController {
             transmit()
         }
     }
-    var numPlayers : Int {
+    private var storedNumPlayers : Int { // only use this if leader
         get {
             return OptionSettings.instance.numPlayers
         }
@@ -74,6 +74,21 @@ class ViewController: UIViewController {
             OptionSettings.instance.numPlayers = newValue
             // Changes to numPlayers should propagate eagerly
             transmit()
+        }
+    }
+    private var _numPlayers : Int = 0 // cache for received value
+    var numPlayers : Int { // zero if not leader until value received
+        get {
+            if leadPlayer {
+                return storedNumPlayers
+            }
+            return _numPlayers
+        }
+        set {
+            _numPlayers = newValue
+            if leadPlayer {
+                storedNumPlayers = newValue
+            }
         }
     }
     var leadPlayer : Bool {
@@ -899,43 +914,47 @@ class ViewController: UIViewController {
 // Conform to protocol for Communicator
 extension ViewController : CommunicatorDelegate {
     // Respond to a new player list during game initiation.  We do not use this call later for lost players;
-    // we use `lostPlayer` for that.
-    func newPlayerList(_ numPlayers: Int, _ players: [Player]) {
-        Logger.log("newPlayerList received")
-        if players.count > 0 {
-            Logger.log("players.count is \(players.count)")
-            if numPlayers > 0 && self.numPlayers == 0 {
-                self.numPlayers = numPlayers
-            }
+    // we use `lostPlayer` for that.  The received players array is already properly sorted.
+    func newPlayerList(_ newNumPlayers: Int, _ newPlayers: [Player]) {
+        Logger.log("newPlayerList received, newNumPlayers=\(newNumPlayers), \(newPlayers.count) players present")
+        self.players = newPlayers
+        if players.count > 0 { // Should always be true, probably, but give communicators some slack
             // Recalculate thisPlayer based on new list
             guard let thisPlayer = players.firstIndex(where: {$0.name == OptionSettings.instance.userName})
-                else { Logger.logFatalError("This player not in player list") }
+            else { Logger.logFatalError("This player not in player list") }
             self.thisPlayer = thisPlayer
             configurePlayerLabels()
-            // Check whether we now have the right number of players.  It is an error to have too many.  If we have exactly the
-            // right number, check that there is exactly one lead player and indicate an error if there is none or more than one.
-            // If that test is passed, indicate that play can begin.
-            if numPlayers < players.count {
-                presentTerminalError(PlayerErrorTitle, TooManyPlayersMessage)
-                return
-            } else if numPlayers == players.count {
-                for player in 0..<numPlayers {
-                    if players[player].order == 1 {
-                        if player > 0 {
-                            presentTerminalError(PlayerErrorTitle, TooManyLeadsMessage)
+            
+            // Manage incoming numPlayers.  Ignore it if leader.  For others, store it but 0 means unknown.
+            if !leadPlayer {
+                numPlayers = newNumPlayers
+            }
+            if numPlayers > 0 {
+                // Check whether we now have the right number of players.  It is an error to have too many.
+                // If we have exactly the right number, check that there is exactly one lead player and indicate an error
+                // if there is none or more than one.  If that test is passed, indicate that play can begin.
+                if numPlayers < players.count {
+                    presentTerminalError(PlayerErrorTitle, TooManyPlayersMessage)
+                    return
+                } else if numPlayers == players.count {
+                    for player in 0..<numPlayers {
+                        if players[player].order == 1 {
+                            if player > 0 {
+                                presentTerminalError(PlayerErrorTitle, TooManyLeadsMessage)
+                                return
+                            }
+                        } else if player == 0 {
+                            presentTerminalError(PlayerErrorTitle, NoLeadPlayersMessage)
                             return
                         }
-                    } else if player == 0 {
-                        presentTerminalError(PlayerErrorTitle, NoLeadPlayersMessage)
-                        return
                     }
-                }
-                // Player list is complete with exactly one lead player
-                playBegun = true
-                Logger.log("Player list complete, play begun")
-                checkTurnToPlay()
-            }
-        }
+                    // Player list is complete with exactly one lead player
+                    playBegun = true
+                    Logger.log("Player list complete, play begun")
+                    checkTurnToPlay()
+                } // else player list not complete
+            } // else we don't know the number of players yet
+        } // else this call does not provide any players
     }
 
     // Handle a new chat message
@@ -1047,15 +1066,9 @@ extension ViewController : CommunicatorDelegate {
     }
 
     // React to lost peer by ending the game with a short dialog
-    func lostPlayer(_ playerID: String) {
-        var player = getPlayer(playerID)
-        if player == nil {
-            Logger.log("Lost player \(playerID)")
-            player = playerID
-        } else {
-            Logger.log("Lost player \(player!)(\(playerID))")
-        }
-        let lostPlayerMessage = String(format: LostPlayerTemplate, player!)
+    func lostPlayer(_ player: Player) {
+        Logger.log("Lost player \(player.display)")
+        let lostPlayerMessage = String(format: LostPlayerTemplate, player.display)
         presentTerminalError(LostPlayerTitle, lostPlayerMessage)
     }
 

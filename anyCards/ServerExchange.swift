@@ -29,6 +29,8 @@ fileprivate let gameHeader   = "GameToken"
 fileprivate let websocketURL = "wss://unigame-befsi.ondigitalocean.app/websocket"
 fileprivate let typeChat = UInt8(("C" as UnicodeScalar).value)
 fileprivate let typeGame = UInt8(("G" as UnicodeScalar).value)
+fileprivate let typePlayers = UInt8(("P" as UnicodeScalar).value)
+fileprivate let typeLostPlayer = UInt8(("L" as UnicodeScalar).value)
 
 // This communicator currently uses two means of communication, a websocket and https request/response.
 // The https mechanism may be gradually phased out.
@@ -43,7 +45,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     // Internal state
     private let gameToken: String
     private let accessToken: String
-    private let playerID: String
+    private let player: Player
     private let delegate: CommunicatorDelegate
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
@@ -55,12 +57,12 @@ class ServerBasedCommunicator : NSObject, Communicator {
     init(_ accessToken: String, gameToken: String, player: Player, delegate: CommunicatorDelegate) {
         self.accessToken = accessToken
         self.gameToken = gameToken
-        self.playerID = String(player.order)
+        self.player = player
         self.delegate = delegate
         self.encoder = JSONEncoder()
         self.decoder = JSONDecoder()
         super.init()
-        self.webSocketTask = connectWebsocket(game: gameToken, player: playerID, accessToken: accessToken)
+        self.webSocketTask = connectWebsocket(game: gameToken, player: player, accessToken: accessToken)
     }
 
     // Process a new Received state
@@ -84,7 +86,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     func send(_ gameState: GameState) {
         var arg: Data
         do {
-            let msg = SentState(gameToken: self.gameToken, player: self.playerID,
+            let msg = SentState(gameToken: self.gameToken, player: self.player.token,
                                 gameState: gameState)
             arg = try encoder.encode(msg)
         } catch {
@@ -100,22 +102,22 @@ class ServerBasedCommunicator : NSObject, Communicator {
     // Part of communicator protocol
     func shutdown() {
         disconnectWebsocket()
-        guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: playerID ]) else {
+        guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: player.token ]) else {
         // ignore error and stop trying to withdraw
             return
         }
         postAnAction(pathWithdraw, accessToken, arg) { (data, response, err) in return } // ignore errors
     }
 
-    // Update the players list.  Part of Communicator protocol but not used for server-based.
-    func updatePlayers(_ players: [Player]) {
-        // Do nothing
-    }
-
     // Subroutine to initialize the websocket connection
-    private func connectWebsocket(game: String, player: String, accessToken: String) -> URLSessionWebSocketTask {
-        Logger.log("New websocket connection with game=\(game), player=\(player)")
-        let url = URL(string: "\(websocketURL)?\(gameHeader)=\(game)&\(playerHeader)=\(player)")!
+    private func connectWebsocket(game: String, player: Player, accessToken: String) -> URLSessionWebSocketTask {
+        Logger.log("New websocket connection with game=\(game), player=\(player.token)")
+        var numPlayers = ""
+        if player.order == 1 {
+            // Leader
+            numPlayers = "&numPlayers=\(OptionSettings.instance.numPlayers)"
+        }
+        let url = URL(string: "\(websocketURL)?\(gameHeader)=\(game)&\(playerHeader)=\(player)\(numPlayers)")!
         var request = URLRequest(url: url)
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         let webSocketTask = URLSession.shared.webSocketTask(with: request)
@@ -166,10 +168,17 @@ class ServerBasedCommunicator : NSObject, Communicator {
     private func processIncomingFromWebsocket(_ rawData: Data) {
         let type = rawData[0]
         let data = rawData.dropFirst()
-        if type == typeChat {
+        switch type {
+        case typeChat:
             delegate.newChatMsg(String(decoding: data, as: UTF8.self))
-        } else if type == typeGame {
+        case typeGame:
             deliverReceivedState(data)
+        case typePlayers:
+            deliverPlayerList(data)
+        case typeLostPlayer:
+            deliverLostPlayer(data)
+        default:
+            Logger.logFatalError("Protocol error.  Unknown message type \(type)")
         }
     }
     
@@ -181,6 +190,21 @@ class ServerBasedCommunicator : NSObject, Communicator {
         } catch {
             Logger.log("Got decoding error: \(error)")
             delegate.error(error, false)
+        }
+    }
+    
+    // Decodes and then processes received player list
+    private func deliverPlayerList(_ data: Data) {
+        if let coded = String(data: data, encoding: .utf8), let answer = decodePlayers(coded) {
+            let (numPlayers, players) = answer
+            delegate.newPlayerList(numPlayers, players)
+        }
+    }
+    
+    // Decodes and then processes received lost player message
+    private func deliverLostPlayer(_ data: Data) {
+        if let lost = String(data: data, encoding: .utf8), let player = Player(lost) {
+            delegate.lostPlayer(player)
         }
     }
     

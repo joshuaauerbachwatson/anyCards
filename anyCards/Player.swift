@@ -58,6 +58,11 @@ struct Player : Equatable {
         let name = Data(self.name.utf8).base64EncodedString()
         return "\(name):\(String(order))"
     }
+    
+    // Display the player meaningfully
+    var display : String {
+        return "\(name)(\(String(order)))"
+    }
 }
 
 // Encode an array of players, along with a "max players" number.  Note: by design numPlayers is

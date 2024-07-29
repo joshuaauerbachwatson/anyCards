@@ -33,7 +33,7 @@ protocol CommunicatorDelegate {
     func newPlayerList(_ numPlayers: Int, _ players: [Player])
     func gameChanged(_ gameState: GameState)
     func error(_ error: Error, _ deleteGame: Bool)
-    func lostPlayer(_ peer: String)
+    func lostPlayer(_ lost: Player)
     func newChatMsg(_ msg: String)
 }
 
