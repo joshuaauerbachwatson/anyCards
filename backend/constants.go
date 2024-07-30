@@ -47,7 +47,8 @@ const (
 	argGameToken = "gameToken"
 	argPlayer    = "player"
 
-	// Custom headers used for websocket creation
-	playerHeader = "PlayerOrder"
-	gameHeader   = "GameToken"
+	// Query value keys used for websocket creation
+	playerKey     = "Player"
+	gameTokenKey  = "GameToken"
+	numPlayersKey = "NumPlayers"
 )

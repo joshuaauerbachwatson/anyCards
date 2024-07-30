@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware/v2"
 	"github.com/auth0/go-jwt-middleware/v2/validator"
@@ -76,22 +77,36 @@ func isValidGameToken(gameToken string) bool {
 	return len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken)
 }
 
-// Secondary validator for post bodies containing player.  Returns the player (or "") and a valid
-// indicator (bool).  Issues a response if invalid.
-func validatePlayer(w http.ResponseWriter, body map[string]interface{}) (string, bool) {
-	player, ok := body[argPlayer].(string)
-	if ok && isValidPlayer(player) {
-		return player, true
+// Secondary validator for post bodies containing player.  Returns the playerToken (or ""), the
+// player order (or 0) and a valid indicator (bool).  Issues a response if invalid.
+func validatePlayer(w http.ResponseWriter, body map[string]interface{}) (string, uint32, bool) {
+	player, ok := body[argPlayer]
+	if ok {
+		token, ok := player.(string)
+		if ok {
+			order, ok := isValidPlayer(token)
+			if ok {
+				return token, order, true
+			}
+		}
 	}
 	indicateError(http.StatusBadRequest, "missing or malformed player value", w)
-	return "", false
+	return "", 0, false
 }
 
-// Check validity of player order "number" (as string).  Note that zero is never a valid order number
-// but other numbers may be randomly chosen and are not densely assigned.
-func isValidPlayer(player string) bool {
-	maybe, err := strconv.Atoi(player)
-	return err == nil && maybe >= 0
+// Check validity of player token.  The first part a base64 encoded player name, which is not checked.
+// The second part is an "order number" represented as a string of ascii digits.  Note that 0 is never
+// a valid player order number.  If valid, the order number is also returned.
+func isValidPlayer(player string) (uint32, bool) {
+	parts := strings.Split(player, ":")
+	if len(parts) != 2 {
+		return 0, false
+	}
+	maybe, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0, false
+	}
+	return uint32(maybe), true
 }
 
 // Function to indicate an error, both logging it to the server console and reflecting it back to
@@ -105,55 +120,59 @@ func indicateError(status int, msg string, w http.ResponseWriter) {
 // Get a single-valued query value from an http.Request, returning empty string if not present or if there
 // are multiple values.
 func getQueryValue(r *http.Request, key string) string {
-	fmt.Printf("Parsing query value  %s\n", key)
 	ans, ok := r.URL.Query()[key]
 	if !ok {
-		fmt.Println("Query value not present in http.Request")
 		return ""
 	}
 	if len(ans) != 1 {
-		fmt.Printf("answer is not singular but has length %d\n", len(ans))
 		return ""
 	}
-	fmt.Printf("Parsed value is %s\n", ans[0])
 	return ans[0]
 }
 
-// Get the gameToken, player, and game for a request.  The game need not previously exist but
-// will be created on demand.  However, either the game token or the player value may be malformed.
+// Get the gameToken, playerToken, playerOrder game for a request.  The game need not previously exist but
+// will be created on demand.  However, either the game token or the playerToken may be malformed.
 // All errors result in an error response being sent and a return with a nil Game.
-func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (string, string, *Game) {
+func getGameAndPlayer(w http.ResponseWriter, body map[string]interface{}) (string, string, uint32, *Game) {
 	gameToken, ok := validateGameToken(w, body)
 	if !ok {
-		return "", "", nil
+		return "", "", 0, nil
 	}
-	playerToken, ok := validatePlayer(w, body)
+	playerToken, playerOrder, ok := validatePlayer(w, body)
 	if !ok {
-		return gameToken, "", nil
+		return gameToken, "", 0, nil
 	}
-	game, _ := ensureGameAndPlayer(gameToken, playerToken)
-	return gameToken, playerToken, game // game will be nil on error
+	game, _ := ensureGameAndPlayer(gameToken, playerToken, playerOrder, 0)
+	return gameToken, playerToken, playerOrder, game // game will be nil on error
 }
 
 // Given game and player tokens that are syntactically valid but may or may not designate
 // and actual game and player, make sure that the game and player exist and return the
 // Game and Player structures.  A Game will always have a running Hub whether pre-existing or not.
 // A newly created Player may not yet have a Client.
-func ensureGameAndPlayer(gameToken string, playerToken string) (*Game, *Player) {
+func ensureGameAndPlayer(gameToken string, playerToken string, playerOrder uint32,
+	numPlayers int) (*Game, *Player) {
+
 	game := games[gameToken]
 	if game == nil {
-		game = &Game{Players: make(map[string]*Player), State: map[string]interface{}{}, Hub: newHub()}
+		game = &Game{Players: make(map[uint32]*Player), State: map[string]interface{}{},
+			Hub: newHub(), NumPlayers: numPlayers}
 		games[gameToken] = game
 		game.Hub.run()
 	} else {
 		game.IdleCount = 0
+		if game.NumPlayers == 0 {
+			game.NumPlayers = numPlayers
+		} // No else clause for now, arrival of non-zero numPlayers when there is already a
+		// non-zero numPlayers indicates a "too many leaders" condition or some other protocol
+		// error.   We' need to allow for error returns in that case.
 	}
-	if game.Players[playerToken] == nil {
-		game.Players[playerToken] = &Player{}
+	if game.Players[playerOrder] == nil {
+		game.Players[playerOrder] = &Player{Token: playerToken}
 	} else {
-		game.Players[playerToken].IdleCount = 0
+		game.Players[playerOrder].IdleCount = 0
 	}
-	return game, game.Players[playerToken]
+	return game, game.Players[playerOrder]
 }
 
 // Convert an error message to an error dictionary using the key "error".

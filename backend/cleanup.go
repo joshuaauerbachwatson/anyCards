@@ -47,7 +47,7 @@ func cleanup() {
 		for playerOrder, player := range game.Players {
 			player.IdleCount++
 			if player.IdleCount > playerTimeout {
-				fmt.Printf("cleanup deleting player %s from game %s\n", playerOrder, token)
+				fmt.Printf("cleanup deleting player %d from game %s\n", playerOrder, token)
 				if player.Client != nil {
 					player.Client.Destroy()
 				}

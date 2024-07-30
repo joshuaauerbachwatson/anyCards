@@ -39,12 +39,12 @@ import (
 // If the player withdrawing is the last player of the game (or the game is already empty), the game is deleted.
 // We do not use the "not found" response if the player is not in the game.  That is considered "success".
 func withdraw(w http.ResponseWriter, body map[string]interface{}) {
-	gameToken, player, game := getGameAndPlayer(w, body)
+	gameToken, _, playerOrder, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return
 	}
-	fmt.Printf("request to withdraw player %s from game %s\n", player, gameToken)
-	delete(game.Players, player)
+	fmt.Printf("request to withdraw player %d from game %s\n", playerOrder, gameToken)
+	delete(game.Players, playerOrder)
 	if len(game.Players) == 0 {
 		fmt.Printf("game %s has no remaining players, deleting\n", gameToken)
 		delete(games, gameToken)

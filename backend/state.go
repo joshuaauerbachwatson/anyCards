@@ -23,23 +23,26 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sort"
-	"strings"
+	"slices"
 
 	"golang.org/x/exp/maps"
 )
 
 // The state of one game
 type Game struct {
-	Players   map[string]*Player     `json:"players"`   // key is the player's "order" string, value is the idleCount
-	IdleCount int                    `json:"idleCount"` // global idle count for the game as a whole
-	State     map[string]interface{} `json:"state"`     // the game state (not interpreted here)
-	Hub       *Hub                   // The Websocket "Hub" for the game (not serialized)
+	Players    map[uint32]*Player     `json:"players"`    // key is the player's "order" number
+	IdleCount  int                    `json:"idleCount"`  // global idle count for the game as a whole
+	State      map[string]interface{} `json:"state"`      // the game state (not interpreted here)
+	NumPlayers int                    `json:"numPlayers"` // The expected number of players for this game
+	// Note: the number of players in the Players map should not exceed NumPlayers but may be less as
+	// players join the game.  A NumPlayers value of 0 means "unknown", which may be case transiently.
+	Hub *Hub // The Websocket "Hub" for the game (not serialized)
 }
 
 // The state of one Player
 type Player struct {
-	IdleCount int     `json:"idleCount"` // global idle count for the game as a whole
+	Token     string  `json:"token"`     // Player's token (encodes name and order number)
+	IdleCount int     `json:"idleCount"` // Idle count for this player.
 	Client    *Client // The Websocket "client" for the player (not serialized)
 }
 
@@ -48,31 +51,29 @@ type DumpedState struct {
 	Games          map[string]*Game `json:"games"`
 }
 
-// Map from game tokens to game states
+// Map from game tokens to Game structures
 var games = make(map[string]*Game)
 
 // Counter for the number of times cleanup has run
 var cleanupCounter int
 
-type FullState struct { // The structure sent between client and server in both directions
-	// The GameState here is not interpreted but treated just as a map
-	GameState map[string]interface{} `json:"gameState,omitempty"`
-	Players   string                 `json:"players"`
-}
-
 // Send a new state to all the players of a game
 func sendState(game *Game) {
-	players := sortAndEncode(game.Players)
-	stateData := FullState{GameState: game.State, Players: players}
-	state, _ := json.Marshal(stateData) // are errors possible here? ... I think not
-	game.Hub.broadcastState(state)
+	state, _ := json.Marshal(game.State) // are errors possible here? ... I think not
+	game.Hub.broadcastMessage(gameStateType, state)
 }
 
-// Subroutine to sort and encode the player numbers of a game
-func sortAndEncode(players map[string]*Player) string {
-	keys := maps.Keys(players)
-	sort.Strings(keys)
-	return strings.Join(keys, " ")
+// Subroutine to make the player list of a game
+func makePlayerList(game *Game) string {
+	keys := maps.Keys(game.Players)
+	slices.Sort(keys)
+	list := ""
+	delim := ""
+	for _, key := range keys {
+		list += (delim + game.Players[key].Token)
+		delim = " "
+	}
+	return string(game.NumPlayers) + " " + list
 }
 
 // Handler for an admin function to dump the entire state of the server.

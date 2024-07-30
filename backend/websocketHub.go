@@ -48,14 +48,18 @@ func newHub() *Hub {
 	}
 }
 
-const gameState = 'G' // Indicates a game state
+// Message types
+const gameStateType = 'G'  // Indicates a game state message
+const playerListType = 'P' // Indicates a player list message
+const lostPlayerType = 'L' // Indicates a lost player message
 // There is also constant 'C' for chat message, but since we pass those through without
 // examination we don't need a go declaration for it.
 
-// Send a new state to all the clients
-func (h *Hub) broadcastState(encodedState []byte) {
-	toSend := []byte{gameState}
-	toSend = append(toSend, encodedState...)
+// Send a message (other than chat) to all the clients
+// Chat is handled specially within the readPump when an incoming chat message is detected
+func (h *Hub) broadcastMessage(msgType byte, body []byte) {
+	toSend := []byte{msgType}
+	toSend = append(toSend, body...)
 	h.broadcast <- toSend
 }
 

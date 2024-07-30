@@ -17,19 +17,20 @@
 import Foundation
 
 // Constants mimic those in the backend
-fileprivate let pathNewState = "/newstate"
-fileprivate let pathWithdraw = "/withdraw"
-fileprivate let argGameToken = "gameToken"
-fileprivate let argPlayer    = "player"
-fileprivate let argPlayers   = "players"
-fileprivate let argGameState = "gameState"
-fileprivate let argError     = "argError"
-fileprivate let playerHeader = "PlayerOrder"
-fileprivate let gameHeader   = "GameToken"
-fileprivate let websocketURL = "wss://unigame-befsi.ondigitalocean.app/websocket"
-fileprivate let typeChat = UInt8(("C" as UnicodeScalar).value)
-fileprivate let typeGame = UInt8(("G" as UnicodeScalar).value)
-fileprivate let typePlayers = UInt8(("P" as UnicodeScalar).value)
+fileprivate let pathNewState   = "/newstate"
+fileprivate let pathWithdraw   = "/withdraw"
+fileprivate let argGameToken   = "gameToken"
+fileprivate let argPlayer      = "player"
+fileprivate let argPlayers     = "players"
+fileprivate let argGameState   = "gameState"
+fileprivate let argError       = "argError"
+fileprivate let playerKey      = "Player"
+fileprivate let gameKey        = "GameToken"
+fileprivate let numPlayersKey  = "NumPlayers"
+fileprivate let websocketURL   = "wss://unigame-befsi.ondigitalocean.app/websocket"
+fileprivate let typeChat       = UInt8(("C" as UnicodeScalar).value)
+fileprivate let typeGame       = UInt8(("G" as UnicodeScalar).value)
+fileprivate let typePlayers    = UInt8(("P" as UnicodeScalar).value)
 fileprivate let typeLostPlayer = UInt8(("L" as UnicodeScalar).value)
 
 // This communicator currently uses two means of communication, a websocket and https request/response.
@@ -115,9 +116,9 @@ class ServerBasedCommunicator : NSObject, Communicator {
         var numPlayers = ""
         if player.order == 1 {
             // Leader
-            numPlayers = "&numPlayers=\(OptionSettings.instance.numPlayers)"
+            numPlayers = "&\(numPlayersKey)=\(OptionSettings.instance.numPlayers)"
         }
-        let url = URL(string: "\(websocketURL)?\(gameHeader)=\(game)&\(playerHeader)=\(player)\(numPlayers)")!
+        let url = URL(string: "\(websocketURL)?\(gameKey)=\(game)&\(playerKey)=\(player)\(numPlayers)")!
         var request = URLRequest(url: url)
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         let webSocketTask = URLSession.shared.webSocketTask(with: request)

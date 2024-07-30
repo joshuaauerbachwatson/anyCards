@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -45,6 +46,10 @@ const (
 
 	// Maximum message size allowed from peer.
 	maxMessageSize = 512
+
+	// Size of message frames being sent
+	// TODO this must accommodate all four frame types; determine best value.
+	sentFrameSize = 1024
 )
 
 var (
@@ -83,6 +88,8 @@ func (c *Client) Destroy() {
 		return
 	}
 	c.terminated = true
+	fmt.Printf("Sending lost player message for player %s\n", c.player.Token)
+	c.hub.broadcastMessage(lostPlayerType, []byte(c.player.Token))
 	c.hub.unregister <- c
 	c.conn.Close()
 }
@@ -172,10 +179,11 @@ func (c *Client) writePump() {
 // already occurred but we need to parse the header information to identity the player and game
 // If there is a problem with that, we avoid the upgrade.
 func newWebSocket(w http.ResponseWriter, r *http.Request) {
-	playerValue := getQueryValue(r, playerHeader)
-	gameToken := getQueryValue(r, gameHeader)
-	fmt.Printf("newWebsocket: player=%s and game=%s\n", playerValue, gameToken)
-	if playerValue == "" || gameToken == "" {
+	playerToken := getQueryValue(r, playerKey)
+	gameToken := getQueryValue(r, gameTokenKey)
+	numPlayersString := getQueryValue(r, numPlayersKey)
+	fmt.Printf("newWebsocket: playerToken=%s and game=%s\n", playerToken, gameToken)
+	if playerToken == "" || gameToken == "" {
 		indicateError(http.StatusBadRequest, "Missing required header information for websocket", w)
 		return
 	}
@@ -183,25 +191,33 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 		indicateError(http.StatusBadRequest, "Game token is invalid on websocket upgrade", w)
 		return
 	}
-	if !isValidPlayer(playerValue) {
+	playerOrder, ok := isValidPlayer(playerToken)
+	if !ok {
 		indicateError(http.StatusBadRequest, "Player id is invalid on websocket upgrade", w)
 		return
 	}
-	// We have a valid player and game so it's ok to upgrade
+	numPlayers := 0
+	if numPlayersString != "" {
+		maybe, err := strconv.Atoi(numPlayersString)
+		if err != nil {
+			indicateError(http.StatusBadRequest, "Invalid value for numPlayers", w)
+			return
+		}
+		numPlayers = maybe
+	}
+	// We have valid inputs so it's ok to upgrade
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 	// Create and remember Client
-	game, player := ensureGameAndPlayer(gameToken, playerValue)
+	game, player := ensureGameAndPlayer(gameToken, playerToken, playerOrder, numPlayers)
 	if player.Client != nil {
 		// Make sure old client is dead if found
 		player.Client.Destroy()
 	}
-	// TODO the frame size (256) is certainly adequate for chat but probably too small for game states.
-	// This needs to be tuned.
-	player.Client = &Client{hub: game.Hub, conn: conn, send: make(chan []byte, 256), player: player}
+	player.Client = &Client{hub: game.Hub, conn: conn, send: make(chan []byte, sentFrameSize), player: player}
 	game.Hub.register <- player.Client
 	player.IdleCount = 0
 
@@ -209,4 +225,10 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 	// new goroutines.
 	go player.Client.writePump()
 	go player.Client.readPump()
+
+	fmt.Printf("New client added with order %d and token %s\n", playerOrder, playerToken)
+
+	// Notify all clients of the new player list
+	newPlayerList := makePlayerList(game)
+	game.Hub.broadcastMessage(playerListType, []byte(newPlayerList))
 }

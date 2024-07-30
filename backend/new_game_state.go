@@ -34,17 +34,27 @@ import (
 //	status == StatusOK if the game exists or can be created and the player and gameState are admitted
 //	status == StatusBadRequest if any argument is ill-formed
 func newGameState(w http.ResponseWriter, body map[string]interface{}) {
-	gameToken, player, game := getGameAndPlayer(w, body)
+	gameToken, _, playerOrder, game := getGameAndPlayer(w, body)
 	if game == nil {
 		return // error response already issued
 	}
-	gameState, ok := body[argGameState].(map[string]interface{})
+	rawGameState, ok := body[argGameState]
 	if !ok {
-		indicateError(http.StatusBadRequest, "missing or malformed gameState argument", w)
+		indicateError(http.StatusBadRequest, "missing gameState argument", w)
+		return
+	}
+	gameState, ok := rawGameState.(map[string]interface{})
+	if !ok {
+		indicateError(http.StatusBadRequest, "malformed gameState argument", w)
 		return
 	}
 	game.State = gameState
-	game.Players[player].IdleCount = 0
+	player, ok := game.Players[playerOrder]
+	if !ok {
+		indicateError(http.StatusBadRequest, "player is not in the game", w)
+		return
+	}
+	player.IdleCount = 0
 	fmt.Printf("New gamestate recorded for game %s\n", gameToken)
 	sendState(game)
 	w.WriteHeader(http.StatusOK)
