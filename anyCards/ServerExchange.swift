@@ -118,7 +118,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
             // Leader
             numPlayers = "&\(numPlayersKey)=\(OptionSettings.instance.numPlayers)"
         }
-        let url = URL(string: "\(websocketURL)?\(gameKey)=\(game)&\(playerKey)=\(player)\(numPlayers)")!
+        let url = URL(string: "\(websocketURL)?\(gameKey)=\(game)&\(playerKey)=\(player.token)\(numPlayers)")!
         var request = URLRequest(url: url)
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         let webSocketTask = URLSession.shared.webSocketTask(with: request)
@@ -144,7 +144,8 @@ class ServerBasedCommunicator : NSObject, Communicator {
             if nserror.domain == NSPOSIXErrorDomain && nserror.code == POSIXError.ENOTCONN.rawValue {
                 return
             }
-            Logger.logFatalError("Error receiving message: \(error)")
+            Logger.log("Error receiving message: \(error)")
+            delegate.error(error, true)
         }
     }
     
@@ -168,6 +169,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     // Process incoming information from websocket
     private func processIncomingFromWebsocket(_ rawData: Data) {
         let type = rawData[0]
+        Logger.log("Message of type \(type) received on websocket")
         let data = rawData.dropFirst()
         switch type {
         case typeChat:
