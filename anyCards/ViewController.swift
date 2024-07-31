@@ -916,6 +916,13 @@ extension ViewController : CommunicatorDelegate {
     // Respond to a new player list during game initiation.  We do not use this call later for lost players;
     // we use `lostPlayer` for that.  The received players array is already properly sorted.
     func newPlayerList(_ newNumPlayers: Int, _ newPlayers: [Player]) {
+        DispatchQueue.main.async {
+            // Doing everything on the main thread for now; some things could be done in the background but not clear that's necessary
+            self.doNewPlayerList(newNumPlayers, newPlayers)
+        }
+    }
+    
+    func doNewPlayerList(_ newNumPlayers: Int, _ newPlayers: [Player]) {
         Logger.log("newPlayerList received, newNumPlayers=\(newNumPlayers), \(newPlayers.count) players present")
         self.players = newPlayers
         if players.count > 0 { // Should always be true, probably, but give communicators some slack
