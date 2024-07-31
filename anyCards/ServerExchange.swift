@@ -176,9 +176,8 @@ class ServerBasedCommunicator : NSObject, Communicator {
     
     // Completion handler for websocket receive.  Posts a new receive, then processes the present one.
     private func onWebsocketReceive(incoming: Result<URLSessionWebSocketTask.Message, Error>) {
-        webSocketTask.receive(completionHandler: onWebsocketReceive)
-
         if case .success(let message) = incoming {
+            webSocketTask.receive(completionHandler: onWebsocketReceive)
             onWebsocketMessage(message: message)
         }
         else if case .failure(let error) = incoming {
