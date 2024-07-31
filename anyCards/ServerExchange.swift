@@ -28,10 +28,49 @@ fileprivate let playerKey      = "Player"
 fileprivate let gameKey        = "GameToken"
 fileprivate let numPlayersKey  = "NumPlayers"
 fileprivate let websocketURL   = "wss://unigame-befsi.ondigitalocean.app/websocket"
-fileprivate let typeChat       = UInt8(("C" as UnicodeScalar).value)
-fileprivate let typeGame       = UInt8(("G" as UnicodeScalar).value)
-fileprivate let typePlayers    = UInt8(("P" as UnicodeScalar).value)
-fileprivate let typeLostPlayer = UInt8(("L" as UnicodeScalar).value)
+
+// One-byte message types for the differnt kinds of messages we can receive on the web socket
+enum MessageType {
+    case Chat, Game, Players, LostPlayer
+    var code: UInt8 {
+        switch self {
+        case .Chat:
+            return UInt8(("C" as UnicodeScalar).value)
+        case .Game:
+            return UInt8(("G" as UnicodeScalar).value)
+        case .Players:
+            return UInt8(("P" as UnicodeScalar).value)
+        case .LostPlayer:
+            return UInt8(("L" as UnicodeScalar).value)
+        }
+    }
+    var display: String {
+        switch self {
+        case .Chat:
+            return "CHAT"
+        case .Game:
+            return "GAME"
+        case .Players:
+            return "PLAYER LIST"
+        case .LostPlayer:
+            return "LOST PLAYER"
+        }
+    }
+    static func from(_ code: UInt8) ->MessageType? {
+        switch code {
+        case UInt8(("C" as UnicodeScalar).value):
+            return .Chat
+        case UInt8(("G" as UnicodeScalar).value):
+            return .Game
+        case UInt8(("P" as UnicodeScalar).value):
+            return .Players
+        case UInt8(("L" as UnicodeScalar).value):
+            return .LostPlayer
+        default:
+            return nil
+        }
+    }
+}
 
 // This communicator currently uses two means of communication, a websocket and https request/response.
 // The https mechanism may be gradually phased out.
@@ -114,11 +153,13 @@ class ServerBasedCommunicator : NSObject, Communicator {
     private func connectWebsocket(game: String, player: Player, accessToken: String) -> URLSessionWebSocketTask {
         Logger.log("New websocket connection with game=\(game), player=\(player.token)")
         var numPlayers = ""
-        if player.order == 1 {
+        if player.order == UInt32(1) {
             // Leader
+            Logger.log("This player is the leader.  Adding number of players to the request")
             numPlayers = "&\(numPlayersKey)=\(OptionSettings.instance.numPlayers)"
         }
         let url = URL(string: "\(websocketURL)?\(gameKey)=\(game)&\(playerKey)=\(player.token)\(numPlayers)")!
+        Logger.log("Request URL is \(url)")
         var request = URLRequest(url: url)
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         let webSocketTask = URLSession.shared.webSocketTask(with: request)
@@ -168,20 +209,20 @@ class ServerBasedCommunicator : NSObject, Communicator {
   
     // Process incoming information from websocket
     private func processIncomingFromWebsocket(_ rawData: Data) {
-        let type = rawData[0]
-        Logger.log("Message of type \(type) received on websocket")
+        guard let type = MessageType.from(rawData[0]) else {
+            Logger.logFatalError("Protocol error.  Unknown message type \(rawData[0])")
+        }
+        Logger.log("Message of type \(type.display) received on websocket")
         let data = rawData.dropFirst()
         switch type {
-        case typeChat:
+        case .Chat:
             delegate.newChatMsg(String(decoding: data, as: UTF8.self))
-        case typeGame:
+        case .Game:
             deliverReceivedState(data)
-        case typePlayers:
+        case .Players:
             deliverPlayerList(data)
-        case typeLostPlayer:
+        case .LostPlayer:
             deliverLostPlayer(data)
-        default:
-            Logger.logFatalError("Protocol error.  Unknown message type \(type)")
         }
     }
     
@@ -221,6 +262,57 @@ class ServerBasedCommunicator : NSObject, Communicator {
             }
         }
     }
+}
+
+struct Disconnection: LocalizedError {
+    let closeCode: URLSessionWebSocketTask.CloseCode
+    let reason: Data?
+    var errorDescription: String {
+        let code: String
+        switch closeCode {
+        case .abnormalClosure:
+            code = "abnormalClosure"
+        case .invalid:
+            code = "invalid"
+        case .normalClosure:
+            code = "normalClosure"
+        case .goingAway:
+            code = "goingAway"
+        case .protocolError:
+            code = "protocolError"
+        case .unsupportedData:
+            code = "unsupportedData"
+        case .noStatusReceived:
+            code = "noStatueReceived"
+        case .invalidFramePayloadData:
+            code = "invalidFramePayloadData"
+        case .policyViolation:
+            code = "policyViolation"
+        case .messageTooBig:
+            code = "messageTooBig"
+        case .mandatoryExtensionMissing:
+            code = "mandatoryExtensionMissing"
+        case .internalServerError:
+            code = "internalServerError"
+        case .tlsHandshakeFailure:
+            code = "tlsHandshakeFailure"
+        @unknown default:
+            code = "unknown"
+        }
+        var reasonMsg = ""
+        if let data = reason, let reasonText = String(data: data, encoding: .utf8) {
+            reasonMsg = " ,reason=\(reasonText)"
+        }
+        return "Websocket closed, code=\(code)\(reasonMsg)"
+    }
+}
+
+extension ServerBasedCommunicator: URLSessionWebSocketDelegate {
+    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask,
+                    didCloseWith: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        delegate.error(Disconnection(closeCode: didCloseWith, reason: reason), true)
+    }
+
 }
 
 
