@@ -158,7 +158,7 @@ func ensureGameAndPlayer(gameToken string, playerToken string, playerOrder uint3
 		game = &Game{Players: make(map[uint32]*Player), State: map[string]interface{}{},
 			Hub: newHub(), NumPlayers: numPlayers}
 		games[gameToken] = game
-		game.Hub.run()
+		go game.Hub.run()
 		fmt.Printf("New game created with token %s\n", gameToken)
 	} else {
 		game.IdleCount = 0
