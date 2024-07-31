@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strconv"
 
 	"golang.org/x/exp/maps"
 )
@@ -73,7 +74,7 @@ func makePlayerList(game *Game) string {
 		list += (delim + game.Players[key].Token)
 		delim = " "
 	}
-	return string(game.NumPlayers) + " " + list
+	return strconv.Itoa(game.NumPlayers) + " " + list
 }
 
 // Handler for an admin function to dump the entire state of the server.
