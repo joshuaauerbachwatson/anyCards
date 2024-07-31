@@ -211,6 +211,7 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+	fmt.Println("Websocket upgrade completed")
 	// Create and remember Client
 	game, player := ensureGameAndPlayer(gameToken, playerToken, playerOrder, numPlayers)
 	if player.Client != nil {
@@ -230,5 +231,6 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	// Notify all clients of the new player list
 	newPlayerList := makePlayerList(game)
+	fmt.Printf("Sending player list to all clients: %s\n", newPlayerList)
 	game.Hub.broadcastMessage(playerListType, []byte(newPlayerList))
 }

@@ -159,16 +159,17 @@ func ensureGameAndPlayer(gameToken string, playerToken string, playerOrder uint3
 			Hub: newHub(), NumPlayers: numPlayers}
 		games[gameToken] = game
 		game.Hub.run()
+		fmt.Printf("New game created with token %s\n", gameToken)
 	} else {
 		game.IdleCount = 0
-		if game.NumPlayers == 0 {
-			game.NumPlayers = numPlayers
-		} // No else clause for now, arrival of non-zero numPlayers when there is already a
-		// non-zero numPlayers indicates a "too many leaders" condition or some other protocol
-		// error.   We' need to allow for error returns in that case.
 	}
+	if game.NumPlayers == 0 {
+		fmt.Printf("Number of players in game %s set to %d\n", gameToken, numPlayers)
+		game.NumPlayers = numPlayers
+	} // TODO should we check for "too many leaders" here?
 	if game.Players[playerOrder] == nil {
 		game.Players[playerOrder] = &Player{Token: playerToken}
+		fmt.Printf("Player %d added to game %s\n", playerOrder, gameToken)
 	} else {
 		game.Players[playerOrder].IdleCount = 0
 	}
