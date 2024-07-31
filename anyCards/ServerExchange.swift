@@ -163,6 +163,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
         var request = URLRequest(url: url)
         request.addValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         let webSocketTask = URLSession.shared.webSocketTask(with: request)
+        webSocketTask.delegate = self
         webSocketTask.receive(completionHandler: onWebsocketReceive)
         webSocketTask.resume()
         return webSocketTask
