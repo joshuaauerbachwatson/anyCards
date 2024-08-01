@@ -106,20 +106,11 @@ class ServerBasedCommunicator : NSObject, Communicator {
     }
 
     // Process a new Received state
-    private func processReceivedState(_ newState: ReceivedState) {
-        // Note: eventually ReceivedState goes away and we get GameState and Player list separately
-        if let playerList = newState.players, let (numPlayers, players) = decodePlayers(playerList) {
-            delegate.newPlayerList(numPlayers, players)
-        }
-        if let gameState = newState.gameState {
-            if gameState != self.lastGameState {
-                 self.lastGameState = gameState
-                 delegate.gameChanged(gameState)
-            } // do nothing if no change
-        } else if self.lastGameState != nil {
-            // Once some GameState has been established, all polls should be returning one
-            delegate.error(ServerError("No game state included in received state"), false)
-        } // but if a GameState was never sent, we can assume that none exists on the server yet either
+    private func processReceivedState(_ newState: GameState) {
+        if newState != self.lastGameState {
+             self.lastGameState = newState
+             delegate.gameChanged(newState)
+        } // do nothing if no change
     }
 
     // Send a new game state (part of Communicator protocol)
@@ -229,7 +220,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
     // Decodes and then processes received game state
     private func deliverReceivedState(_ data: Data) {
         do {
-            let received = try JSONDecoder().decode(ReceivedState.self, from: data)
+            let received = try JSONDecoder().decode(GameState.self, from: data)
             processReceivedState(received)
         } catch {
             Logger.log("Got decoding error: \(error)")
@@ -361,12 +352,6 @@ struct SentState: Encodable {
     let gameToken: String
     let player: String
     let gameState: GameState
-}
-
-// The value received on the websocket as a push notification when the state of the server changes.
-struct ReceivedState: Decodable {
-    let players: String?
-    let gameState: GameState?
 }
 
 // Subroutine used by response handlers to validate the response and up-call an error if appropriate
