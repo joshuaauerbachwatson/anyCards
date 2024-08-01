@@ -39,8 +39,8 @@ const (
 
 	// Timeouts for idle players and games, as multiples of the cleanup period
 	// We use tight values as a development aid, but we need to make them looser eventually.
-	playerTimeout = 45 / cleanupPeriod
-	gameTimeout   = 300 / cleanupPeriod
+	playerTimeout = 90 / cleanupPeriod
+	gameTimeout   = 600 / cleanupPeriod
 
 	// Dictionary keys used by the various functions for inputs and outputs
 	argGameState = "gameState"
