@@ -25,7 +25,7 @@ protocol Communicator {
     var isChatAvailable: Bool { get }
     func sendChatMsg(_ mag: String)
     func send(_ gameState: GameState)
-    func shutdown()
+    func shutdown(_ dueToError: Bool)
 }
 
 // The protocol for the delegate (callbacks)

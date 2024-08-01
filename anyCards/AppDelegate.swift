@@ -56,7 +56,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let main = window?.rootViewController
         if let vc = main?.presentedViewController as? ViewController,
            let communicator = vc.communicator {
-            communicator.shutdown()
+            communicator.shutdown(false)
         }
     }
 

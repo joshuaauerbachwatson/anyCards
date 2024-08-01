@@ -140,13 +140,14 @@ class ServerBasedCommunicator : NSObject, Communicator {
     
     // Shutdown this communicator.  First disconnect the websocket, then try to withdraw from the game (silently)
     // Part of communicator protocol
-    func shutdown() {
-        disconnectWebsocket()
-        guard let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: player.token ]) else {
-        // ignore error and stop trying to withdraw
+    func shutdown(_ dueToError: Bool) {
+        if webSocketTask.state != URLSessionTask.State.running {
             return
         }
-        postAnAction(pathWithdraw, accessToken, arg) { (data, response, err) in return } // ignore errors
+        if let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: player.token ]) {
+            postAnAction(pathWithdraw, accessToken, arg) { (data, response, err) in return } // ignore errors
+        }
+        disconnectWebsocket(dueToError)
     }
 
     // Subroutine to initialize the websocket connection
@@ -170,21 +171,20 @@ class ServerBasedCommunicator : NSObject, Communicator {
     }
     
     // Subroutine to disconnect the websocket
-    private func disconnectWebsocket() {
-        webSocketTask.cancel(with: .normalClosure, reason: nil)
+    private func disconnectWebsocket(_ dueToError: Bool) {
+        let code = dueToError ? URLSessionWebSocketTask.CloseCode.protocolError :
+            URLSessionWebSocketTask.CloseCode.normalClosure
+        webSocketTask.cancel(with: code, reason: nil)
     }
     
-    // Completion handler for websocket receive.  Posts a new receive, then processes the present one.
+    // Completion handler for websocket receive.  If success, posts a new receive.  In either case, processes the present
+    // message.
     private func onWebsocketReceive(incoming: Result<URLSessionWebSocketTask.Message, Error>) {
         if case .success(let message) = incoming {
             webSocketTask.receive(completionHandler: onWebsocketReceive)
             onWebsocketMessage(message: message)
         }
         else if case .failure(let error) = incoming {
-            let nserror = error as NSError
-            if nserror.domain == NSPOSIXErrorDomain && nserror.code == POSIXError.ENOTCONN.rawValue {
-                return
-            }
             Logger.log("Error receiving message: \(error)")
             delegate.error(error, true)
         }
@@ -309,10 +309,14 @@ struct Disconnection: LocalizedError {
 
 extension ServerBasedCommunicator: URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask,
-                    didCloseWith: URLSessionWebSocketTask.CloseCode, reason: Data?) {
-        delegate.error(Disconnection(closeCode: didCloseWith, reason: reason), true)
+                    didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+        Logger.log("Web socket task has closed")
+        delegate.error(Disconnection(closeCode: closeCode, reason: reason), true)
     }
-
+    
+    func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+        Logger.log("Web socket task has opened")
+    }
 }
 
 

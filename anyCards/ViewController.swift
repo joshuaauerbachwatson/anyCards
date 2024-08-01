@@ -826,7 +826,7 @@ class ViewController: UIViewController {
     // End current game and prepare a new one (responds to EndGame button and also to lost peer condition)
     private func prepareNewGame() {
         // Clean up former game
-        communicator?.shutdown()
+        communicator?.shutdown(false)
         communicator = nil
         playBegun = false
         setFirstYieldOccurred(false, false)
@@ -989,7 +989,7 @@ extension ViewController : CommunicatorDelegate {
                 alert.addAction(keepPlaying)
             }
             let stopPlaying = UIAlertAction(title: stopTitle, style: .cancel) { _ in
-                self.communicator?.shutdown()
+                self.communicator?.shutdown(true)
                 switch self.communication {
                 case .ServerBased(let token):
                     gameTokens.remove(token) // This also sets the saved CommunicatorKind to show a deleted game.

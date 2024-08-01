@@ -75,7 +75,7 @@ class MultiPeerCommunicator : NSObject, Communicator {
     }
 
     // Shutdown communications
-    func shutdown() {
+    func shutdown(_ dueToError: Bool) {
         serviceAdvertiser.stopAdvertisingPeer()
         serviceBrowser.stopBrowsingForPeers()
         session.disconnect()
