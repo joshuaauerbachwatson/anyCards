@@ -21,21 +21,27 @@ import MultipeerConnectivity
 class MultiPeerCommunicator : NSObject, Communicator {
     // The local "peer id"
     private let peerId : MCPeerID
-
+    
     // The advertiser object
     private let serviceAdvertiser : MCNearbyServiceAdvertiser
-
+    
     // The browser object
     private let serviceBrowser : MCNearbyServiceBrowser
-
+    
+    // The number of players.  In the leader instance, this is set to its true value during initialization.
+    // For non-leaders, it is initially zero (meaning unknown) and is learned as part of discoveryInfo sent by
+    // the leader.
+    var numPlayers: Int
+    
     // The delegate, with which we communicate critical events
     private let delegate : CommunicatorDelegate?
-
+    
     // The MultiPeer communicator does not support chat
     var isChatAvailable = false
     
     func sendChatMsg(_ mag: String) {
-        Logger.logFatalError("sendChatMsg should not be called on MultiPeerCommunicator")
+        Logger.log("sendChatMsg should not be called on MultiPeerCommunicator")
+        // Perhaps this should be fatal sincd the button should have been hidden?
     }
     
     // The session as a lazily initialized private property
@@ -44,12 +50,18 @@ class MultiPeerCommunicator : NSObject, Communicator {
         session.delegate = self
         return session
     }()
-
+    
     // Initializer conformed to Communicator protocol (accepts delegate argument)
     required init(_ player: Player, _ delegate: CommunicatorDelegate) {
         self.delegate = delegate
         self.peerId = MCPeerID(displayName: player.token)
-        self.serviceAdvertiser = MCNearbyServiceAdvertiser(peer: peerId, discoveryInfo: nil, serviceType: MultiPeerServiceName)
+        self.numPlayers = 0
+        var info: [String:String]? = nil
+        if OptionSettings.instance.leadPlayer {
+            self.numPlayers = OptionSettings.instance.numPlayers
+            info = [ NumPlayersKey : String(numPlayers)]
+        }
+        self.serviceAdvertiser = MCNearbyServiceAdvertiser(peer: peerId, discoveryInfo: info, serviceType: MultiPeerServiceName)
         self.serviceBrowser = MCNearbyServiceBrowser(peer: peerId, serviceType: MultiPeerServiceName)
         super.init()
         serviceBrowser.delegate = self
@@ -58,8 +70,8 @@ class MultiPeerCommunicator : NSObject, Communicator {
         serviceAdvertiser.startAdvertisingPeer()
         serviceBrowser.startBrowsingForPeers()
     }
-
-    // Send the game state to all peers.  A harmless no-op if there are no peers.  Handles errors (when there is at least one 
+    
+    // Send the game state to all peers.  A harmless no-op if there are no peers.  Handles errors (when there is at least one
     // peer) by calling delegate.error().   Implements Communicator protocol
     func send(_ gameState : GameState) {
         if session.connectedPeers.count > 0 {
@@ -73,33 +85,12 @@ class MultiPeerCommunicator : NSObject, Communicator {
             }
         }
     }
-
+    
     // Shutdown communications
     func shutdown(_ dueToError: Bool) {
         serviceAdvertiser.stopAdvertisingPeer()
         serviceBrowser.stopBrowsingForPeers()
         session.disconnect()
-    }
-
-    // Update the player list based on caller's view.  The logic here avoids creating more than
-    // one MCPeerID for each displayName (Player.token) that is encountered.  There is hidden data in
-    // a MCPeerID that can cause errors when there is more than one instance.
-    func updatePlayers(_ players: [Player]) {
-        // Get those players that are already in the session to avoid adding twice.
-        let registered = session.connectedPeers.map { $0.displayName }
-        // Get only those that are newly "arrived" from local information
-        let newlyArrived = players.map({ String($0.token) }).filter { !registered.contains($0) }
-        for arrived in newlyArrived {
-            // Don't make a new peer ID for the local user, just ones that are "brand new" (presumeably
-            // found in a received GameState).
-            let peer = (arrived == peerId.displayName) ? peerId : MCPeerID(displayName: arrived)
-            session.nearbyConnectionData(forPeer: peer) { (data, error) in
-                if let data = data {
-                    Logger.log("Adding \(arrived) to session")
-                    self.session.connectPeer(peer, withNearbyConnectionData: data)
-                }
-            }
-        }
     }
 }
 
@@ -130,10 +121,15 @@ extension MultiPeerCommunicator : MCNearbyServiceBrowserDelegate {
 
     // React to found peer
     // Note: This code invites any peer automatically. The MCBrowserViewController class
-    // could be used to scan for peers and invite them manually (TODO).
+    // could be used to scan for peers and invite them manually.  The more general question is
+    // whether we support more than one multipeer group for this app in the same "vicinity" (currently not).
     func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String : String]?) {
         Logger.log("Peer found: \(peerID)")
         browser.invitePeer(peerID, to: self.session, withContext: nil, timeout: 10)
+        // If the peer is the leader, it will have sent along the correct numPlayers value
+        if let info = info, let numPlayersString = info[NumPlayersKey], let numPlayers = Int(numPlayersString) {
+            self.numPlayers = numPlayers
+        }
     }
 
     // React to losing contact with peer
@@ -149,9 +145,34 @@ extension MultiPeerCommunicator : MCNearbyServiceBrowserDelegate {
 extension MultiPeerCommunicator : MCSessionDelegate {
     // React to state change
     func session(_ session: MCSession, peer peerID: MCPeerID, didChange state: MCSessionState) {
-        Logger.log("peer \(peerID) didChangeState: \(state.rawValue)")
-        // TODO figure out what we really should do here.  We need to have been maintaining an actual player list
-        self.delegate?.newPlayerList(session.connectedPeers.count, [])
+        Logger.log("peer \(peerID) didChangeState: \(state)")
+        switch state {
+        case .notConnected:
+            if let player = Player(peerID.displayName) {
+                delegate?.lostPlayer(player)
+            }
+        case .connecting:
+            break
+        case .connected:
+            if self.numPlayers > 0 {
+                sendLatestPlayerList()
+            }
+        @unknown default:
+            break
+        }
+    }
+    
+    // Send the latest player list based on the session.  This is only called when numPlayers is non-zero
+    // (meaning that it is a meaningful value and not "unknown").
+    func sendLatestPlayerList() {
+        guard let thisPlayer = Player(peerId.displayName) else { return }
+        var list: [Player] = [thisPlayer]
+        for peer in session.connectedPeers {
+            if let player = Player(peer.displayName) {
+                list.append(player)
+            }
+        }
+        self.delegate?.newPlayerList(numPlayers, list.sorted())
     }
 
     // React to incoming data

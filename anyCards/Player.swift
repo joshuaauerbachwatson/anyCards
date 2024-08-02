@@ -23,7 +23,7 @@ import Foundation
 // the leader configures the game, he may yield after configuring and before making an actual move, causing the
 // player just after him to play first.   A Player structure is not Codable per se but has a simple serialization
 // deserialization for transmission purposes.
-struct Player : Equatable {
+struct Player : Equatable, Comparable {
     let name : String
     let order : UInt32
 
@@ -62,6 +62,11 @@ struct Player : Equatable {
     // Display the player meaningfully
     var display : String {
         return "\(name)(\(String(order)))"
+    }
+
+    // Compare two players to determine ordering of a player list
+    static func < (lhs: Player, rhs: Player) -> Bool {
+        return lhs.order < rhs.order
     }
 }
 

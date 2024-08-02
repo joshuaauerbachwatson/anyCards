@@ -928,7 +928,10 @@ extension ViewController : CommunicatorDelegate {
         if players.count > 0 { // Should always be true, probably, but give communicators some slack
             // Recalculate thisPlayer based on new list
             guard let thisPlayer = players.firstIndex(where: {$0.name == OptionSettings.instance.userName})
-            else { Logger.logFatalError("This player not in player list") }
+            else { 
+                Logger.log("The player for this app is not in the received player list")
+                return
+            }
             self.thisPlayer = thisPlayer
             configurePlayerLabels()
             
