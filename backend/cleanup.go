@@ -24,42 +24,50 @@ import (
 	"time"
 )
 
-// Cleanup function, expected to be invoked at regular intervals.  The constants
-// gameTimeout and playerTimeout express how many times a player or game can be
-// found idle by this function before they are removed.  This assumes that the idle counts
-// are zeroed every time a game is touched or a player is heard from.
+// Cleanup function, expected to be invoked at regular intervals.
+// The constant `playerTimeout` expresses how many times a player can be found
+// unresponsive by this function before it is removed.   The player idle count is
+// zeroed everytime the player app responds with a pong to a websocket ping from the server.
+// So, the playerTimeout should be a small multiple of the pong wait time.
+// The constant `gameFormationTimeout` expresses how many times a game may be found
+// incomplete (number of players unknown or not as many players as needed).  Once a game
+// is complete, its idle count is no longer used.  It will be deleted when it has no more
+// players.
 func cleanup() {
 	// Note: deletion from a map in the scope of a 'range' loop is said to be safe:
 	// https://stackoverflow.com/questions/23229975/is-it-safe-to-remove-selected-keys-from-map-within-a-range-loop
-	for token, game := range games {
-		game.IdleCount++
-		if game.IdleCount > gameTimeout {
-			fmt.Println("cleanup deleting idle game", token)
-			for _, player := range game.Players {
-				if player.Client != nil {
-					player.Client.Destroy()
+	for gameToken, game := range games {
+		// Time out any games that have taken too long to find enough players
+		if game.NumPlayers == 0 || len(game.Players) < game.NumPlayers {
+			// Game not yet fully assembled, so subject to time limit
+			game.IdleCount++
+			if game.IdleCount > gameFormationTimeout {
+				fmt.Printf("cleanup deleting incomplete game '%s' that has passed its time limit\n", gameToken)
+				for _, player := range game.Players {
+					if player.Client != nil {
+						player.Client.Destroy()
+					}
 				}
+				delete(games, gameToken)
+				continue
 			}
-			delete(games, token)
-			continue
+		} else {
+			game.IdleCount = 0
 		}
-		oldPlayerCount := len(game.Players)
+		// Timeout any players that have been idle too long.  Delete the game if it has no player.
 		for playerOrder, player := range game.Players {
 			player.IdleCount++
 			if player.IdleCount > playerTimeout {
-				fmt.Printf("cleanup deleting player %d from game %s\n", playerOrder, token)
+				fmt.Printf("cleanup deleting player %d from game %s\n", playerOrder, gameToken)
 				if player.Client != nil {
 					player.Client.Destroy()
 				}
 				delete(game.Players, playerOrder)
 			}
 		}
-		newPlayerCount := len(game.Players)
-		if newPlayerCount == 0 && oldPlayerCount > 0 {
-			// Game went from having players to having none.  If the game restarts, its old state
-			// is irrelevant and will only cause confusion
-			fmt.Printf("cleanup discarding stale game state from game%s\n", token)
-			game.State = nil
+		if len(game.Players) == 0 {
+			fmt.Printf("cleanup discarding game %s because it no longer has any players\n", gameToken)
+			delete(games, gameToken)
 		}
 	}
 }

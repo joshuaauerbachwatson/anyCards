@@ -160,8 +160,6 @@ func ensureGameAndPlayer(gameToken string, playerToken string, playerOrder uint3
 		games[gameToken] = game
 		go game.Hub.run()
 		fmt.Printf("New game created with token %s\n", gameToken)
-	} else {
-		game.IdleCount = 0
 	}
 	if game.NumPlayers == 0 {
 		fmt.Printf("Number of players in game %s set to %d\n", gameToken, numPlayers)

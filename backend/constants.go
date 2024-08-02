@@ -37,10 +37,9 @@ const (
 	// Default port to listen on if a port is not specified via the environment
 	defaultPort = "80"
 
-	// Timeouts for idle players and games, as multiples of the cleanup period
-	// We use tight values as a development aid, but we need to make them looser eventually.
-	playerTimeout = 90 / cleanupPeriod
-	gameTimeout   = 600 / cleanupPeriod
+	// Timeouts for idle players and for game formation, as multiples of the cleanup period.
+	playerTimeout        = 90 / cleanupPeriod
+	gameFormationTimeout = 300 / cleanupPeriod
 
 	// Dictionary keys used by the various functions for inputs and outputs
 	argGameState = "gameState"

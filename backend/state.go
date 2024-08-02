@@ -31,8 +31,9 @@ import (
 
 // The state of one game
 type Game struct {
-	Players    map[uint32]*Player     `json:"players"`    // key is the player's "order" number
-	IdleCount  int                    `json:"idleCount"`  // global idle count for the game as a whole
+	Players   map[uint32]*Player `json:"players"`   // key is the player's "order" number
+	IdleCount int                `json:"idleCount"` // global idle count for the game as a whole
+	// The game idle count is only used while the player list is incomplete.
 	State      map[string]interface{} `json:"state"`      // the game state (not interpreted here)
 	NumPlayers int                    `json:"numPlayers"` // The expected number of players for this game
 	// Note: the number of players in the Players map should not exceed NumPlayers but may be less as
