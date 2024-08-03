@@ -17,8 +17,6 @@
 import Foundation
 
 // Constants mimic those in the backend
-fileprivate let pathNewState   = "/newstate"
-fileprivate let pathWithdraw   = "/withdraw"
 fileprivate let argGameToken   = "gameToken"
 fileprivate let argPlayer      = "player"
 fileprivate let argPlayers     = "players"
@@ -30,20 +28,12 @@ fileprivate let numPlayersKey  = "NumPlayers"
 fileprivate let websocketURL   = "wss://unigame-befsi.ondigitalocean.app/websocket"
 
 // One-byte message types for the differnt kinds of messages we can receive on the web socket
-enum MessageType {
-    case Chat, Game, Players, LostPlayer
+enum MessageType: Unicode.Scalar, CaseIterable {
+    case Chat = "C", Game = "G", Players = "P", LostPlayer = "L"
     var code: UInt8 {
-        switch self {
-        case .Chat:
-            return UInt8(("C" as UnicodeScalar).value)
-        case .Game:
-            return UInt8(("G" as UnicodeScalar).value)
-        case .Players:
-            return UInt8(("P" as UnicodeScalar).value)
-        case .LostPlayer:
-            return UInt8(("L" as UnicodeScalar).value)
-        }
+        return UInt8(rawValue.value)
     }
+
     var display: String {
         switch self {
         case .Chat:
@@ -56,26 +46,27 @@ enum MessageType {
             return "LOST PLAYER"
         }
     }
-    static func from(_ code: UInt8) ->MessageType? {
-        switch code {
-        case UInt8(("C" as UnicodeScalar).value):
-            return .Chat
-        case UInt8(("G" as UnicodeScalar).value):
-            return .Game
-        case UInt8(("P" as UnicodeScalar).value):
-            return .Players
-        case UInt8(("L" as UnicodeScalar).value):
-            return .LostPlayer
-        default:
-            return nil
-        }
+     
+    static func from(rawValue: Unicode.Scalar) ->MessageType? {
+        return allCases.filter({ $0.rawValue == rawValue }).first
+    }
+    
+    static func from(code: UInt8) ->MessageType? {
+        let rawValue = Unicode.Scalar(code)
+        return from(rawValue: rawValue)
     }
 }
 
-// This communicator currently uses two means of communication, a websocket and https request/response.
-// The https mechanism may be gradually phased out.
-// Currently:  websocket is used for chat and received state.  https is used for sending gamestate and for
-// withdrawing from the game.
+// This communicator uses websocket communication with the server.  Things that may be sent to the server
+//  -- chat messages
+//  -- new game states
+// Things that may be received from the server
+// -- chat messages
+// -- new game states
+// -- lost player messages
+// -- player lists
+// The connection to the server may also be shutdown, which has consequences for the game as viewed by the
+// server and other players.
 class ServerBasedCommunicator : NSObject, Communicator {
     // Chat is available with this communicator.  True, it is only available when the communicator is connected.
     // But, a Communicator connects on construction and should be rendered inaccessible on failure or termination of
@@ -115,28 +106,31 @@ class ServerBasedCommunicator : NSObject, Communicator {
 
     // Send a new game state (part of Communicator protocol)
     func send(_ gameState: GameState) {
-        var arg: Data
+        var data: Data
         do {
             let msg = SentState(gameToken: self.gameToken, player: self.player.token,
                                 gameState: gameState)
-            arg = try encoder.encode(msg)
+            data = try encoder.encode(msg)
         } catch {
             delegate.error(error, false)
             return
         }
-        postAnAction(pathNewState, accessToken, arg) { (data, response, err) in
-            _ = validateResponse(data, response, err, Dictionary<String,String>.self, self.delegate.error)
+        var buffer: Data = Data([MessageType.Game.code])
+        buffer.append(data)
+        let message = URLSessionWebSocketTask.Message.data(buffer)
+        webSocketTask.send(message) { error in
+            if let error = error {
+                self.delegate.error(error, true)
+            }
         }
     }
+
     
-    // Shutdown this communicator.  First disconnect the websocket, then try to withdraw from the game (silently)
+    // Shutdown this communicator by disconnecting the websocket.
     // Part of communicator protocol
     func shutdown(_ dueToError: Bool) {
         if webSocketTask.state != URLSessionTask.State.running {
             return
-        }
-        if let arg = try? encoder.encode([ argGameToken: gameToken, argPlayer: player.token ]) {
-            postAnAction(pathWithdraw, accessToken, arg) { (data, response, err) in return } // ignore errors
         }
         disconnectWebsocket(dueToError)
     }
@@ -200,7 +194,7 @@ class ServerBasedCommunicator : NSObject, Communicator {
   
     // Process incoming information from websocket
     private func processIncomingFromWebsocket(_ rawData: Data) {
-        guard let type = MessageType.from(rawData[0]) else {
+        guard let type = MessageType.from(code: rawData[0]) else {
             Logger.logFatalError("Protocol error.  Unknown message type \(rawData[0])")
         }
         Logger.log("Message of type \(type.display) received on websocket")
@@ -245,11 +239,11 @@ class ServerBasedCommunicator : NSObject, Communicator {
     
     // Send a chat message.  Part of the Communicator protocol
     func sendChatMsg(_ text: String) {
-        let toSend = "[\(OptionSettings.instance.userName)] \(text)"
+        let toSend = String(MessageType.Chat.rawValue) + "[\(OptionSettings.instance.userName)] \(text)"
         let message = URLSessionWebSocketTask.Message.string(toSend)
         webSocketTask.send(message) { error in
             if let error = error {
-                Logger.logFatalError("Error sending message: \(error)")
+                self.delegate.error(error, true)
             }
         }
     }
@@ -310,87 +304,9 @@ extension ServerBasedCommunicator: URLSessionWebSocketDelegate {
     }
 }
 
-
-// Subroutines for invoking actions and checking results
-
-typealias HttpCompletionHandler = (Data?, URLResponse?, Error?) -> Void
-
-fileprivate func postAnAction(_ action: String, _ token: String, _ input: Data?, _ handler: @escaping HttpCompletionHandler) {
-    guard let url = URL(string: ActionRoot + action) else {
-        Logger.logFatalError("Unable to form request URL")
-    }
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.httpBody = input
-    request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.addValue("application/json", forHTTPHeaderField: "Accept")
-    request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-    let task = URLSession.shared.dataTask(with: request, completionHandler: handler)
-    Logger.log("Posting request: \(request)")
-    task.resume()
-}
-
-// A generic error for communications problems
-struct ServerError: Error, CustomDebugStringConvertible {
-    let debugDescription: String
-    let localizedDescription: String
-    init(_ msg: String) {
-        self.localizedDescription = msg
-        self.debugDescription = msg
-    }
-    init(_ statusCode: Int, withMessage: String? = nil) {
-        var msg = HTTPURLResponse.localizedString(forStatusCode: statusCode)
-        if let detail = withMessage {
-            msg = "\(msg) (\(detail))"
-        }
-        self.init(msg)
-    }
-}
-
 // The value sent in a newstate exchange
 struct SentState: Encodable {
     let gameToken: String
     let player: String
     let gameState: GameState
-}
-
-// Subroutine used by response handlers to validate the response and up-call an error if appropriate
-// Returns the result dictionary if valid or nil if error.
-fileprivate func validateResponse<T: Decodable>(_ data: Data?, _ response: URLResponse?, _ err: Error?, _ type: T.Type, _ errHandler: (Error, Bool)->Void) -> T? {
-    if let err = err {
-        Logger.log("Got error return: \(err)")
-        errHandler(err, false)
-        return nil
-    }
-    guard let resp = response as? HTTPURLResponse else {
-        errHandler(ServerError("Could not interpret response from backend"), false)
-        return nil
-    }
-    Logger.log("Got response status code: \(resp.statusCode)")
-    if resp.statusCode < 200 || resp.statusCode > 299 {
-        // By convention, in any error case, the body will not conform to T but rather will be a one-element string->string Dictionary
-        // whose element is "error" (or else there is no body).
-        var errMsg: String? = nil
-        if let data = data, data.count > 0  {
-            if let errBody = try? JSONDecoder().decode(Dictionary<String,String>.self, from: data) {
-                errMsg = errBody[argError]
-            }
-        }
-        errHandler(ServerError(resp.statusCode, withMessage: errMsg), resp.statusCode == 404)
-        return nil
-    }
-    var body: T? = nil
-    if let data = data, data.count > 0 {
-//        let showData = String(decoding: data, as: UTF8.self)
-//        Logger.log("Got data: \(showData)")
-        Logger.log("Decoding message with type \(type)")
-        do {
-            body = try JSONDecoder().decode(T.self, from: data)
-        } catch {
-            Logger.log("Got decoding error: \(error)")
-            errHandler(error, false)
-            return nil
-        }
-    }
-    return body
 }
