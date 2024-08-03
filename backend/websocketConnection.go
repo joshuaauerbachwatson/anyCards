@@ -115,15 +115,24 @@ func (c *Client) readPump() {
 		if c.terminated {
 			return
 		}
-		_, message, err := c.conn.ReadMessage()
+		_, buffer, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("error: %v", err)
 			}
+			// More handling needed?
 			break
 		}
-		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
-		c.hub.broadcast <- message
+		msgType := buffer[0]
+		if msgType == chatType {
+			// For chat, clean up the message a bit as it is supposed to be text
+			buffer = bytes.TrimSpace(bytes.Replace(buffer, newline, space, -1))
+		} else if msgType != gameStateType {
+			// Unexpected type.  Handle?
+			continue
+		}
+		// For each valid message type just echo it to everyone
+		c.hub.broadcast <- buffer
 	}
 }
 

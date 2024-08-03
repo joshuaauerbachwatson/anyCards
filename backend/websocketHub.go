@@ -52,8 +52,7 @@ func newHub() *Hub {
 const gameStateType = 'G'  // Indicates a game state message
 const playerListType = 'P' // Indicates a player list message
 const lostPlayerType = 'L' // Indicates a lost player message
-// There is also constant 'C' for chat message, but since we pass those through without
-// examination we don't need a go declaration for it.
+const chatType = 'C'       // Indicates a chat message
 
 // Send a message (other than chat) to all the clients
 // Chat is handled specially within the readPump when an incoming chat message is detected

@@ -41,11 +41,6 @@ const (
 	playerTimeout        = 90 / cleanupPeriod
 	gameFormationTimeout = 300 / cleanupPeriod
 
-	// Dictionary keys used by the various functions for inputs and outputs
-	argGameState = "gameState"
-	argGameToken = "gameToken"
-	argPlayer    = "player"
-
 	// Query value keys used for websocket creation
 	playerKey     = "Player"
 	gameTokenKey  = "GameToken"

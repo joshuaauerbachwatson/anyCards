@@ -36,28 +36,12 @@ func main() {
 	}
 
 	// Set up handlers
+	// Websocket initiation.  This should carry all traffic from the app itself
 	http.Handle(pathWebsocket, EnsureValidToken()(
 		http.HandlerFunc(newWebSocket),
 	))
 
-	// TODO: this should eventually be replaced by using the websocket inbound channel for game states
-	http.Handle(pathNewState, EnsureValidToken()(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if body := screenRequest(w, r); body != nil {
-				newGameState(w, *body)
-			}
-		}),
-	))
-
-	// TODO this should eventually be replaced by detecting remote close of the websocket
-	http.Handle(pathWithdraw, EnsureValidToken()(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if body := screenRequest(w, r); body != nil {
-				withdraw(w, *body)
-			}
-		}),
-	))
-
+	// The Dump feature (requires admin role)
 	http.Handle(pathDump, EnsureValidToken()(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if body := screenRequest(w, r); body != nil {
@@ -68,6 +52,7 @@ func main() {
 		}),
 	))
 
+	// The Reset feature (requires admin role)
 	http.Handle(pathReset, EnsureValidToken()(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if body := screenRequest(w, r); body != nil {

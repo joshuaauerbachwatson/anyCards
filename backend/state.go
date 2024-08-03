@@ -34,8 +34,7 @@ type Game struct {
 	Players   map[uint32]*Player `json:"players"`   // key is the player's "order" number
 	IdleCount int                `json:"idleCount"` // global idle count for the game as a whole
 	// The game idle count is only used while the player list is incomplete.
-	State      map[string]interface{} `json:"state"`      // the game state (not interpreted here)
-	NumPlayers int                    `json:"numPlayers"` // The expected number of players for this game
+	NumPlayers int `json:"numPlayers"` // The expected number of players for this game
 	// Note: the number of players in the Players map should not exceed NumPlayers but may be less as
 	// players join the game.  A NumPlayers value of 0 means "unknown", which may be case transiently.
 	Hub *Hub // The Websocket "Hub" for the game (not serialized)
@@ -58,12 +57,6 @@ var games = make(map[string]*Game)
 
 // Counter for the number of times cleanup has run
 var cleanupCounter int
-
-// Send a new state to all the players of a game
-func sendState(game *Game) {
-	state, _ := json.Marshal(game.State) // are errors possible here? ... I think not
-	game.Hub.broadcastMessage(gameStateType, state)
-}
 
 // Subroutine to make the player list of a game
 func makePlayerList(game *Game) string {
