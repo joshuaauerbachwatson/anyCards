@@ -993,15 +993,6 @@ extension ViewController : CommunicatorDelegate {
             }
             let stopPlaying = UIAlertAction(title: stopTitle, style: .cancel) { _ in
                 self.communicator?.shutdown(true)
-                switch self.communication {
-                case .ServerBased(let token):
-                    gameTokens.remove(token) // This also sets the saved CommunicatorKind to show a deleted game.
-                    if let otherToken = gameTokens.first?.token {
-                        self.communication = .ServerBased(otherToken)
-                    } // Else the communicator kind remains .ServerBased with special value for deleted game
-                default:
-                    break
-                }
                 self.prepareNewGame()
             }
             alert.addAction(stopPlaying)

@@ -62,7 +62,7 @@ func isAdmin(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func isValidGameToken(gameToken string) bool {
-	return len(gameToken) == gameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9]*$`).MatchString(gameToken)
+	return len(gameToken) >= minGameTokenLen && regexp.MustCompile(`^[a-zA-Z0-9_-]*$`).MatchString(gameToken)
 }
 
 // Check validity of player token.  The first part a base64 encoded player name, which is not checked.

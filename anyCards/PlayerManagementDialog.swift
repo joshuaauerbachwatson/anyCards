@@ -40,9 +40,8 @@ class PlayerManagementDialog : UIViewController {
     let localRemote = TouchableLabel()  // 6th row right
     let tokenLabel = UILabel()          // 7th row left
     let token = UITextField()           // 7th row right
-    let saveToken = UIButton()          // 8th row
-    let useSavedToken = UIButton()      // 9th row
-    let findPlayersButton = UIButton()  // 10th row
+    let useSavedToken = UIButton()      // 8th row
+    let findPlayersButton = UIButton()  // 9th row
 
     // editable field tags
     let UserNameTag = 0
@@ -118,12 +117,8 @@ class PlayerManagementDialog : UIViewController {
         configureLeftLabel(tokenLabel, TokenLabelText)
         configureEditableField(token, TokenTag)
         if case let CommunicatorKind.ServerBased(savedToken) = vc.communication {
-            token.text = gameTokens.getDisplayFromToken(savedToken)
+            token.text = savedToken
         }
-
-        // Save token button
-        configureButton(saveToken, title: SaveTokenTitle, target: self, action: #selector(saveTokenTouched), parent: view)
-        hide(saveToken)
 
         // Use saved token button
         configureButton(useSavedToken, title: UseSavedTokenTitle, target: self, action: #selector(useSavedTokenTouched), parent: view)
@@ -159,8 +154,7 @@ class PlayerManagementDialog : UIViewController {
         place(localRemote,after(localRemoteLabel), below(numPlayers), twoThirdsWidth, ctlHeight)
         place(tokenLabel, startX, below(localRemote), thirdWidth, ctlHeight)
         place(token, after(tokenLabel), below(localRemote), twoThirdsWidth,  ctlHeight)
-        place(saveToken, startX, below(token), fullWidth, ctlHeight)
-        place(useSavedToken, startX, below(saveToken), fullWidth, ctlHeight)
+        place(useSavedToken, startX, below(token), fullWidth, ctlHeight)
         place(findPlayersButton, startX, below(useSavedToken), fullWidth, ctlHeight)
     }
 
@@ -197,28 +191,9 @@ class PlayerManagementDialog : UIViewController {
         }
     }
 
-    // Respond to touch of the save token button
-    @objc func saveTokenTouched() {
-        guard let newToken = token.text, newToken.count > 0 else {
-            bummer(title: MissingToken, message: MissingToken, host: self)
-            return
-        }
-        if !validToken(newToken) {
-            bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
-            return
-        }
-        token.resignFirstResponder()
-        promptForName(self, title: SaveTokenTitle, message: SaveTokenMessage, placeholder: NicknamePlaceholder) { nickName in
-            let display = gameTokens.storeEntry(newToken, nickName)
-            self.vc.communication = .ServerBased(newToken)
-            self.showToken(newToken, display)
-            hide(self.saveToken)
-        }
-    }
-
     // Respond to touch of the use saved button
     @objc func useSavedTokenTouched() {
-        let preferredSize = TableDialogController.getPreferredSize(gameTokens.pairs.count)
+        let preferredSize = TableDialogController.getPreferredSize(gameTokens.values.count)
         let anchor = CGPoint(x: token.frame.midX, y: token.frame.minY)
         let popup = RestoreTokenDialog(self, size: preferredSize, anchor: anchor)
         token.resignFirstResponder()
@@ -245,29 +220,26 @@ class PlayerManagementDialog : UIViewController {
     // Subroutines
 
     // Show a specific token in this dialog (assumes isRemote is true and that the labels are showing)
-    // Arguments are the token and the display value (which may be the same as the token or may incorporate a nickname).
-    func showToken(_ tokenArg: String, _ displayArg: String) {
+    // Argument is the token to show.
+    func showToken(_ tokenArg: String) {
         unhide(useSavedToken)
-        token.text = displayArg
+        token.text = tokenArg
         vc.communication = .ServerBased(tokenArg)
     }
 
     // Show a blank token to be filled in by the user (assumes remote and that the labels are showing)
     func showBlankToken() {
         token.text = nil
-        hide(saveToken)
         token.becomeFirstResponder()
     }
 
     // Show the appropriate initial token (assuming remote and that the labels are showing)
     func showInitialToken() {
         unhide(token)
-        if let pair = gameTokens.first {
-            showToken(pair.token, pair.display)
-            unhide(useSavedToken)
+        if let firstToken = gameTokens.first {
+            showToken(firstToken)
         } else {
             showBlankToken()
-            hide(saveToken)
             hide(useSavedToken)
         }
     }
@@ -275,7 +247,7 @@ class PlayerManagementDialog : UIViewController {
     // Set the remote controls hidden or not
     func setRemoteControlsHidden(_ hidden: Bool) {
         if hidden {
-            hide(token, tokenLabel, saveToken, useSavedToken)
+            hide(token, tokenLabel, useSavedToken)
         } else {
             unhide(tokenLabel)
             showInitialToken()
@@ -317,36 +289,23 @@ class PlayerManagementDialog : UIViewController {
         guard let token = text else {
             return false
         }
-        return token.count == GameTokenLength && validTokenChars(token)
+        return token.count >= GameTokenMinLength && validTokenChars(token)
     }
 
     // Determines if characters are valid for inclusion in a token
     func validTokenChars(_ chars: String) -> Bool {
-        return (try? Regex("^[a-zA-Z0-9]*$").wholeMatch(in: chars)) != nil
+        return (try? Regex("^[a-zA-Z0-9_-]*$").wholeMatch(in: chars)) != nil
     }
 }
 
 // Conform to UITextFieldDelegate
 extension PlayerManagementDialog: UITextFieldDelegate {
-    // Prevent erroneous characters from entering the editToken field.  Also prevents too many characters from being entered.
-    // Deals with hiding or unhiding the save button according to whether the new character count is exactly GameTokenLength
+    // Prevent erroneous characters from entering the editToken field.
     func textField(_ field: UITextField, shouldChangeCharactersIn range: NSRange, replacementString chars: String) -> Bool {
         if field.tag != TokenTag {
             return true
         }
-        if !validTokenChars(chars) {
-            return false
-        }
-        let newLen = (field.text?.count ?? 0) + chars.count - range.length
-        if newLen < 0 || newLen > GameTokenLength {
-            return false
-        }
-        if newLen == GameTokenLength {
-            unhide(saveToken)
-        } else {
-            hide(saveToken)
-        }
-        return true
+        return validTokenChars(chars)
     }
 
     // Don't allow invalid token to be left in the token field
@@ -354,11 +313,9 @@ extension PlayerManagementDialog: UITextFieldDelegate {
         if field.tag != TokenTag {
             return true
         }
-        hide(saveToken)
         if let token = field.text, token.count > 0 {
             if validToken(token) {
-                unhide(saveToken)
-                vc.communication = .ServerBased(token)
+                return true
             } else {
                 bummer(title: InvalidTokenTitle, message: InvalidTokenMessage, host: self)
                 return false
@@ -369,12 +326,16 @@ extension PlayerManagementDialog: UITextFieldDelegate {
 
     // Store new value of the player name field and/or end token editing
     func textFieldDidEndEditing(_ textField: UITextField, reason: UITextField.DidEndEditingReason) {
-        if textField.tag == UserNameTag {
-            if let newText = textField.text, reason == .committed {
+        if let newText = textField.text, reason == .committed, newText.count > 0 {
+            if textField.tag == UserNameTag {
                 vc.userName = newText
                 vc.configurePlayerLabels()
+            } else {
+                gameTokens.storeToken(newText)
+                vc.communication = .ServerBased(newText)
+                unhide(useSavedToken)
             }
-        } // Nothing to do for tokens
+        }
     }
 
     // For all fields, allow the return key to end editing

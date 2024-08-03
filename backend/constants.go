@@ -20,13 +20,10 @@ package main
 // Constants used in the backend
 
 const (
-	// Length of a game token in characters
-	gameTokenLen = 12
+	// Minimum Length of a game token in characters
+	minGameTokenLen = 6
 
 	// URL paths representing verbs
-	pathNewState  = "/newstate"
-	pathPoll      = "/poll"
-	pathWithdraw  = "/withdraw"
 	pathReset     = "/reset"
 	pathDump      = "/dump"
 	pathWebsocket = "/websocket"

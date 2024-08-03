@@ -16,45 +16,22 @@
 
 import Foundation
 
-// Stores game tokens, with optional nicknames.  Game tokens are used only when using the server (with MPC,
+// Stores game tokens (now generally called "game IDs").  Game tokens are used only when using the server (with MPC,
 // the player group consists of those in proximity, by definition).
-
-struct StoredGameToken: Codable {
-    let token: String
-    let nickName: String?
-    var display: String {
-        if let nickName = nickName, nickName.count > 0 {
-            return "\(nickName): \(token)"
-        }
-        return token
-    }
-}
-
-enum SavedGamesStatus {
-    case Zero, One, Many
-}
 
 class GameTokens : Codable {
     // The stored tokens themselves
-    var pairs = [StoredGameToken]()
+    var values = [String]()
 
-    var displays: [String] {
+    var first: String? {
         get {
-            return pairs.map { $0.display }
+            return values.first
         }
     }
-
-    var first: StoredGameToken? {
-        get {
-            return pairs.first
-        }
-    }
-    
-    
 
     // Remove items by token value (there should be only one such item but this will remove all in case of duplicates)
     func remove(_ item: String) {
-        pairs.removeAll(where: { $0.token == item })
+        values.removeAll(where: { $0 == item })
         save()
         switch OptionSettings.instance.communication {
         case .ServerBased(let gameToken):
@@ -66,40 +43,32 @@ class GameTokens : Codable {
         }
     }
 
-    // Remove item by index position.  Returns the display value for the item.
+    // Remove item by index position.  Returns the value of the item.
     func remove(at: Int) -> String {
-        let removed = pairs.remove(at: at)
+        let removed = values.remove(at: at)
         save()
-        return removed.display
+        return removed
     }
 
-    // Save the pairs to disk
+    // Save the values to disk
     private func save() {
         let encoder = JSONEncoder()
         guard let encoded = try? encoder.encode(self) else {
             return Logger.log("Failed to encode server tokens")
         }
-        let dictionaryFile = getDocDirectory().appendingPathComponent(ServerGameFile).path
-        FileManager.default.createFile(atPath: dictionaryFile, contents: encoded, attributes: nil)
+        let gamesFile = getDocDirectory().appendingPathComponent(ServerGameFile).path
+        FileManager.default.createFile(atPath: gamesFile, contents: encoded, attributes: nil)
         Logger.log("Server tokens successfully saved")
     }
 
-    // Store a new entry (name, token) in the dictionary.  Returns the display value for the new item.
-    func storeEntry(_ token: String, _ nickName: String?) -> String {
-        let newPair = StoredGameToken(token: token, nickName: nickName)
-        Logger.log("save game tokens updated with \(newPair.display)")
-        pairs.append(newPair)
-        save()
-        return newPair.display
-    }
-
-    // Decorates a token to become a displayable value with a nickname iff the token is in the saved server tokens.
-    // Otherwise returns the token itself
-    func getDisplayFromToken(_ token: String) -> String {
-        if let pair = pairs.first(where: { $0.token == token }) {
-            return pair.display
+    // Store a new token in the list.
+    func storeToken(_ token: String) {
+        Logger.log("save game tokens updated with \(token)")
+        if values.contains(token) {
+            return
         }
-        return token
+        values.append(token)
+        save()
     }
 }
 
@@ -109,7 +78,7 @@ var gameTokens: GameTokens = {
         let archived = try Data(contentsOf: storageFile)
         let decoder = JSONDecoder()
         let ans = try decoder.decode(GameTokens.self, from: archived)
-        Logger.log("Game tokens loaded from disk with \(ans.pairs.count) entries")
+        Logger.log("Game tokens loaded from disk with \(ans.values.count) entries")
         return ans
     } catch {
         Logger.log("Saved GameTokens not found, a new one was created")
