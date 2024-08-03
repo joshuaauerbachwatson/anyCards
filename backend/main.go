@@ -21,7 +21,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+
 	"net/http"
 	"os"
 
@@ -32,7 +32,8 @@ import (
 func main() {
 	// Load environment
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading the .env file: %v", err)
+		fmt.Printf("Error loading the .env file: %v", err)
+		return
 	}
 
 	// Set up handlers
@@ -78,6 +79,6 @@ func main() {
 
 	// Start serving requests
 	err := http.ListenAndServe(fmt.Sprintf(":%s", port), nil)
-	// No reasonable recovery at this point, just crash
-	log.Fatal(err)
+	// No reasonable recovery at this point, just exit
+	fmt.Println(err)
 }

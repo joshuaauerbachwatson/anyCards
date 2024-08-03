@@ -26,7 +26,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
+
 	"net/http"
 	"strconv"
 	"time"
@@ -91,6 +91,7 @@ func (c *Client) Destroy() {
 	fmt.Printf("Sending lost player message for player %s\n", c.player.Token)
 	c.hub.broadcastMessage(lostPlayerType, []byte(c.player.Token))
 	c.hub.unregister <- c
+	// TODO send close code, probably
 	c.conn.Close()
 }
 
@@ -117,10 +118,7 @@ func (c *Client) readPump() {
 		}
 		_, buffer, err := c.conn.ReadMessage()
 		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
-			}
-			// More handling needed?
+			fmt.Printf("error: %v", err)
 			break
 		}
 		msgType := buffer[0]
@@ -128,8 +126,8 @@ func (c *Client) readPump() {
 			// For chat, clean up the message a bit as it is supposed to be text
 			buffer = bytes.TrimSpace(bytes.Replace(buffer, newline, space, -1))
 		} else if msgType != gameStateType {
-			// Unexpected type.  Handle?
-			continue
+			fmt.Printf("Unexpected incoming message type %d\n", msgType)
+			break
 		}
 		// For each valid message type just echo it to everyone
 		c.hub.broadcast <- buffer
@@ -218,7 +216,7 @@ func newWebSocket(w http.ResponseWriter, r *http.Request) {
 	// We have valid inputs so it's ok to upgrade
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		fmt.Printf("error: %v\n", err)
 		return
 	}
 	fmt.Println("Websocket upgrade completed")
