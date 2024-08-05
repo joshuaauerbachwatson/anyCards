@@ -15,7 +15,6 @@
  */
 
 import Foundation
-import Network
 
 // Constants mimic those in the backend
 fileprivate let argGameToken   = "gameToken"
@@ -27,6 +26,7 @@ fileprivate let playerKey      = "Player"
 fileprivate let gameKey        = "GameToken"
 fileprivate let numPlayersKey  = "NumPlayers"
 fileprivate let websocketURL   = "wss://unigame-befsi.ondigitalocean.app/websocket"
+fileprivate let ignoredReceiveErrors: [Int] = [ Int(ENOTCONN), Int(ECANCELED) ]
 
 // One-byte message types for the differnt kinds of messages we can receive on the web socket
 enum MessageType: Unicode.Scalar, CaseIterable {
@@ -172,7 +172,8 @@ class ServerBasedCommunicator : NSObject, Communicator {
         }
         else if case .failure(let error) = incoming {
             Logger.log("Error receiving message: \(error)")
-            if let nwError = error as? NWError, case let .posix(code) = nwError, code == .ENOTCONN || code == .ECANCELED {
+            let nsError = error as NSError
+            if nsError.domain == NSPOSIXErrorDomain && ignoredReceiveErrors.contains(nsError.code){
                 return
             }
             delegate.error(error, true)
