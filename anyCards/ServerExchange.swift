@@ -15,6 +15,7 @@
  */
 
 import Foundation
+import Network
 
 // Constants mimic those in the backend
 fileprivate let argGameToken   = "gameToken"
@@ -171,6 +172,9 @@ class ServerBasedCommunicator : NSObject, Communicator {
         }
         else if case .failure(let error) = incoming {
             Logger.log("Error receiving message: \(error)")
+            if let nwError = error as? NWError, case let .posix(code) = nwError, code == .ENOTCONN || code == .ECANCELED {
+                return
+            }
             delegate.error(error, true)
         }
     }
@@ -296,7 +300,6 @@ extension ServerBasedCommunicator: URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask,
                     didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         Logger.log("Web socket task has closed")
-        delegate.error(Disconnection(closeCode: closeCode, reason: reason), true)
     }
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
