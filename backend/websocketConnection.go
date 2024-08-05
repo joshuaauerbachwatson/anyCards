@@ -119,9 +119,12 @@ func (c *Client) readPump() {
 			return
 		}
 		_, buffer, err := c.conn.ReadMessage()
-		if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-			fmt.Printf("error: %v\n", err)
-			break
+		if err != nil {
+			if !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				fmt.Printf("error: %v\n", err)
+			}
+			fmt.Printf("Closing connection for player %s\n", c.player.Token)
+			return
 		}
 		msgType := buffer[0]
 		if msgType == chatType {
@@ -129,8 +132,10 @@ func (c *Client) readPump() {
 			buffer = bytes.TrimSpace(bytes.Replace(buffer, newline, space, -1))
 		} else if msgType != gameStateType {
 			fmt.Printf("Unexpected incoming message type %d\n", msgType)
-			break
+			fmt.Printf("Closing connection for player %s\n", c.player.Token)
+			return
 		}
+		fmt.Printf("Valid message received of type %d from player %s.  Broadcasting.\n", msgType, c.player.Token)
 		// For each valid message type just echo it to everyone
 		c.hub.broadcast <- buffer
 	}
