@@ -970,8 +970,10 @@ extension ViewController : CommunicatorDelegate {
     // Handle a new chat message
     func newChatMsg(_ msg: String) {
         chatTranscript = chatTranscript == "" ? msg : chatTranscript + "\n" + msg
-        if let chatController = presentedViewController as? ChatController {
-            chatController.updateTranscript(chatTranscript)
+        DispatchQueue.main.async {
+            if let chatController = self.presentedViewController as? ChatController {
+                chatController.updateTranscript(self.chatTranscript)
+            }
         }
     }
     

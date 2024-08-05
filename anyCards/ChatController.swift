@@ -21,6 +21,7 @@ class ChatController : UIViewController, UITextFieldDelegate {
         self.communicator = communicator
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = UIModalPresentationStyle.fullScreen
+        self.messages.font = getTextFont()
         self.messages.text = messages
     }
     
@@ -51,6 +52,7 @@ class ChatController : UIViewController, UITextFieldDelegate {
         place(done, after(send), below(input), halfWidth, controlHeight)
         let messagesHeight = safeArea.maxY - done.frame.maxY - border
         place(messages, startX, below(done), fullWidth, messagesHeight)
+        input.becomeFirstResponder()
     }
     
     @objc func sendTouched() {
