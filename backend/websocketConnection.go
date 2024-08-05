@@ -45,10 +45,9 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 512
+	maxMessageSize = 1024
 
 	// Size of message frames being sent
-	// TODO this must accommodate all four frame types; determine best value.
 	sentFrameSize = 1024
 )
 
