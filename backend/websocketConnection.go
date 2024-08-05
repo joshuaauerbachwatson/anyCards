@@ -88,10 +88,12 @@ func (c *Client) Destroy() {
 		return
 	}
 	c.terminated = true
+	// Unregister from the hub _before_ sending the lost player message so as not to try sending
+	// it to the lost player itself.
+	c.hub.unregister <- c
 	fmt.Printf("Sending lost player message for player %s\n", c.player.Token)
 	c.hub.broadcastMessage(lostPlayerType, []byte(c.player.Token))
-	c.hub.unregister <- c
-	// TODO send close code, probably
+	// TODO should this always be an abrupt close?
 	c.conn.Close()
 }
 
