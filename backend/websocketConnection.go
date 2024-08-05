@@ -119,8 +119,8 @@ func (c *Client) readPump() {
 			return
 		}
 		_, buffer, err := c.conn.ReadMessage()
-		if err != nil {
-			fmt.Printf("error: %v", err)
+		if err != nil && !websocket.IsUnexpectedCloseError(err) {
+			fmt.Printf("error: %v\n", err)
 			break
 		}
 		msgType := buffer[0]
