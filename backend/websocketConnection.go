@@ -45,10 +45,13 @@ const (
 	pingPeriod = (pongWait * 9) / 10
 
 	// Maximum message size allowed from peer.
-	maxMessageSize = 1024
+	// TODO this is big enough to hold the JSON encoding of double-deck game state.  A considerably smaller
+	// value would work if we switched to a dense binary encoding, but that is a bunch of work requiring
+	// matched implementations in two languages.
+	maxMessageSize = 10240
 
 	// Size of message frames being sent
-	sentFrameSize = 1024
+	sentFrameSize = 10240
 )
 
 var (
