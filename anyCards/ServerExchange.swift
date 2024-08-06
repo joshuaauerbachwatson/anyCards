@@ -109,15 +109,14 @@ class ServerBasedCommunicator : NSObject, Communicator {
     func send(_ gameState: GameState) {
         var data: Data
         do {
-            let msg = SentState(gameToken: self.gameToken, player: self.player.token,
-                                gameState: gameState)
-            data = try encoder.encode(msg)
+            data = try encoder.encode(gameState)
         } catch {
             delegate.error(error, false)
             return
         }
         var buffer: Data = Data([MessageType.Game.code])
         buffer.append(data)
+        Logger.log("Sending game state message of length \(buffer.count)")
         let message = URLSessionWebSocketTask.Message.data(buffer)
         webSocketTask.send(message) { error in
             if let error = error {
@@ -306,11 +305,4 @@ extension ServerBasedCommunicator: URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         Logger.log("Web socket task has opened")
     }
-}
-
-// The value sent in a newstate exchange
-struct SentState: Encodable {
-    let gameToken: String
-    let player: String
-    let gameState: GameState
 }
