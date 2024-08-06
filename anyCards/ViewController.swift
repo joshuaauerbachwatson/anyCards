@@ -725,6 +725,8 @@ class ViewController: UIViewController {
             label.attributedText = nil
             label.text = playerName
         }
+        Logger.log("Setting text color for player \(playerIndex). " +
+                   " This player is \(thisPlayer), playBegun is \(playBegun) and activePlayer is \(activePlayer)")
         label.textColor = (playBegun && playerIndex == activePlayer) ? ActivePlayerColor : NormalTextColor
     }
 
@@ -933,7 +935,6 @@ extension ViewController : CommunicatorDelegate {
                 return
             }
             self.thisPlayer = thisPlayer
-            configurePlayerLabels()
             
             // Manage incoming numPlayers.  Ignore it if leader.  For others, store it but 0 means unknown.
             if !leadPlayer {
@@ -964,6 +965,8 @@ extension ViewController : CommunicatorDelegate {
                     checkTurnToPlay()
                 } // else player list not complete
             } // else we don't know the number of players yet
+            // Always configure the player labels after all information is processed.
+            configurePlayerLabels()
         } // else this call does not provide any players
     }
 
