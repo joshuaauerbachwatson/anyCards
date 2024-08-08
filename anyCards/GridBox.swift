@@ -20,7 +20,7 @@ import UIKit
 // a stack of cards.  Cards that overlap a GridBox may snap into it, being placed in accordance with the GridBox's rules.
 class GridBox : UIView {
     // Classifies the GridBox according to the rules that apply
-    enum Kind : Codable {
+    enum Kind : Codable, CaseIterable {
         case Deck     // All face down, remove only
         case Discard  // All face up, add at top only.  Removal allowed.
         case General  // Potentially mixed, face up added to top and face down to bottom.  Removal allowed.
@@ -47,8 +47,6 @@ class GridBox : UIView {
                 return "↑↓"
             }
         }
-        
-        static let allKinds : [Kind] = [.Deck, .Discard, .General]
     }
 
     // An variable to save the previous "kind" of a GridBox as it is being changed.

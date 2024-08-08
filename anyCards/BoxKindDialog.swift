@@ -36,22 +36,22 @@ class BoxKindDialog : TableDialogController {
 
     // Override getCurrentRow to reflect the index position of the "current" box kind
     override func getCurrentRow() -> Int {
-        return GridBox.Kind.allKinds.firstIndex(of: box.kind) ?? 0
+        return GridBox.Kind.allCases.firstIndex(of: box.kind) ?? 0
     }
 
     // Override the number of rows to use the number of GridBox kind values
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return GridBox.Kind.allKinds.count
+        return GridBox.Kind.allCases.count
     }
 
     // Override initializeRow to use the appropriate labels for the box kinds
     override func initializeRow(_ label: UILabel, _ row: Int) {
-        label.text = GridBox.Kind.allKinds[row].label
+        label.text = GridBox.Kind.allCases[row].label
     }
 
     // Override rowSelected to handle the appropriate action changing the GridBox kind
     override func rowSelected(_ row: Int) -> Bool {
-        let kind = GridBox.Kind.allKinds[row]
+        let kind = GridBox.Kind.allCases[row]
         if kind != box.kind {
             box.kind = kind
             host.kind.text = box.kind.label
