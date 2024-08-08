@@ -421,6 +421,9 @@ class ViewController: UIViewController {
     // On "tap", which can only happen if card is not dragged.  Tapping a covered card brings it to the front.
     // Tapping a non-covered card flips it over.
     private func cardTapped(_ touch: UITouch) {
+        if !thisPlayersTurn {
+            Logger.log("Card tap when not this player's turn ignored")
+        }
         if let card = touch.view as? Card {
             if isCovered(card) {
                 playingArea.bringSubviewToFront(card)
