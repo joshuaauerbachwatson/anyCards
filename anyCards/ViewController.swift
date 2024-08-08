@@ -564,7 +564,7 @@ class ViewController: UIViewController {
     @objc func yieldTouched() {
         Logger.log("Yield Touched")
         activePlayer = (thisPlayer + 1) % players.count
-        transmit()
+        transmit(yielding: true)
         configurePlayerLabels()
         checkTurnToPlay()
     }
@@ -906,8 +906,8 @@ class ViewController: UIViewController {
     }
 
     // Transmit GameState to the other players, either when just showing or when yielding
-    func transmit() {
-        guard thisPlayersTurn && communicator != nil else {
+    func transmit(yielding: Bool = false) {
+        guard communicator != nil && (yielding || thisPlayersTurn) else {
             return // Make it possible to call this without worrying.
         }
         let gameState = GameState(self)
