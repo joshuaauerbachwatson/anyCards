@@ -52,8 +52,6 @@ class ViewController: UIViewController {
         set {
             OptionSettings.instance.deckType = newValue
             cards = makePlayingDeck(Deck, deckType)
-            // Changes to deckType should propagate eagerly
-            transmit()
         }
     }
     var hasHands : Bool {
@@ -311,7 +309,7 @@ class ViewController: UIViewController {
             bummer(title: "Rotation error", message: "Rotation should have been forbidden", host: self)
             return
         }
-        let gameState = GameState(self)
+        let gameState = GameState(self, includeHandArea: true)
         coordinator.animate(alongsideTransition: nil) {_ in
             self.removeAllCardsAndBoxes()
             self.doLayout(gameState)
@@ -565,8 +563,8 @@ class ViewController: UIViewController {
     // Respond to touch of yield button.  Sends the GameState and advances the turn.
     @objc func yieldTouched() {
         Logger.log("Yield Touched")
-        transmit(true)
         activePlayer = (thisPlayer + 1) % players.count
+        transmit()
         configurePlayerLabels()
         checkTurnToPlay()
     }
@@ -782,6 +780,7 @@ class ViewController: UIViewController {
     private func makePlayingDeck(_ deck: SourceDeck, _ instructions: PlayingDeckTemplate) -> [Card] {
         Logger.log("making playing deck")
         let cards = deck.makePlayingDeck(instructions)
+        Logger.log("there are \(cards.count) cards")
         for card in cards {
             if let recognizers = card.gestureRecognizers, recognizers.count > 0 {
                 continue
@@ -869,8 +868,10 @@ class ViewController: UIViewController {
         }
     }
 
-    // Called when the deck type or hand area setting changes.  Does the initial setup for that combination of decktype and hand area.
+    // Called when the deck type or hand area setting changes.  
+    // Does the initial setup for that combination of decktype and hand area.
     func newShuffle() {
+        Logger.log("Request for newShuffle (deck change?)")
         setupPublicArea()
         removeAllCardsAndBoxes()
         shuffleAndPlace()
@@ -890,6 +891,7 @@ class ViewController: UIViewController {
 
     // Shuffle cards and form deck.  Add a GridBox to hold the deck and place everything on the playingArea
     private func shuffleAndPlace() {
+        Logger.log("Shuffling and placing \(self.cards.count) cards")
         let cards = shuffle(self.cards)
         let deckOrigin = CGPoint(x: cardSize.width, y: cardSize.height)
         cards.forEach { card in
@@ -904,11 +906,11 @@ class ViewController: UIViewController {
     }
 
     // Transmit GameState to the other players, either when just showing or when yielding
-    func transmit(_ yielding: Bool = false) {
+    func transmit() {
         guard thisPlayersTurn && communicator != nil else {
             return // Make it possible to call this without worrying.
         }
-        let gameState = GameState(self, yielding: yielding)
+        let gameState = GameState(self)
         communicator?.send(gameState)
     }
 }
@@ -1025,17 +1027,18 @@ extension ViewController : CommunicatorDelegate {
                 setupPublicArea()
                 setFirstYieldOccurred(true, gameState.areaSize.landscape)
             }
-            Logger.log("New layout based on received game state")
+            Logger.log("New layout based on received game state.  ActivePlayer is \(activePlayer). " +
+                       "Received activePlayer is \(gameState.activePlayer)")
             removePublicCardsAndBoxes()
-            doLayout(gameState)
-            if gameState.yielding {
-                Logger.log("A player has yielded, determining next turn")
-                activePlayer = (activePlayer + 1) % players.count
+            if gameState.activePlayer != activePlayer {
+                Logger.log("The active player has changed")
+                activePlayer = gameState.activePlayer
                 for i in 0..<players.count {
                     configurePlayer(playerLabels[i], players[i].name, i)
                 }
                 checkTurnToPlay()
             }
+            doLayout(gameState)
         } else {
             Logger.log("Play has not begun so not processing complete game state")
         }
