@@ -23,27 +23,19 @@ class GameState : Codable, Equatable {
     let handArea : Bool
     // Fields always present
     let items : [ItemHolder] // The positions of all the cards and boxes
-    let yielding : Bool      // If true, the transmitting player is yielding control to the next player in turn
+    let activePlayer : Int   // The index of the active player.  Remains 0 until the player list is established.
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
 
     // Initializer from local ViewController state.
     // The 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
-    // done when transmitting but is done when simply using the GameState to facilitate layout.
-    convenience init(_ controller: ViewController, yielding: Bool = false, includeHandArea: Bool = false) {
-        self.init(controller.deckType, controller.hasHands, yielding, controller.playingArea,
-                  includeHandArea ? controller.publicArea : nil)
-    }
-
-    // General initializer, not publicly visible.  TODO there used to be many convenience initializers but not any more,
-    // so perhaps we can collapse this into the one remaining one.
-    private init(_ deckType: PlayingDeckTemplate?, _ handArea: Bool,
-                 _ yielding: Bool, _ playingArea: UIView?, _ publicArea:  CGRect?) {
-        let cards = playingArea?.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemHolder.make($0) } ?? []
-        self.deckType = deckType
-        self.handArea = handArea
-        self.items = cards
-        self.yielding = yielding
-        self.areaSize = playingArea?.bounds.size ?? CGSize.zero
+    // done when transmitting but is done when using the GameState locally to facilitate layout.
+    init(_ controller: ViewController, includeHandArea: Bool = false) {
+        self.deckType = controller.deckType
+        self.handArea = controller.hasHands
+        self.activePlayer = controller.activePlayer
+        let publicArea = includeHandArea ? controller.publicArea : nil
+        self.items = controller.playingArea.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemHolder.make($0) }
+        self.areaSize = controller.playingArea.bounds.size
     }
     // decoding initializer is auto-generated
 
@@ -52,7 +44,7 @@ class GameState : Codable, Equatable {
         return lhs.deckType?.displayName == rhs.deckType?.displayName
         && lhs.handArea == rhs.handArea
         && lhs.items == rhs.items
-        && lhs.yielding == rhs.yielding
+        && lhs.activePlayer == rhs.activePlayer
         && lhs.areaSize == rhs.areaSize
     }
 }

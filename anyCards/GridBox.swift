@@ -172,7 +172,7 @@ class GridBox : UIView {
                     cards.forEach { $0.frame = cardFrame }
                 }
                 if recognizer.state == .ended {
-                    host.transmit(false)
+                    host.transmit()
                 }
             }
         }
