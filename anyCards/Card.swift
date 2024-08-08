@@ -29,10 +29,21 @@ class Card : UIView {
     // Provide the owning box or nil if none
     var box: GridBox? {
         guard let playingArea = self.superview else {
+            Logger.log("Card has no box because card has no superview")
             return nil
         }
+        Logger.log("Looking for containing box with origin \(self.frame.origin)")
         if let subview = playingArea.subviews.first(where: {
-            $0 is GridBox && self.frame.origin == ($0 as? GridBox)?.snapFrame.origin }) {
+            if let box = $0 as? GridBox {
+                if box.isHeld(self) {
+                    return true
+                } else {
+                    Logger.log("rejecting possible box because its origin is \(box.snapFrame.origin)")
+                }
+            }
+            return false
+        }) {
+            Logger.log("Card is held by box")
             return subview as? GridBox
         }
         return nil
