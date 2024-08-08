@@ -16,15 +16,10 @@
 
 import UIKit
 
-// A table dialog for choosing a box kind
+// A table dialog for choosing a deck kind
 
 class PlayingDeckDialog : TableDialogController {
     let host : GameSetupDialog
-
-    // Convenient terse finder for settings
-    var settings : OptionSettings {
-        return OptionSettings.instance
-    }
 
     // Main init
     init(_ host: GameSetupDialog, size: CGSize, anchor: CGPoint) {
@@ -39,7 +34,7 @@ class PlayingDeckDialog : TableDialogController {
 
     // Override getCurrentRow to reflect the index position of the "current" playing deck template
     override func getCurrentRow() -> Int {
-        let deckName = settings.deckType.displayName
+        let deckName = host.vc.deckType.displayName
         return Decks.available.firstIndex(where: {$0.displayName == deckName}) ?? 0
     }
 
@@ -56,8 +51,8 @@ class PlayingDeckDialog : TableDialogController {
     // Override rowSelected to handle the appropriate action changing the GridBox kind
     override func rowSelected(_ row: Int) -> Bool {
         let deckType = Decks.available[row]
-        if deckType.displayName != settings.deckType.displayName {
-            settings.deckType = deckType
+        if deckType.displayName != host.vc.deckType.displayName {
+            host.vc.deckType = deckType
             host.deckType.text = deckType.displayName
             host.vc.newShuffle()
             host.vc.transmit()
