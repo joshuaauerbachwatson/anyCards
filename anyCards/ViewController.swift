@@ -405,9 +405,6 @@ class ViewController: UIViewController {
                 }
                 playingArea.addSubview(newView)
             }
-            for card in cardViews {
-                card.maybeBeSnapped(boxViews)
-            }
             refreshBoxCounts()
         } else {
             // First ever layout, no gameState exists yet.  Just create and place the deck, without rescaling.
