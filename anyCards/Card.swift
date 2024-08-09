@@ -16,11 +16,12 @@
 
 import UIKit
 
-// Represents a Card as a view, with animated flipping from front to back. The two images for front and back are stored in the card (typically,
-// the cards of a deck would share a common back image by reference).
+// Represents a Card as a view, with animated flipping from front to back. The two images for front and back are stored in the
+// card (typically, the cards of a deck would share a common back image by reference).
 class Card : UIView {
-    // The index of the card in its "deck" when that deck is in its normal (not shuffled) order.  The index is used to identify cards
-    // unambiguously across player views but does not necessarily have a predictable relationship to the card's denomination or suit.
+    // The index of the card in its "deck" when that deck is in its normal (not shuffled) order.  The index is used to 
+    // identify cards unambiguously across player views but does not necessarily have a predictable relationship to the card's
+    // denomination or suit.
     let index : Int
 
     // Says whether the card is face up or not
@@ -66,7 +67,8 @@ class Card : UIView {
     // Ignored except during a drag.
     var dragSet: [Card] = []
 
-    // Make a new card.  Typically, called as part of deck construction, after which the cards of the deck are kept in the deck array.
+    // Make a new card.  Typically, called as part of deck construction, after which the cards of the deck are kept in the
+    // deck array.
     init (_ index: Int, front: UIImage, back: UIImage) {
         self.index = index
         self.front = front
@@ -115,20 +117,33 @@ class Card : UIView {
             let intersect = r1.intersection(r2)
             return intersect.width > SnapThreshhold || intersect.height > SnapThreshhold
         }
+        func rejects(_ boxes: [GridBox]) -> [GridBox] {
+            let nonSnapBoxes = boxes.filter { $0.kind == .Deck || !$0.mayBeModified }
+            let rejectedBoxes = nonSnapBoxes.filter { overlaps($0.snapFrame, self.frame) }
+            if rejectedBoxes.isEmpty {
+                Logger.log("No boxes were rejected")
+            } else {
+                let rejectedNames = rejectedBoxes.map { $0.name ?? "unknown" }
+                Logger.log("Rejected boxes: \(rejectedNames)")
+            }
+            return rejectedBoxes
+
+        }
         let snapBoxes = boxes.filter { $0.kind != .Deck && $0.mayBeModified }
         let overlapAreas = snapBoxes.map { overlapArea($0.snapFrame, self.frame) }
         let maxOverlap = overlapAreas.max()
         if maxOverlap == 0 {
-            return []
+            return rejects(boxes)
         }
-        for (box, overlap) in zip(boxes, overlapAreas) {
+        for (box, overlap) in zip(snapBoxes, overlapAreas) {
             if overlap == maxOverlap {
+                Logger.log("Card with origin \(self.frame.origin) will be snapped by box \(box.name ?? "unknown"), " +
+                           "overlap is \(overlap)")
                 box.snapUp(self)
                 return []
             }
         }
-        let deckBoxes = boxes.filter { $0.kind == .Deck || !$0.mayBeModified }
-        return deckBoxes.filter { overlaps($0.snapFrame, self.frame) }
+        return rejects(boxes)
     }
 
     // Turn the card face down.  Does nothing if the card is already face down.
