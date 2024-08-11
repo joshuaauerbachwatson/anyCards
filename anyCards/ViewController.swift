@@ -905,11 +905,11 @@ class ViewController: UIViewController {
 
     // Transmit GameState to the other players, either when just showing or when yielding
     func transmit(activePlayer: Int? = nil) {
-        guard communicator != nil && thisPlayersTurn else {
+        guard let communicator = self.communicator, thisPlayersTurn else {
             return // Make it possible to call this without worrying.
         }
         let gameState = GameState(self, activePlayer: activePlayer)
-        communicator?.send(gameState)
+        communicator.send(gameState)
     }
 }
 

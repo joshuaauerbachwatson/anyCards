@@ -37,13 +37,13 @@ class GameState : Codable, Equatable {
     // transmission, since transmit is gated by thisPlayersTurn.
     init(_ controller: ViewController, includeHandArea: Bool = false, activePlayer: Int? = nil) {
         if controller.leadPlayer && !controller.setupIsComplete {
-            setup = Setup(deckType: controller.deckType, handArea: controller.hasHands)
+            self.setup = Setup(deckType: controller.deckType, handArea: controller.hasHands)
         } else {
-            setup = nil
+            self.setup = nil
         }
         self.sendingPlayer = controller.thisPlayer
         self.activePlayer = activePlayer ?? controller.activePlayer
-        let publicArea = includeHandArea ? controller.publicArea : nil
+        let publicArea = includeHandArea ? nil : controller.publicArea
         self.items = controller.playingArea.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemHolder.make($0) }
         self.areaSize = controller.playingArea.bounds.size
     }
@@ -63,8 +63,18 @@ class GameState : Codable, Equatable {
 // Determine if a view is a card and its center is in the public area.
 // If there is no public area (may be true during early phases of game setup), then all cards are eligible.
 fileprivate func isEligibleCard(_ maybe: UIView, _ publicArea: CGRect?) -> Bool {
-    if maybe is Card {
-        return publicArea?.contains(maybe.center) ?? true
+    if let card = maybe as? Card {
+        if let publicArea = publicArea {
+            if publicArea.contains(card.center) {
+                Logger.log("Accepting card with index \(card.index) and center \(card.center) because it is within the public area")
+                return true
+            }
+            Logger.log("Rejecting card with index \(card.index) and center \(card.center) because it is outside the public area")
+            return false
+        } else {
+            Logger.log("Accepting card with index \(card.index) and center \(card.center) because was are accepting all cards")
+            return true
+        }
     } else {
         return false
     }
