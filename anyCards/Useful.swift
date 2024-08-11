@@ -216,7 +216,7 @@ func randomString(length: Int) -> String {
 }
 
 // Run an sequence of automations provided as an array of functions
-func runAnimationSequence(_ seq: [()->Void]) {
+func runAnimationSequence(_ seq: [()->Void], completion: @escaping ()->Void) {
     var next = 0
     func runNextAnimation() {
         guard next < seq.count else { return }
@@ -225,6 +225,9 @@ func runAnimationSequence(_ seq: [()->Void]) {
         CATransaction.begin()
         CATransaction.setCompletionBlock({ runNextAnimation() })
         animation()
+        if next == seq.count {
+            completion()
+        }
         CATransaction.commit()
     }
     runNextAnimation()

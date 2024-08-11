@@ -60,8 +60,6 @@ class ViewController: UIViewController {
         }
         set {
             OptionSettings.instance.hasHands = newValue
-            // Changes to hasHands should propagate eagerly
-            transmit()
         }
     }
     private var storedNumPlayers : Int { // only use this if leader
@@ -135,9 +133,9 @@ class ViewController: UIViewController {
     // constructed.  Game turns may not occur until play officially begins
     var playBegun = false
 
-    // Indicates that the first yield by a player has occurred.  Until this happens, the first player is allowed to change the
-    // setup.  Afterwards, the setup is fixed.
-    var firstYieldOccurred = false
+    // Indicates that the first yield by the leader has occurred.  Until this happens, the leader is allowed to change the
+    // setup.  Afterwards, the setup is fixed.  This field is only meaningful in the leader's app instance.
+    var setupIsComplete = false
     
     // The transcript of the ongoing chat (if in use)
     var chatTranscript = ""
@@ -419,7 +417,7 @@ class ViewController: UIViewController {
     // Tapping a non-covered card flips it over.
     private func cardTapped(_ touch: UITouch) {
         if !thisPlayersTurn {
-            Logger.log("Card tap when not this player's turn ignored")
+            Logger.log("Card tap when not this player's turn (ignored)")
         }
         if let card = touch.view as? Card {
             if isCovered(card) {
@@ -563,8 +561,14 @@ class ViewController: UIViewController {
     // Respond to touch of yield button.  Sends the GameState and advances the turn.
     @objc func yieldTouched() {
         Logger.log("Yield Touched")
-        activePlayer = (thisPlayer + 1) % players.count
-        transmit(yielding: true)
+        let newActivePlayer = (thisPlayer + 1) % players.count
+        transmit(activePlayer: newActivePlayer)
+        self.activePlayer = newActivePlayer
+        if leadPlayer {
+            Logger.log("Leader is yielding, marking setup complete")
+            setupIsComplete = true
+            hide(gameSetupButton)
+        }
         configurePlayerLabels()
         checkTurnToPlay()
     }
@@ -808,19 +812,11 @@ class ViewController: UIViewController {
         }
     }
 
-    // Set the firstYieldOccurred field and the associated orientation lock fields.  Hide the game setup button once first yield occurs.
-    private func setFirstYieldOccurred(_ value: Bool, _ landscape: Bool) {
-        self.firstYieldOccurred = value
-        self.gameSetupButton.isHidden = value
-        if value {
-            Logger.log("firstYieldOccurred has been set to true, orientation locked to \(landscape ? "landscape" : "portrait")")
-            self.lockedToLandscape = landscape
-            self.lockedToPortrait = !landscape
-        } else {
-            Logger.log("firstYieldOccurred has been set to false")
-            self.lockedToLandscape = false
-            self.lockedToPortrait = false
-        }
+    // Set the orientation lock fields
+    private func setOrientationLocks(_ landscape: Bool) {
+        Logger.log("Leader has sent setup information.  Orientation locked to \(landscape ? "landscape" : "portrait")")
+        self.lockedToLandscape = landscape
+        self.lockedToPortrait = !landscape
         self.setNeedsUpdateOfSupportedInterfaceOrientations()
     }
 
@@ -830,7 +826,9 @@ class ViewController: UIViewController {
         communicator?.shutdown(false)
         communicator = nil
         playBegun = false
-        setFirstYieldOccurred(false, false)
+        lockedToLandscape = false
+        lockedToPortrait = false
+        setupIsComplete = false
         thisPlayer = 0
         activePlayer = 0
         playerLabels.forEach { $0.textColor = NormalTextColor }
@@ -906,11 +904,11 @@ class ViewController: UIViewController {
     }
 
     // Transmit GameState to the other players, either when just showing or when yielding
-    func transmit(yielding: Bool = false) {
-        guard communicator != nil && (yielding || thisPlayersTurn) else {
+    func transmit(activePlayer: Int? = nil) {
+        guard communicator != nil && thisPlayersTurn else {
             return // Make it possible to call this without worrying.
         }
-        let gameState = GameState(self)
+        let gameState = GameState(self, activePlayer: activePlayer)
         communicator?.send(gameState)
     }
 }
@@ -921,7 +919,6 @@ extension ViewController : CommunicatorDelegate {
     // we use `lostPlayer` for that.  The received players array is already properly sorted.
     func newPlayerList(_ newNumPlayers: Int, _ newPlayers: [Player]) {
         DispatchQueue.main.async {
-            // Doing everything on the main thread for now; some things could be done in the background but not clear that's necessary
             self.doNewPlayerList(newNumPlayers, newPlayers)
         }
     }
@@ -1009,6 +1006,17 @@ extension ViewController : CommunicatorDelegate {
 
     // Respond to receipt of a new GameState
     func gameChanged(_ gameState: GameState) {
+        if gameState.sendingPlayer == thisPlayer {
+            // Don't accept remote game state updates that you originated yourself.
+            // TODO Consider whether this should be more properly handled inside the communicator since it is not
+            // something that can happen with all communicators.
+            Logger.log("Rejected incoming game state during own turn")
+            return
+        }
+        if !playBegun {
+            Logger.log("Play has not begun so not processing game state")
+            return
+        }
         DispatchQueue.main.async {
             // Doing everything on the main thread for now; some things could be done in the background but not clear that's necessary
             self.doGameChanged(gameState)
@@ -1016,41 +1024,33 @@ extension ViewController : CommunicatorDelegate {
     }
     private func doGameChanged(_ gameState: GameState) {
         Logger.log("doGameChanged invoked")
-        if playBegun {
-            // If player lists have quiesced and play has begun, examine the rest of the game state
-            Logger.log("Received GameState contains \(gameState.items.count) items")
-            if !firstYieldOccurred {
-                Logger.log("Still in initial setup, processing deck type and public area")
-                if let deckType = gameState.deckType {
-                    cards = makePlayingDeck(Deck, deckType)
-                }
-                setupPublicArea()
-                setFirstYieldOccurred(true, gameState.areaSize.landscape)
-            }
-            Logger.log("New layout based on received game state.  ActivePlayer is \(activePlayer). " +
-                       "Received activePlayer is \(gameState.activePlayer)")
-            removePublicCardsAndBoxes()
-            if gameState.activePlayer != activePlayer {
-                Logger.log("The active player has changed")
-                activePlayer = gameState.activePlayer
-                for i in 0..<players.count {
-                    configurePlayer(playerLabels[i], players[i].name, i)
-                }
-                checkTurnToPlay()
-            }
-            doLayout(gameState)
-        } else {
-            Logger.log("Play has not begun so not processing complete game state")
+        if let setup = gameState.setup, !leadPlayer {
+            Logger.log("Still in initial setup, processing deck type and public area")
+            cards = makePlayingDeck(Deck, setup.deckType)
+            hasHands = setup.handArea
+            setupPublicArea()
+            setOrientationLocks(gameState.areaSize.landscape)
         }
+        Logger.log("Received GameState contains \(gameState.items.count) items")
+        if gameState.activePlayer != self.activePlayer {
+            Logger.log("The active player has changed")
+            self.activePlayer = gameState.activePlayer
+            for i in 0..<players.count {
+                configurePlayer(playerLabels[i], players[i].name, i)
+            }
+            checkTurnToPlay()
+        }
+        removePublicCardsAndBoxes()
+        doLayout(gameState)
     }
 
     // Restore a saved game state
     func restoreGameState(_ gameState: GameState) {
-        if let deckType = gameState.deckType {
-            self.deckType = deckType
-            cards = makePlayingDeck(Deck, deckType)
+        if let setup = gameState.setup {
+            self.deckType = setup.deckType
+            cards = makePlayingDeck(Deck, setup.deckType)
+            hasHands = setup.handArea
         }
-        hasHands = gameState.handArea
         setupPublicArea()
         removePublicCardsAndBoxes()
         // Randomize the cards in the restored state (leaving grid boxes alone)

@@ -18,21 +18,31 @@ import UIKit
 
 // Represents the state of a game.  Transmitted between devices.   Also used to facilitate layout within a single device.
 class GameState : Codable, Equatable {
-    // Examined only on first yield: part of setup performed by leader
-    let deckType : PlayingDeckTemplate?
-    let handArea : Bool
-    // Fields always present
+    // Setup is only sent by the leader and only until the leader's first yield
+    struct Setup : Codable {
+        let deckType : PlayingDeckTemplate
+        let handArea : Bool
+    }
+    let setup : Setup?       // Setup information if present.
     let items : [ItemHolder] // The positions of all the cards and boxes
-    let activePlayer : Int   // The index of the active player.  Remains 0 until the player list is established.
+    let sendingPlayer : Int  // The index of the player constructing the GameState
+    let activePlayer: Int    // The index of the player whose turn it is (== previous except when yielding)
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
 
     // Initializer from local ViewController state.
-    // The 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
+    //  - The 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
     // done when transmitting but is done when using the GameState locally to facilitate layout.
-    init(_ controller: ViewController, includeHandArea: Bool = false) {
-        self.deckType = controller.deckType
-        self.handArea = controller.hasHands
-        self.activePlayer = controller.activePlayer
+    //  - The activePlayer argument is presented when yielding, since, in that case, the active player after yielding
+    // will differ from the active player before yielding.  The local activePlayer value cannot change until after
+    // transmission, since transmit is gated by thisPlayersTurn.
+    init(_ controller: ViewController, includeHandArea: Bool = false, activePlayer: Int? = nil) {
+        if controller.leadPlayer && !controller.setupIsComplete {
+            setup = Setup(deckType: controller.deckType, handArea: controller.hasHands)
+        } else {
+            setup = nil
+        }
+        self.sendingPlayer = controller.thisPlayer
+        self.activePlayer = activePlayer ?? controller.activePlayer
         let publicArea = includeHandArea ? controller.publicArea : nil
         self.items = controller.playingArea.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemHolder.make($0) }
         self.areaSize = controller.playingArea.bounds.size
@@ -41,9 +51,10 @@ class GameState : Codable, Equatable {
 
     // Conform to Equatable protocol
     static func == (lhs: GameState, rhs: GameState) -> Bool {
-        return lhs.deckType?.displayName == rhs.deckType?.displayName
-        && lhs.handArea == rhs.handArea
+        return lhs.setup?.deckType.displayName == rhs.setup?.deckType.displayName
+        && lhs.setup?.handArea == rhs.setup?.handArea
         && lhs.items == rhs.items
+        && lhs.sendingPlayer == rhs.sendingPlayer
         && lhs.activePlayer == rhs.activePlayer
         && lhs.areaSize == rhs.areaSize
     }

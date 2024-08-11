@@ -204,8 +204,9 @@ class DealingDialog : UIViewController {
                 animations.append(makeOneCardDealFunction(hand))
             }
         }
-        runAnimationSequence(animations)
-        vc.transmit()
+        runAnimationSequence(animations) {
+            self.vc.transmit()
+        }
     }
 }
 

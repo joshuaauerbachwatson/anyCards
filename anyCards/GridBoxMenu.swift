@@ -131,11 +131,12 @@ class GridBoxMenu : UIViewController {
             currentX += step
         }
         // Move the cards with animation
-        runAnimationSequence(animations)
-        // Delete the box
-        box.removeFromSuperview()
-        Logger.logDismiss(self, host: vc, animated: true)
-        vc.transmit()
+        runAnimationSequence(animations) {
+            // Delete the box
+            self.box.removeFromSuperview()
+            Logger.logDismiss(self, host: self.vc, animated: true)
+            self.vc.transmit()
+        }
     }
 
     // Respond to touch of turn over button
