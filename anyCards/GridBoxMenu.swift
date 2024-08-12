@@ -126,6 +126,7 @@ class GridBoxMenu : UIViewController {
                     card.frame.origin = CGPoint(x: xValue, y: fixedY)
                     //Logger.log("card.frame.origin is now \(card.frame.origin)")
                     card.turnFaceUp()
+                    card.isPrivate = true
                 })
             })
             currentX += step

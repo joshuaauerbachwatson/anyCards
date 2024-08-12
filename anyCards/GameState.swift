@@ -43,8 +43,7 @@ class GameState : Codable, Equatable {
         }
         self.sendingPlayer = controller.thisPlayer
         self.activePlayer = activePlayer ?? controller.activePlayer
-        let publicArea = includeHandArea ? nil : controller.publicArea
-        self.items = controller.playingArea.subviews.filter({isEligibleCard($0, publicArea) || $0 is GridBox}).map{ ItemHolder.make($0) }
+        self.items = controller.playingArea.subviews.filter({isEligibleCard($0) || $0 is GridBox}).map{ ItemHolder.make($0) }
         self.areaSize = controller.playingArea.bounds.size
     }
     // decoding initializer is auto-generated
@@ -60,24 +59,10 @@ class GameState : Codable, Equatable {
     }
 }
 
-// Determine if a view is a card and its center is in the public area.
-// If there is no public area (may be true during early phases of game setup), then all cards are eligible.
-fileprivate func isEligibleCard(_ maybe: UIView, _ publicArea: CGRect?) -> Bool {
-    if let card = maybe as? Card {
-        if let publicArea = publicArea {
-            if publicArea.contains(card.center) {
-                Logger.log("Accepting card with index \(card.index) and center \(card.center) because it is within the public area")
-                return true
-            }
-            Logger.log("Rejecting card with index \(card.index) and center \(card.center) because it is outside the public area")
-            return false
-        } else {
-            Logger.log("Accepting card with index \(card.index) and center \(card.center) because was are accepting all cards")
-            return true
-        }
-    } else {
-        return false
-    }
+// Determine if a view is a card and is not private.
+fileprivate func isEligibleCard(_ maybe: UIView) -> Bool {
+    guard let card = maybe as? Card else { return false }
+    return !card.isPrivate
 }
 
 enum ItemHolder: Codable, Equatable {

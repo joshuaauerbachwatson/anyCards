@@ -231,6 +231,9 @@ class GridBox : UIView {
     // Decide which of several cards should be snapped up by this GridBox and, snap up those that are appropriate
     func maybeSnapUp(_ cards: [Card]) {
         for card in cards {
+            if card.isPrivate {
+                continue
+            }
             let overlap = card.frame.intersection(snapFrame).size
             if overlap.height > SnapThreshhold || overlap.width > SnapThreshhold {
                 snapUp(card)

@@ -211,6 +211,12 @@ class ViewController: UIViewController {
         let cardHeight = cardWidth / Deck.aspectRatio
         return CGSize(width: cardWidth, height: cardHeight)
     }
+    
+    // The amount by which a card being dragged in the private area may extend into the public area without danger of
+    // ending up there.
+    var privateAreaCardOverlap: CGFloat {
+        return cardSize.height / 5
+    }
 
     // Initializers
 
@@ -435,13 +441,15 @@ class ViewController: UIViewController {
 
     // Respond to dragging of a card
     @objc func dragging(recognizer: UIPanGestureRecognizer) {
-        if recognizer.state == .possible || !thisPlayersTurn {
-            Logger.log("Card not dragged, not eligible")
+        if recognizer.state == .possible {
             return
         }
         guard let card = recognizer.view as? Card else {
             Logger.log("View not dragged, not a Card")
             return
+        }
+        if !card.isPrivate && !thisPlayersTurn {
+            Logger.log("Public card cannot be dragged when not the player's turn")
         }
         if let box = card.box, !box.mayBeModified {
             box.mayNotModify()
@@ -457,11 +465,12 @@ class ViewController: UIViewController {
         }
         // In any active drag state we move all the cards in the drag set
         let translation = recognizer.translation(in: playingArea)
-        // We allow the drag as long as the actual card is in the playing area.  We don't
-        // check the other cards, which may leave them off the screen, although when the drag ends
-        // they will be adjusted individually.
+        // We allow the drag as long as the actual card is in the playing area and, if the player is not the active player,
+        // as long as no part of it is in the public area.  We don't check the other cards, which may leave them off the screen,
+        // although when the drag ends they will be adjusted individually.
         let primaryNewFrame = CGRect(origin: card.frame.origin + translation, size: card.frame.size)
-        if playingArea.bounds.contains(primaryNewFrame) {
+        if playingArea.bounds.contains(primaryNewFrame) &&
+                (thisPlayersTurn || primaryNewFrame.minY > publicArea.maxY - privateAreaCardOverlap) {
             for draggedCard in card.dragSet {
                 let newFrame = CGRect(origin: draggedCard.frame.origin + translation, size: card.frame.size)
                 draggedCard.frame = newFrame
@@ -471,11 +480,13 @@ class ViewController: UIViewController {
         // At the end, we adjust the cards individually
         if recognizer.state == .ended {
             for draggedCard in card.dragSet {
-                // Let a box snap up card if appropriate
-                let rejectedDecks = draggedCard.maybeBeSnapped(boxViews)
-                // Make sure an unsnapped card isn't covering too much of a rejected deck
-                if rejectedDecks.count > 0 {
-                    unhideDeck(draggedCard, rejectedDecks)
+                // Let a box snap up card if appropriate.  We assume all boxes are public so we skip if private
+                if !draggedCard.isPrivate {
+                    let rejectedDecks = draggedCard.maybeBeSnapped(boxViews)
+                    // Make sure an unsnapped card isn't covering too much of a rejected deck
+                    if rejectedDecks.count > 0 {
+                        unhideDeck(draggedCard, rejectedDecks)
+                    }
                 }
                 // Make sure the card isn't left straddling the hand area line
                 if !publicArea.contains(draggedCard.frame) && publicArea.intersects(draggedCard.frame) {
@@ -491,6 +502,8 @@ class ViewController: UIViewController {
                     // Place the card into the most appropriate area (public or hand)
                     draggedCard.frame.origin = newOrigin
                 }
+                // Mark card public or private
+                draggedCard.isPrivate = !publicArea.contains(draggedCard.frame.center)
             }
             refreshBoxCounts()
             transmit()
@@ -613,7 +626,7 @@ class ViewController: UIViewController {
             if !cardSeen && candidate.index == card.index {
                 //Logger.log("found card in card views")
                 cardSeen = true
-            } else if cardSeen && intersectsAny(candidate, answer) {
+            } else if cardSeen && candidate.isPrivate == card.isPrivate && intersectsAny(candidate, answer) {
                 //Logger.log("adding card \(candidate.index) to drag set")
                 answer.append(candidate)
             }
@@ -1072,6 +1085,7 @@ extension ViewController : CommunicatorDelegate {
             }
         }
         doLayout(gameState)
+        transmit()
     }
 
     // React to lost peer by ending the game with a short dialog

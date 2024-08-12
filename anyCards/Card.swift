@@ -26,6 +26,9 @@ class Card : UIView {
 
     // Says whether the card is face up or not
     var isFaceUp = false
+    
+    // Says whether the card is in the private hand area
+    var isPrivate = false
 
     // Provide the owning box or nil if none
     var box: GridBox? {
@@ -129,6 +132,9 @@ class Card : UIView {
             return rejectedBoxes
 
         }
+        if isPrivate {
+            return []
+        }
         let snapBoxes = boxes.filter { $0.kind != .Deck && $0.mayBeModified }
         let overlapAreas = snapBoxes.map { overlapArea($0.snapFrame, self.frame) }
         let maxOverlap = overlapAreas.max()
@@ -196,8 +202,8 @@ class Card : UIView {
         frame.origin = frame.origin + CGPoint(x: SnapThreshhold, y: SnapThreshhold)
     }
 
-    // Make a new image view from an image, sizing it to fill the view.  The result is intended to be used as the sole subview of the card, replacing the
-    // previous sole subview.  Thus there should be no storage leak if use correctly.
+    // Make a new image view from an image, sizing it to fill the view.  The result is intended to be used as the sole 
+    // subview of the card, replacing the previous sole subview.  Thus there should be no storage leak if use correctly.
     private func makeImageView(_ image: UIImage) -> UIImageView {
         let ans = UIImageView()
         ans.image = image
