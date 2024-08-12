@@ -37,6 +37,24 @@ extension String {
     }
 }
 
+// Add 'center' property to CGRect and CALayer
+extension CGRect {
+    var center : CGPoint {
+        get { return CGPoint(x: midX, y: midY) }
+        set {
+            let dx = midX - minX
+            let dy = midY - minY
+            origin = newValue - CGPoint(x: dx, y: dy)
+        }
+    }
+}
+extension CALayer {
+    var center : CGPoint {
+        get { return frame.center }
+        set { frame.center = newValue }
+    }
+}
+
 // Simplify some common call sequences to CATransaction
 extension CATransaction {
     static func beginNoAnimation() {
