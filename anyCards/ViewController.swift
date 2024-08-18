@@ -422,10 +422,14 @@ class ViewController: UIViewController {
     // On "tap", which can only happen if card is not dragged.  Tapping a covered card brings it to the front.
     // Tapping a non-covered card flips it over.
     private func cardTapped(_ touch: UITouch) {
-        if !thisPlayersTurn {
-            Logger.log("Card tap when not this player's turn (ignored)")
-        }
         if let card = touch.view as? Card {
+            if maybeTakeHand(card) {
+                return
+            }
+            if !thisPlayersTurn {
+                Logger.log("Card tap when not this player's turn (ignored)")
+                return
+            }
             if isCovered(card) {
                 playingArea.bringSubviewToFront(card)
             } else if card.isFaceUp {
@@ -446,6 +450,9 @@ class ViewController: UIViewController {
         }
         guard let card = recognizer.view as? Card else {
             Logger.log("View not dragged, not a Card")
+            return
+        }
+        if maybeTakeHand(card) {
             return
         }
         if !card.isPrivate && !thisPlayersTurn {
@@ -602,7 +609,16 @@ class ViewController: UIViewController {
     }
 
     // Other functions
-
+    
+    // When a card is tapped or dragged, determine if it is in a properly owned Hand Box and, if so, take the hand
+    func maybeTakeHand(_ card: Card) -> Bool {
+        if let box = card.box, box.kind == .Hand, box.mayBeModified {
+            takeHand(box)
+            return true
+        }
+        return false
+    }
+    
     // Decide whether chat button should be hidden or not
     func setChatButtonVisibility() {
         if let communicator = self.communicator, communicator.isChatAvailable {
@@ -1120,6 +1136,39 @@ extension ViewController : CommunicatorDelegate {
         }
         return nil
     }
+    
+    // Perform the "take hand" function
+    func takeHand(_ box: GridBox) {
+        // Calculate the placement points in the private area
+        let lastX = playingArea.bounds.width - cardSize.width - border
+        var currentX = playingArea.bounds.minX + border
+        let step = (lastX - currentX) / (box.cards.count - 1)
+        //Logger.log("currentX=\(currentX), lastX=\(lastX), step=\(step)")
+        let fixedY = playingArea.bounds.maxY - cardSize.height - border
+        // Prepare animation functions to move the cards
+        var animations = [()->Void]()
+        for card in box.cards.sorted(by: { $0.index < $1.index }) {
+            let xValue = currentX // use immutable to ensure value is captured, not reference
+            animations.append({
+                UIView.animate(withDuration: DealCardDuration, animations: {
+                    //Logger.log("card.frame.origin was \(card.frame.origin)")
+                    card.frame.origin = CGPoint(x: xValue, y: fixedY)
+                    //Logger.log("card.frame.origin is now \(card.frame.origin)")
+                    card.turnFaceUp()
+                    card.isPrivate = true
+                    self.playingArea.bringSubviewToFront(card)
+                })
+            })
+            currentX += step
+        }
+        // Move the cards with animation
+        runAnimationSequence(animations) {
+            // Delete the box
+            box.removeFromSuperview()
+            self.transmit()
+        }
+    }
+
 
     // Get the player name associated with an index position or else use a helpful placeholder phrase
     func getPlayer(index: Int) -> String {

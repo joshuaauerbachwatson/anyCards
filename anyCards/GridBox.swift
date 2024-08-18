@@ -22,6 +22,7 @@ class GridBox : UIView {
     // Classifies the GridBox according to the rules that apply
     enum Kind : Codable, CaseIterable {
         case Deck     // All face down, remove only
+        case Hand     // Locked, except for "Take Hand", touching will result in taking
         case Discard  // All face up, add at top only.  Removal allowed.
         case General  // Potentially mixed, face up added to top and face down to bottom.  Removal allowed.
 
@@ -30,6 +31,8 @@ class GridBox : UIView {
             switch self {
             case .Deck:
                 return "deck"
+            case .Hand:
+                return "hand"
             case .Discard:
                 return "discard"
             case .General:
@@ -41,6 +44,8 @@ class GridBox : UIView {
             switch self {
             case .Deck:
                 return "↓"
+            case .Hand:
+                return "!"
             case .Discard:
                 return "↑"
             case .General:
@@ -60,7 +65,7 @@ class GridBox : UIView {
         didSet {
             kindLabel.text = kind.symbol
             switch kind {
-            case .Deck:
+            case .Deck, .Hand:
                 makeIntoDeck()
             case .Discard:
                 makeIntoDiscard()
@@ -230,6 +235,9 @@ class GridBox : UIView {
 
     // Decide which of several cards should be snapped up by this GridBox and, snap up those that are appropriate
     func maybeSnapUp(_ cards: [Card]) {
+        if kind == .Hand {
+            return
+        }
         for card in cards {
             if card.isPrivate {
                 continue
@@ -250,7 +258,7 @@ class GridBox : UIView {
             card.turnFaceUp()
         case .Deck:
             card.turnFaceDown()
-        case .General:
+        case .General, .Hand:
             break
         }
         if card.isFaceUp {

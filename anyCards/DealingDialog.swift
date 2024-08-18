@@ -194,6 +194,7 @@ class DealingDialog : UIViewController {
             if handsAreOwned {
                 hand.owner = i
                 hand.name = vc.getPlayer(index: i)
+                hand.kind = .Hand
             } else {
                 hand.name = "\(i + 1)"
             }

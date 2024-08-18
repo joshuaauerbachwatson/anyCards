@@ -110,34 +110,8 @@ class GridBoxMenu : UIViewController {
 
     // Respond to touch of take hand button
     @objc func takeHandTouched() {
-        // Calculate the placement points in the private area
-        let lastX = vc.playingArea.bounds.width - vc.cardSize.width - border
-        var currentX = vc.playingArea.bounds.minX + border
-        let step = (lastX - currentX) / (box.cards.count - 1)
-        //Logger.log("currentX=\(currentX), lastX=\(lastX), step=\(step)")
-        let fixedY = vc.handAreaMarker.frame.maxY + border  
-        // Prepare animation functions to move the cards
-        var animations = [()->Void]()
-        for card in box.cards {
-            let xValue = currentX // use immutable to ensure value is captured, not reference
-            animations.append({
-                UIView.animate(withDuration: DealCardDuration, animations: {
-                    //Logger.log("card.frame.origin was \(card.frame.origin)")
-                    card.frame.origin = CGPoint(x: xValue, y: fixedY)
-                    //Logger.log("card.frame.origin is now \(card.frame.origin)")
-                    card.turnFaceUp()
-                    card.isPrivate = true
-                })
-            })
-            currentX += step
-        }
-        // Move the cards with animation
-        runAnimationSequence(animations) {
-            // Delete the box
-            self.box.removeFromSuperview()
-            Logger.logDismiss(self, host: self.vc, animated: true)
-            self.vc.transmit()
-        }
+        Logger.logDismiss(self, host: vc, animated: true)
+        vc.takeHand(box)
     }
 
     // Respond to touch of turn over button
@@ -147,7 +121,7 @@ class GridBoxMenu : UIViewController {
             box.kind = .Deck
         case .Deck:
             box.kind = .Discard
-        case .General:
+        case .General, .Hand:
             break // should be ruled out by hiding the control
         }
         Logger.logDismiss(self, host: vc, animated: true)
