@@ -139,6 +139,9 @@ class ViewController: UIViewController {
     
     // The transcript of the ongoing chat (if in use)
     var chatTranscript = ""
+    
+    //  Controls whether card grouping is active in the private area.  Starts out false
+    var groupingInPrivateArea = false
 
     // View-related fields
 
@@ -559,8 +562,11 @@ class ViewController: UIViewController {
                     return
                 }
                 Logger.logPresent(menu, host: self, animated: true)
-            } else {
+            } else if publicArea.contains(location ){
                 attemptNewGridBox(location)
+            } else {
+                // Long press in the private area brings up the card grouping dislog
+                chooseGroupingInPrivateArea()
             }
         }
     }
@@ -619,6 +625,20 @@ class ViewController: UIViewController {
         return false
     }
     
+    // Display alert allowing user to toggle card grouping in the private area
+    func chooseGroupingInPrivateArea() {
+        let groupAction = UIAlertAction(title: "Grouped", style: .default) { _ in
+            self.groupingInPrivateArea = true
+        }
+        let ungroupAction = UIAlertAction(title: "Individual", style: .default) { _ in
+            self.groupingInPrivateArea = false
+        }
+        let alert = UIAlertController(title: "Card Grouping", message: "How to drag cards in hand", preferredStyle: .alert)
+        alert.addAction(groupAction)
+        alert.addAction(ungroupAction)
+        Logger.logPresent(alert, host: self, animated: false)
+    }
+    
     // Decide whether chat button should be hidden or not
     func setChatButtonVisibility() {
         if let communicator = self.communicator, communicator.isChatAvailable {
@@ -636,6 +656,10 @@ class ViewController: UIViewController {
     // are in the set.
     private func findDragSet(_ card: Card) -> [Card] {
         var answer = [card]
+        if card.isPrivate && !groupingInPrivateArea {
+            Logger.log("Not grouping cards in private area")
+            return answer
+        }
         var cardSeen = false
         //Logger.log("finding drag set for card \(card.index)")
         for candidate in cardViews {
@@ -700,17 +724,18 @@ class ViewController: UIViewController {
     // Create a new GridBox or indicate that it can't be done.
     //   -- attempt to create a GridBox with the press at its center; if this does not overlap any other GridBox it succeeds
     //   -- if the attempt overlaps more than one other GridBox it fails
-    //   -- if the attempt overlaps exactly one other GridBox, choose a revised origin such that the new GridBox fits next to the old one
-    //        above, below, to the left, or to the right, depending on where the press is located.  If none of those revised locations
-    //        contain the press or the resulting box would go off the view, the request fails.  Otherwise, it succeeds with the revised
-    //        origin
+    //   -- if the attempt overlaps exactly one other GridBox, choose a revised origin such that the new GridBox fits
+    //      next to the old one, above, below, to the left, or to the right, depending on where the press is located.
+    //      If none of those revised locations contain the press or the resulting box would go off the view, the request fails.
+    //      Otherwise, the request succeeds with the revised origin
     // A new GridBox is immediately sent to the back and snaps up any cards that fall within it.
     private func attemptNewGridBox(_ location: CGPoint) {
         // Calculate the bounds of the public area
         // Try to create a box with location at its center
         let snapSize = cards[0].frame.size
         let gridBox = GridBox(center: location, size: snapSize, host: self)
-        // Reject the GridBox if it would fall outside the public area
+        // Reject the GridBox if any part of it would fall outside the public area
+        // Note that this function should not be called unless the long press location is in the public area
         if !publicArea.contains(gridBox.frame) {
             gridBoxFails()
             return

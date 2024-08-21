@@ -74,7 +74,7 @@ let PlayingColor = UIColor(white: 0.875, alpha: 1.0)
 let SettingsDialogBackground = UIColor.lightGray
 
 // Texts
-let BadGridBoxMessage = "Too close to other card boxes"
+let BadGridBoxMessage = "Too close to other card boxes or to an edge"
 let BadGridBoxTitle = "Bad Placement"
 let CancelButtonTitle = "Cancel"
 let CardsLabelText = "cards each"

@@ -36,18 +36,18 @@ class Card : UIView {
             Logger.log("Card has no box because card has no superview")
             return nil
         }
-        Logger.log("Looking for containing box with origin \(self.frame.origin)")
+        //Logger.log("Looking for containing box with origin \(self.frame.origin)")
         if let subview = playingArea.subviews.first(where: {
             if let box = $0 as? GridBox {
                 if box.isHeld(self) {
                     return true
                 } else {
-                    Logger.log("rejecting possible box because its origin is \(box.snapFrame.origin)")
+                    //Logger.log("rejecting possible box because its origin is \(box.snapFrame.origin)")
                 }
             }
             return false
         }) {
-            Logger.log("Card is held by box")
+            //Logger.log("Card is held by box")
             return subview as? GridBox
         }
         return nil
