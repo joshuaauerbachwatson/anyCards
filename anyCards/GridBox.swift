@@ -18,6 +18,8 @@ import UIKit
 
 // A UIView that is larger than a Card to accommodate a legend area with additional information.  Designed to go behind
 // a stack of cards.  Cards that overlap a GridBox may snap into it, being placed in accordance with the GridBox's rules.
+// Note: GridBox is not Codable, but it is partly mirrored by GridBoxState, which does.  Changes to the stored properties
+// of GridBox should require examining the implications for GridBoxState.
 class GridBox : UIView {
     // Classifies the GridBox according to the rules that apply
     enum Kind : Codable, CaseIterable {
@@ -278,6 +280,7 @@ class GridBox : UIView {
         if previousKind == .Discard {
             reverseCardViews()
          }
+        previousKind = nil
     }
 
     // Reverse the view order of the cards in the deck
@@ -300,7 +303,8 @@ class GridBox : UIView {
         }
         if previousKind == .Deck {
             reverseCardViews()
-         }
+        }
+        previousKind = nil
     }
 
     // Refresh the displayed count in the countLabel

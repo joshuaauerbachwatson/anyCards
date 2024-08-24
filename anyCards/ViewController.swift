@@ -380,22 +380,19 @@ class ViewController: UIViewController {
         if let gameState = gs {
             let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
             Logger.log("rescale is \(rescale)")
-            for itemHolder in gameState.items {
-                let newView : UIView
-                switch (itemHolder) {
-                case .Card(let cardState):
-                    newView = findAndFixCard(from: cardState, rescale: rescale)
-                case .Box(let boxState):
-                    let box = GridBox(origin: boxState.origin * rescale, size: cardSize, host: self)
-                    newView = box
-                    box.name = boxState.name
-                    box.owner = boxState.owner
-                    box.kind = boxState.kind
-                }
-                // Ensure that newView has sufficient pixels overlapping the playing area so as to be easily seen
+            for boxState in gameState.boxes {
+                let box = GridBox(origin: boxState.origin * rescale, size: cardSize, host: self)
+                box.name = boxState.name
+                box.owner = boxState.owner
+                box.kind = boxState.kind
+                playingArea.addSubview(box)
+            }
+            for cardState in gameState.cards {
+                let card = findAndFixCard(from: cardState, rescale: rescale)
+                // Ensure that the card has sufficient pixels overlapping the playing area so as to be easily seen
                 let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
                 let legal = playingArea.bounds.inset(by: insets)
-                let actual = newView.frame
+                let actual = card.frame
                 if !actual.intersects(legal) {
                     var (newX, newY) = (actual.minX, actual.minY)
                     if actual.maxX <= legal.minX {
@@ -408,9 +405,9 @@ class ViewController: UIViewController {
                     } else if actual.minY >= legal.maxY {
                         newY = legal.maxY - (actual.height / 2)
                     }
-                    newView.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: newView.frame.size)
+                    card.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: card.frame.size)
                 }
-                playingArea.addSubview(newView)
+                playingArea.addSubview(card)
             }
             refreshBoxCounts()
         } else {
@@ -814,6 +811,7 @@ class ViewController: UIViewController {
         }
         card.frame = CGRect(origin: from.origin * rescale, size: cardSize)
         // Cards don't change size, which was set once "suitable for this device."
+        card.isPrivate = from.isPrivate // Almost always false but can be true when using GameState for purely local purposes
         return card
     }
 
@@ -1085,7 +1083,7 @@ extension ViewController : CommunicatorDelegate {
             setupPublicArea()
             setOrientationLocks(gameState.areaSize.landscape)
         }
-        Logger.log("Received GameState contains \(gameState.items.count) items")
+        Logger.log("Received GameState contains \(gameState.boxes.count) boxes and \(gameState.cards.count) cards")
         if gameState.activePlayer != self.activePlayer {
             Logger.log("The active player has changed")
             self.activePlayer = gameState.activePlayer
@@ -1108,22 +1106,9 @@ extension ViewController : CommunicatorDelegate {
         setupPublicArea()
         removePublicCardsAndBoxes()
         // Randomize the cards in the restored state (leaving grid boxes alone)
-        let cardCount = gameState.items.reduce(into: 0) {count, item in
-            switch(item) {
-            case .Card:
-                count += 1
-            case .Box:
-                break
-            }
-        }
-        var newIndices = shuffle(Array<Int>(0..<cardCount))
-        for item in gameState.items {
-            switch item {
-            case .Card(let cardState):
-                cardState.index = newIndices.removeFirst()
-            case .Box:
-                break
-            }
+        var newIndices = shuffle(Array<Int>(0..<gameState.cards.count))
+        for card in gameState.cards {
+            card.index = newIndices.removeFirst()
         }
         doLayout(gameState)
         transmit()

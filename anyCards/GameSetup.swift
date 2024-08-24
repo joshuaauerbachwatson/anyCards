@@ -77,16 +77,20 @@ class GameSetupDialog : UIViewController {
         // Deal button
         configureButton(dealButton, title: DealTitle, target: self, action: #selector(dealTouched), parent: view)
         if !vc.canDeal || !vc.boxViews.contains(where: { $0.name == DeckBoxName }) {
-            dealButton.isHidden = true
+            hide(dealButton)
         }
 
         // Save button
         configureButton(saveButton, title: SaveSetupTitle, target: self, action: #selector(saveTouched), parent: view)
+        if vc.cards.contains(where: { $0.isPrivate }) {
+            hide(saveButton)
+        }
+        
 
         // Use button
         configureButton(useButton, title: UseButtonTitle, target: self, action: #selector(useTouched), parent: view)
         if savedSetups.setups.count == 0 {
-            useButton.isHidden = true
+            hide(useButton)
         }
 
         // Reset
@@ -191,6 +195,8 @@ class GameSetupDialog : UIViewController {
                 if !ok {
                     Logger.logDismiss(alert, host: vc, animated: true)
                     self.promptForOverwrite(vc, newName, state)
+                } else {
+                    unhide(self.useButton)
                 }
             }
         }
@@ -210,7 +216,8 @@ class GameSetupDialog : UIViewController {
             // Do nothing
         }
         let useName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
-             savedSetups.storeEntry(name, state, true)
+            savedSetups.storeEntry(name, state, true)
+            unhide(self.useButton)
         }
         alert.addAction(cancel)
         alert.addAction(useName)

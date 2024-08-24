@@ -18,6 +18,8 @@ import UIKit
 
 // Represents a Card as a view, with animated flipping from front to back. The two images for front and back are stored in the
 // card (typically, the cards of a deck would share a common back image by reference).
+// Note: although this class is not Codable it is partly mirrored by CardState, which is.  So, when changing the
+// stored properties of this class, be sure to visit CardState as well.
 class Card : UIView {
     // The index of the card in its "deck" when that deck is in its normal (not shuffled) order.  The index is used to 
     // identify cards unambiguously across player views but does not necessarily have a predictable relationship to the card's

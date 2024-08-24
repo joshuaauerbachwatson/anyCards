@@ -24,7 +24,8 @@ class GameState : Codable, Equatable {
         let handArea : Bool
     }
     let setup : Setup?       // Setup information if present.
-    let items : [ItemHolder] // The positions of all the cards and boxes
+    let boxes:  [GridBoxState] // The positions and properties of the boxes
+    let cards: [CardState]   // The positions and properties of the cards
     let sendingPlayer : Int  // The index of the player constructing the GameState
     let activePlayer: Int    // The index of the player whose turn it is (== previous except when yielding)
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
@@ -43,7 +44,8 @@ class GameState : Codable, Equatable {
         }
         self.sendingPlayer = controller.thisPlayer
         self.activePlayer = activePlayer ?? controller.activePlayer
-        self.items = controller.playingArea.subviews.filter({isEligibleCard($0) || $0 is GridBox}).map{ ItemHolder.make($0) }
+        self.boxes = controller.playingArea.subviews.filter({$0 is GridBox}).map{ GridBoxState($0 as! GridBox) }
+        self.cards = controller.playingArea.subviews.filter({isEligibleCard($0, includeHandArea)}).map{ CardState($0 as! Card) }
         self.areaSize = controller.playingArea.bounds.size
     }
     // decoding initializer is auto-generated
@@ -52,52 +54,18 @@ class GameState : Codable, Equatable {
     static func == (lhs: GameState, rhs: GameState) -> Bool {
         return lhs.setup?.deckType.displayName == rhs.setup?.deckType.displayName
         && lhs.setup?.handArea == rhs.setup?.handArea
-        && lhs.items == rhs.items
+        && lhs.boxes == rhs.boxes
+        && lhs.cards == rhs.cards
         && lhs.sendingPlayer == rhs.sendingPlayer
         && lhs.activePlayer == rhs.activePlayer
         && lhs.areaSize == rhs.areaSize
     }
 }
 
-// Determine if a view is a card and is not private.
-fileprivate func isEligibleCard(_ maybe: UIView) -> Bool {
+// Determine if a view is a card and is not private, except in the special case where we accept private cards
+fileprivate func isEligibleCard(_ maybe: UIView, _ privateOk: Bool) -> Bool {
     guard let card = maybe as? Card else { return false }
-    return !card.isPrivate
-}
-
-enum ItemHolder: Codable, Equatable {
-    case Box(GridBoxState)
-    case Card(CardState)
-
-    static func make(_ item: UIView) -> ItemHolder {
-        if let card = item as? Card {
-            return .Card(CardState(card))
-        }
-        if let box = item as? GridBox {
-            return .Box(GridBoxState(box))
-        }
-        Logger.logFatalError("Attempted creation of ItemHolder from a view that is not a Card or GridBox")
-    }
-
-    // Conform to Equatable protocol
-    static func == (lhs: ItemHolder, rhs: ItemHolder) -> Bool {
-        switch lhs {
-        case .Box(let boxState1):
-            switch rhs {
-            case .Box(let boxState2):
-                return boxState1 == boxState2
-            default:
-                return false
-            }
-        case .Card(let cardState1):
-            switch rhs {
-            case .Card(let cardState2):
-                return cardState1 == cardState2
-            default:
-                return false
-            }
-        }
-    }
+    return privateOk || !card.isPrivate
 }
 
 // Represents the transmissable state unique to a Card
@@ -105,12 +73,19 @@ final class CardState : Codable, Equatable {
     let origin : CGPoint
     var index : Int   // permit overwrite when reordering a restored game state used as a restored setup
     let faceUp : Bool
+    // TODO: Consider that the following will always be false in any card state that is serialized since the intent is
+    // never to store or transmit private cards.  However, it can be true in some CardStates when, for example,
+    // using a GameState to help facilitate the rotation of the playing view.  It is a possible optimization to
+    // omit the isPrivate flag when serializing and set it to false when deserializing but the benefit will likely
+    // be small.
+    let isPrivate : Bool
 
     // Initializer from a Card
     init( _ card: Card) {
         faceUp = card.isFaceUp
         index = card.index
         origin = card.frame.origin
+        isPrivate = card.isPrivate
     }
 
     // Conform to Equatable protocol
