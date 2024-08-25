@@ -20,6 +20,9 @@ import UIKit
 class DealingDialog : UIViewController {
     // The main view controller (not necessarily the presenting controller for this controller)
     let vc : ViewController
+    
+    // The selected "target kind" (initially "Hands")
+    var targetKind = TargetKind.Hands
 
     // Terser reference to settings
     var settings : OptionSettings {
@@ -30,16 +33,15 @@ class DealingDialog : UIViewController {
     let box: GridBox
     var hands = DealingHandsDefault
     var cards = DealingCardsDefault
-    var handsAreOwned = true
 
     // Controls
     let header = UILabel()         // First row
-    let handsStepper = Stepper()   // Second row, first half
-    let handsLabel = UILabel()     // Second row, second half
-    let cardsStepper = Stepper()   // Third row, first half
-    let cardsLabel = UILabel()     // Third row, second half
-    let ownedLabel = UILabel()     // Fourth row, left
-    let owned = TouchableLabel()   // Fourth row, right
+    let handsLabel = UILabel()     // Second row, first half
+    let handsStepper = Stepper()   // Second row, second half
+    let cardsLabel = UILabel()     // Third row, first half
+    let cardsStepper = Stepper()   // Third row, second half
+    let targetLabel = UILabel()     // Fourth row, left
+    let target = TouchableLabel()   // Fourth row, right
     let errorLabel = UILabel()     // Fifth Row
     let confirmButton = UIButton() // Fifth Row
     let cancelButton = UIButton()  // Sixth Row
@@ -71,23 +73,23 @@ class DealingDialog : UIViewController {
         // Steppers and their associated labels
         configureStepper(handsStepper, delegate: self, value: hands, parent: view)
         configureStepper(cardsStepper, delegate: self, value: cards, parent: view)
-        configureLabel(handsLabel, LabelBackground, parent: view)
-        handsLabel.text = HandsLabelText
-        configureLabel(cardsLabel, LabelBackground, parent: view)
-        cardsLabel.text = CardsLabelText
+        configureLabel(handsLabel, SettingsDialogBackground, parent: view)
+        handsLabel.text = "# Targets"
+        configureLabel(cardsLabel, SettingsDialogBackground, parent: view)
+        cardsLabel.text = "Cards per Target"
         handsStepper.minimumValue = DealingHandsMin
         handsStepper.maximumValue = DealingHandsMax
         cardsStepper.minimumValue = DealingCardsMin
         cardsStepper.maximumValue = DealingCardsMax
 
         // Owned indicator and its label
-        configureLabel(ownedLabel, SettingsDialogBackground, parent: view)
-        ownedLabel.text = OwnedTitle
-        ownedLabel.textAlignment = .right
-        configureTouchableLabel(owned, target: self, action: #selector(ownedTouched), parent: view)
-        owned.text = YesText
-        owned.view.font = getTextFont()
-        owned.view.backgroundColor = LabelBackground
+        configureLabel(targetLabel, SettingsDialogBackground, parent: view)
+        targetLabel.text = "Target Type"
+        targetLabel.textAlignment = .right
+        configureTouchableLabel(target, target: self, action: #selector(targetTouched), parent: view)
+        target.text = targetKind.display
+        target.view.font = getTextFont()
+        target.view.backgroundColor = LabelBackground
 
         // Error label and confirm button.  Only one will show but we don't decide which yet.
         configureLabel(errorLabel, LabelBackground, parent: view)
@@ -110,13 +112,13 @@ class DealingDialog : UIViewController {
         let startX = (view.bounds.width / 2) - (fullWidth / 2)
         let startY = (view.bounds.height / 2) - (fullHeight / 2)
         place(header, startX, startY, fullWidth, ctlHeight)
-        place(handsStepper, startX, below(header), ctlWidth, ctlHeight)
-        place(handsLabel, after(handsStepper), below(header), ctlWidth, ctlHeight)
-        place(cardsStepper, startX, below(handsStepper), ctlWidth, ctlHeight)
-        place(cardsLabel, after(cardsStepper), below(handsStepper), ctlWidth, ctlHeight)
-        place(ownedLabel, startX, below(cardsLabel), ctlWidth, ctlHeight)
-        place(owned, after(ownedLabel), below(cardsStepper), ctlWidth, ctlHeight)
-        place(errorLabel, startX, below(owned), fullWidth, ctlHeight)
+        place(handsLabel, startX, below(header), ctlWidth, ctlHeight)
+        place(handsStepper, after(handsLabel), below(header), ctlWidth, ctlHeight)
+        place(cardsLabel, startX, below(handsStepper), ctlWidth, ctlHeight)
+        place(cardsStepper, after(cardsLabel), below(handsStepper), ctlWidth, ctlHeight)
+        place(targetLabel, startX, below(cardsLabel), ctlWidth, ctlHeight)
+        place(target, after(targetLabel), below(cardsStepper), ctlWidth, ctlHeight)
+        place(errorLabel, startX, below(target), fullWidth, ctlHeight)
         confirmButton.frame = errorLabel.frame
         place(cancelButton, startX, below(confirmButton), fullWidth, ctlHeight)
         validate()
@@ -130,15 +132,12 @@ class DealingDialog : UIViewController {
         cancelTouched()
     }
 
-    // Respond to touching of the owned label
-    @objc func ownedTouched() {
-        if handsAreOwned {
-            handsAreOwned = false
-            owned.text = NoText
-        } else {
-            handsAreOwned = true
-            owned.text = YesText
-        }
+    // Respond to touching of the target label
+    @objc func targetTouched() {
+        let preferredSize = TableDialogController.getPreferredSize(TargetKind.allCases.count)
+        let anchor = CGPoint(x: target.frame.midX, y: target.frame.minY)
+        let dialog = DealingTargetDialog(self, size: preferredSize, anchor: anchor)
+        Logger.logPresent(dialog, host: self, animated: false)
     }
 
     // Respond to touching of the cancel button
@@ -159,6 +158,12 @@ class DealingDialog : UIViewController {
         }
         errorLabel.isHidden = true
         confirmButton.isHidden = false
+    }
+    
+    // Sets the target kind (called from subsidiary dialog)
+    func setTargetKind(_ row: Int) {
+        targetKind = TargetKind.allCases[row]
+        target.text = targetKind.display
     }
 
     // Post an error and inhibit dialog confirmation
@@ -188,16 +193,12 @@ class DealingDialog : UIViewController {
         var dealt = [GridBox]()
         for i in 0..<hands {
             let hand = GridBox(origin: origin, size: box.snapFrame.size, host: vc)
+            hand.kind = targetKind.boxKind
+            hand.owner = targetKind.isOwned ? i : GridBox.Unowned
             dealt.append(hand)
             origin.x += step
             vc.playingArea.addSubview(hand)
-            if handsAreOwned {
-                hand.owner = i
-                hand.name = vc.getPlayer(index: i)
-                hand.kind = .Hand
-            } else {
-                hand.name = "\(i + 1)"
-            }
+            hand.name = targetKind.isOwned ? vc.getPlayer(index: i) : "\(i)"
         }
         var animations = [()->Void]()
         for _ in 0..<cards {
@@ -206,6 +207,11 @@ class DealingDialog : UIViewController {
             }
         }
         runAnimationSequence(animations) {
+            if self.targetKind == .Piles {
+                for hand in dealt {
+                    hand.removeFromSuperview()
+                }
+            }
             self.vc.transmit()
         }
     }

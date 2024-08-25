@@ -12,6 +12,7 @@
 		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
 		281EE38B2C4B10FE00750B72 /* launch-image.png in Resources */ = {isa = PBXBuildFile; fileRef = 281EE38A2C4B10FE00750B72 /* launch-image.png */; };
 		287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287DD2CB2BD2E7780020FB46 /* ChatController.swift */; };
+		289925C72C7B7187007710E4 /* DealingTargetDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289925C62C7B7187007710E4 /* DealingTargetDialog.swift */; };
 		28C61D122BD949F800A8A89C /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 28C61D112BD949F800A8A89C /* Auth0 */; };
 		EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290B9E2A4B478A0028D364 /* firstTurn.png */; };
 		EE290BA12A4B479A0028D364 /* secondTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290BA02A4B479A0028D364 /* secondTurn.png */; };
@@ -69,6 +70,7 @@
 		281EE3882C4B101400750B72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = anyCards/Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		281EE38A2C4B10FE00750B72 /* launch-image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "launch-image.png"; sourceTree = SOURCE_ROOT; };
 		287DD2CB2BD2E7780020FB46 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
+		289925C62C7B7187007710E4 /* DealingTargetDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingTargetDialog.swift; sourceTree = "<group>"; };
 		EE290B9E2A4B478A0028D364 /* firstTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = firstTurn.png; sourceTree = SOURCE_ROOT; };
 		EE290BA02A4B479A0028D364 /* secondTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = secondTurn.png; sourceTree = SOURCE_ROOT; };
 		EE68816729B7BCC7003F4831 /* HelpController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HelpController.swift; sourceTree = "<group>"; };
@@ -184,6 +186,7 @@
 				EE90290126DEDF7A00F87FF8 /* Constants.swift */,
 				280065C42BD962E1003A520D /* CredentialStore.swift */,
 				EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */,
+				289925C62C7B7187007710E4 /* DealingTargetDialog.swift */,
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
 				EE68816929B7CB99003F4831 /* Feedback.swift */,
 				EE71CA5329D36C2600BEC774 /* GameSetup.swift */,
@@ -350,6 +353,7 @@
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
 				EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */,
 				EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */,
+				289925C72C7B7187007710E4 /* DealingTargetDialog.swift in Sources */,
 				EE90291026DEDF7A00F87FF8 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
