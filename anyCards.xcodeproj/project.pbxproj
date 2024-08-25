@@ -56,7 +56,6 @@
 		EE90292126DEE6A100F87FF8 /* Stepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292026DEE6A100F87FF8 /* Stepper.swift */; };
 		EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */; };
 		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
-		EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B6E270DCE9B005994FB /* Secrets.swift */; };
 		EEEF9B712716DFAE005994FB /* GameTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* GameTokens.swift */; };
 		EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */; };
 		EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C62A30B91D00226F07 /* boxMenu.png */; };
@@ -117,7 +116,6 @@
 		EE90292026DEE6A100F87FF8 /* Stepper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stepper.swift; sourceTree = "<group>"; };
 		EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTapAndDragRecognizer.swift; sourceTree = "<group>"; };
 		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
-		EEEF9B6E270DCE9B005994FB /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		EEEF9B702716DFAE005994FB /* GameTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameTokens.swift; sourceTree = "<group>"; };
 		EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxModifyDialog.png; sourceTree = SOURCE_ROOT; };
 		EEF0E7C62A30B91D00226F07 /* boxMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxMenu.png; sourceTree = SOURCE_ROOT; };
@@ -206,7 +204,6 @@
 				EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */,
 				EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */,
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
-				EEEF9B6E270DCE9B005994FB /* Secrets.swift */,
 				EE8D1E2E270B013900958060 /* ServerExchange.swift */,
 				EE90292026DEE6A100F87FF8 /* Stepper.swift */,
 				EE71CA5D29E4473800BEC774 /* TableDialogController.swift */,
@@ -346,7 +343,6 @@
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
 				EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */,
 				EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */,
-				EEEF9B6F270DCE9B005994FB /* Secrets.swift in Sources */,
 				EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */,
 				EEEF9B712716DFAE005994FB /* GameTokens.swift in Sources */,
 				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
