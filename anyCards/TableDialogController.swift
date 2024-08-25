@@ -11,25 +11,22 @@ import UIKit
 // Base class for popover dialogs that make choices from items in a simple table view.   Sections are supported (in "grouped" style) but the implementation is
 // biased toward simple cases with just one section.
 
+// Constants
+fileprivate let headerText = "Tap on a list item to choose it"
+fileprivate let backgroundColor = UIColor.lightGray
+fileprivate let headerTextColor = UIColor.white
+fileprivate let headerBackground = UIColor.black
+fileprivate let pickerTextColor = UIColor.black
+fileprivate let pickerBackground = UIColor.white
+fileprivate let expectedWidth = CGFloat(300)
+fileprivate let margin = CGFloat(10)
+fileprivate let spacing = CGFloat(6)
+fileprivate let tabletCtlHeight = CGFloat(40)
+fileprivate let phoneCtlHeight = CGFloat(20)
+fileprivate let reuseIdentifier = "tableDialog"
+
 // The class itself
 class TableDialogController : UIViewController, UIPopoverPresentationControllerDelegate,  UITableViewDelegate,  UITableViewDataSource {
-
-    // Constants
-    private static let headerText = "Tap on a list item to choose it"
-    private static let backgroundColor = UIColor.lightGray
-    private static let headerTextColor = UIColor.white
-    private static let headerBackground = UIColor.black
-    private static let pickerTextColor = UIColor.black
-    private static let pickerBackground = UIColor.white
-    private static let expectedWidth = CGFloat(300)
-    private static let margin = CGFloat(10)
-    private static let spacing = CGFloat(6)
-    private static let tabletCtlHeight = CGFloat(40)
-    private static let phoneCtlHeight = CGFloat(20)
-    private static let reuseIdentifier = "tableDialog"
-
-    // Mitigate the obstanacy of Swift
-    typealias T = TableDialogController
 
     // State
     let sectionCount : Int
@@ -40,7 +37,7 @@ class TableDialogController : UIViewController, UIPopoverPresentationControllerD
     // Recompute ctlHeight for phones to avoid scrolling issues
     private static var ctlHeight : CGFloat {
         let isPhone = UIScreen.main.traitCollection.userInterfaceIdiom == .phone
-        return isPhone ? T.phoneCtlHeight : T.tabletCtlHeight
+        return isPhone ? phoneCtlHeight : tabletCtlHeight
     }
 
     // Initialized with the owning view, the size, and the anchor point (optionally, direction with a default of .up and section count with a default of 1)
@@ -77,32 +74,32 @@ class TableDialogController : UIViewController, UIPopoverPresentationControllerD
     // Create and layout the subviews
     override func viewDidLoad() {
         // Layout assumes preferred size was respected
-        let x = T.margin
-        width = preferredContentSize.width - 2 * T.margin
-        let headerY = T.margin
-        let pickerY = headerY + T.ctlHeight + T.spacing
-        let pickerHeight = preferredContentSize.height - pickerY - T.spacing
+        let x = margin
+        width = preferredContentSize.width - 2 * margin
+        let headerY = margin
+        let pickerY = headerY + Self.ctlHeight + spacing
+        let pickerHeight = preferredContentSize.height - pickerY - spacing
 
         // Header
-        header.text = T.headerText
-        header.textColor = T.headerTextColor
-        header.backgroundColor = T.headerBackground
+        header.text = headerText
+        header.textColor = headerTextColor
+        header.backgroundColor = headerBackground
         header.textAlignment = .center
         header.adjustsFontSizeToFitWidth = true
-        header.frame = CGRect(x: x, y: headerY, width: width, height: T.ctlHeight)
+        header.frame = CGRect(x: x, y: headerY, width: width, height: Self.ctlHeight)
         view.addSubview(header)
 
         // Table View
         let frame = CGRect(x: x, y: pickerY, width: width, height: pickerHeight)
         picker = UITableView(frame: frame, style: sectionCount > 1 ? .grouped: .plain) // Satisfies delayed init
-        picker.rowHeight = T.ctlHeight + T.spacing
+        picker.rowHeight = Self.ctlHeight + spacing
         picker.sectionHeaderHeight = picker.rowHeight
         picker.sectionFooterHeight = 0
         picker.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
         picker.dataSource = self
         picker.delegate = self
         picker.frame = CGRect(x: x, y: pickerY, width: width, height: pickerHeight)
-        picker.register(TableDialogCell.self, forCellReuseIdentifier: T.reuseIdentifier)
+        picker.register(TableDialogCell.self, forCellReuseIdentifier: reuseIdentifier)
         view.addSubview(picker)
     }
 
@@ -124,7 +121,7 @@ class TableDialogController : UIViewController, UIPopoverPresentationControllerD
     // Conform to requirements of this protocol method.  Specializations initialize the the row text in initializePath
     // or initializeRow
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: T.reuseIdentifier, for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         if let label = cell.textLabel {
             initializePath(label, indexPath)
         }
