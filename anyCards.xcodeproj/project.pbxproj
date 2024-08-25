@@ -198,6 +198,7 @@
 				EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
 				EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */,
+				EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */,
 				EE90291B26DEE3B100F87FF8 /* Promotions.swift */,
 				EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */,
 				EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */,
@@ -213,7 +214,6 @@
 				EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */,
 				EE68816B29B7CFBF003F4831 /* anyCards.xcodeproj */,
 				EE9028EC26DE962700F87FF8 /* Assets.xcassets */,
-				EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */,
 			);
 			path = anyCards;
 			sourceTree = "<group>";

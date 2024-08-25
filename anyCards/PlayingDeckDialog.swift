@@ -38,7 +38,7 @@ class PlayingDeckDialog : TableDialogController {
         return Decks.available.firstIndex(where: {$0.displayName == deckName}) ?? 0
     }
 
-    // Override the number of rows to use the number of GridBox kind values
+    // Override the number of rows to use the number of playing deck definitions
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return Decks.available.count
     }
@@ -48,7 +48,7 @@ class PlayingDeckDialog : TableDialogController {
         label.text = Decks.available[row].displayName
     }
 
-    // Override rowSelected to handle the appropriate action changing the GridBox kind
+    // Override rowSelected to handle the appropriate action changing the deckType
     override func rowSelected(_ row: Int) -> Bool {
         let deckType = Decks.available[row]
         if deckType.displayName != host.vc.deckType.displayName {
