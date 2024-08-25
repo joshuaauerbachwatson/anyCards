@@ -25,6 +25,7 @@ class PlayingDeckDialog : TableDialogController {
     init(_ host: GameSetupDialog, size: CGSize, anchor: CGPoint) {
         self.host = host
         super.init(host.view, size: size, anchor: anchor)
+        setEditing(false, animated: false)
     }
 
     // Necessary but useless

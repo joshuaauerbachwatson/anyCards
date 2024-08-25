@@ -27,6 +27,7 @@ class BoxKindDialog : TableDialogController {
         self.host = host
         self.box = box
         super.init(host.view, size: size, anchor: anchor)
+        setEditing(false, animated: false)
     }
 
     // Necessary but useless
