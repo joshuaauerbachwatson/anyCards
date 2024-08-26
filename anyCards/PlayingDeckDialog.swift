@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // A table dialog for choosing a deck kind
 

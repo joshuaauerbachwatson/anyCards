@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import AuerbachLook
 
 // UIViewController for showing the chat transcript and sending chat messages.
 // TODO on tablets this perhaps should not use .fullScreen presentation style.  But, full screen is probably

@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // Dialog for dealing cards in Any Old Card Game
 class DealingDialog : UIViewController {

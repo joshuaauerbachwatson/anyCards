@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		280065C32BD94BCD003A520D /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = 280065C22BD94BCD003A520D /* Auth0.plist */; };
 		280065C52BD962E1003A520D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280065C42BD962E1003A520D /* CredentialStore.swift */; };
+		281D388D2C7CC84700BB5723 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 281D388C2C7CC84700BB5723 /* AuerbachLook */; };
 		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
 		281EE38B2C4B10FE00750B72 /* launch-image.png in Resources */ = {isa = PBXBuildFile; fileRef = 281EE38A2C4B10FE00750B72 /* launch-image.png */; };
 		287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287DD2CB2BD2E7780020FB46 /* ChatController.swift */; };
@@ -24,7 +25,6 @@
 		EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5329D36C2600BEC774 /* GameSetup.swift */; };
 		EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */; };
 		EE71CA5A29E3088E00BEC774 /* ModifyGridBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */; };
-		EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5D29E4473800BEC774 /* TableDialogController.swift */; };
 		EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5F29E448F900BEC774 /* SavedSetups.swift */; };
 		EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */; };
 		EE7D378929FAB82A001BED96 /* gameSetupDialogInitial.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */; };
@@ -48,13 +48,7 @@
 		EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290426DEDF7A00F87FF8 /* Deck.swift */; };
 		EE90291426DEDF7A00F87FF8 /* Communicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290526DEDF7A00F87FF8 /* Communicator.swift */; };
 		EE90291526DEDF7A00F87FF8 /* MultiPeer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290626DEDF7A00F87FF8 /* MultiPeer.swift */; };
-		EE90291726DEE27500F87FF8 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90291626DEE27500F87FF8 /* Logger.swift */; };
 		EE90291926DEE31200F87FF8 /* Useful.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90291826DEE31200F87FF8 /* Useful.swift */; };
-		EE90291C26DEE3B100F87FF8 /* TouchableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90291A26DEE3B100F87FF8 /* TouchableView.swift */; };
-		EE90291D26DEE3B100F87FF8 /* Promotions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90291B26DEE3B100F87FF8 /* Promotions.swift */; };
-		EE90291F26DEE69200F87FF8 /* AuerbachLook.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */; };
-		EE90292126DEE6A100F87FF8 /* Stepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292026DEE6A100F87FF8 /* Stepper.swift */; };
-		EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */; };
 		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
 		EEEF9B712716DFAE005994FB /* GameTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEF9B702716DFAE005994FB /* GameTokens.swift */; };
 		EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */; };
@@ -81,7 +75,6 @@
 		EE71CA5329D36C2600BEC774 /* GameSetup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameSetup.swift; sourceTree = "<group>"; };
 		EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridBoxMenu.swift; sourceTree = "<group>"; };
 		EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModifyGridBox.swift; sourceTree = "<group>"; };
-		EE71CA5D29E4473800BEC774 /* TableDialogController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableDialogController.swift; sourceTree = "<group>"; };
 		EE71CA5F29E448F900BEC774 /* SavedSetups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSetups.swift; sourceTree = "<group>"; };
 		EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreSetupDialog.swift; sourceTree = "<group>"; };
 		EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gameSetupDialogInitial.png; sourceTree = SOURCE_ROOT; };
@@ -108,13 +101,7 @@
 		EE90290426DEDF7A00F87FF8 /* Deck.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Deck.swift; sourceTree = "<group>"; };
 		EE90290526DEDF7A00F87FF8 /* Communicator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Communicator.swift; sourceTree = "<group>"; };
 		EE90290626DEDF7A00F87FF8 /* MultiPeer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultiPeer.swift; sourceTree = "<group>"; };
-		EE90291626DEE27500F87FF8 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		EE90291826DEE31200F87FF8 /* Useful.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Useful.swift; sourceTree = "<group>"; };
-		EE90291A26DEE3B100F87FF8 /* TouchableView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchableView.swift; sourceTree = "<group>"; };
-		EE90291B26DEE3B100F87FF8 /* Promotions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Promotions.swift; sourceTree = "<group>"; };
-		EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AuerbachLook.swift; sourceTree = "<group>"; };
-		EE90292026DEE6A100F87FF8 /* Stepper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stepper.swift; sourceTree = "<group>"; };
-		EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchTapAndDragRecognizer.swift; sourceTree = "<group>"; };
 		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
 		EEEF9B702716DFAE005994FB /* GameTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameTokens.swift; sourceTree = "<group>"; };
 		EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxModifyDialog.png; sourceTree = SOURCE_ROOT; };
@@ -127,6 +114,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				281D388D2C7CC84700BB5723 /* AuerbachLook in Frameworks */,
 				28C61D122BD949F800A8A89C /* Auth0 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -176,7 +164,6 @@
 				EE7D37942A1BCE8F001BED96 /* playerDialogInternet.png */,
 				EE290BA02A4B479A0028D364 /* secondTurn.png */,
 				EE9028F826DEDF7A00F87FF8 /* AppDelegate.swift */,
-				EE90291E26DEE69200F87FF8 /* AuerbachLook.swift */,
 				EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */,
 				EE90290026DEDF7A00F87FF8 /* Card.swift */,
 				287DD2CB2BD2E7780020FB46 /* ChatController.swift */,
@@ -193,22 +180,16 @@
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
 				EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */,
 				EE68816729B7BCC7003F4831 /* HelpController.swift */,
-				EE90291626DEE27500F87FF8 /* Logger.swift */,
 				EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */,
 				EE90290626DEDF7A00F87FF8 /* MultiPeer.swift */,
 				EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
 				EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */,
 				EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */,
-				EE90291B26DEE3B100F87FF8 /* Promotions.swift */,
 				EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */,
 				EE7D37922A13C21F001BED96 /* RestoreTokenDialog.swift */,
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
 				EE8D1E2E270B013900958060 /* ServerExchange.swift */,
-				EE90292026DEE6A100F87FF8 /* Stepper.swift */,
-				EE71CA5D29E4473800BEC774 /* TableDialogController.swift */,
-				EE90291A26DEE3B100F87FF8 /* TouchableView.swift */,
-				EE90292226DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift */,
 				EE90291826DEE31200F87FF8 /* Useful.swift */,
 				EE90290226DEDF7A00F87FF8 /* ViewController.swift */,
 				EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */,
@@ -236,6 +217,7 @@
 			name = anyCards;
 			packageProductDependencies = (
 				28C61D112BD949F800A8A89C /* Auth0 */,
+				281D388C2C7CC84700BB5723 /* AuerbachLook */,
 			);
 			productName = anyCards;
 			productReference = EE9028E526DE962400F87FF8 /* anyCards.app */;
@@ -268,6 +250,7 @@
 			mainGroup = EE9028DC26DE962400F87FF8;
 			packageReferences = (
 				28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */,
+				281BE8ED2C7BCBB100A7CB5B /* XCRemoteSwiftPackageReference "auerbachLook" */,
 			);
 			productRefGroup = EE9028E626DE962400F87FF8 /* Products */;
 			projectDirPath = "";
@@ -316,8 +299,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				280065C52BD962E1003A520D /* CredentialStore.swift in Sources */,
-				EE90291C26DEE3B100F87FF8 /* TouchableView.swift in Sources */,
-				EE90292326DEE79900F87FF8 /* TouchTapAndDragRecognizer.swift in Sources */,
 				EE68816A29B7CB99003F4831 /* Feedback.swift in Sources */,
 				EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */,
 				EE90291426DEDF7A00F87FF8 /* Communicator.swift in Sources */,
@@ -326,26 +307,21 @@
 				EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */,
 				EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */,
 				EE90291926DEE31200F87FF8 /* Useful.swift in Sources */,
-				EE90291D26DEE3B100F87FF8 /* Promotions.swift in Sources */,
 				EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */,
 				EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */,
 				EE7D378D29FEB093001BED96 /* BoxKindDialog.swift in Sources */,
-				EE90292126DEE6A100F87FF8 /* Stepper.swift in Sources */,
 				EE8D1E2F270B013900958060 /* ServerExchange.swift in Sources */,
 				EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */,
 				EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */,
 				EE90291526DEDF7A00F87FF8 /* MultiPeer.swift in Sources */,
 				EE71CA5029CA1B1300BEC774 /* PlayerManagementDialog.swift in Sources */,
 				EE7D37932A13C21F001BED96 /* RestoreTokenDialog.swift in Sources */,
-				EE90291F26DEE69200F87FF8 /* AuerbachLook.swift in Sources */,
 				EE90291126DEDF7A00F87FF8 /* ViewController.swift in Sources */,
 				287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
 				EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */,
-				EE71CA5E29E4473800BEC774 /* TableDialogController.swift in Sources */,
 				EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */,
 				EEEF9B712716DFAE005994FB /* GameTokens.swift in Sources */,
-				EE90291726DEE27500F87FF8 /* Logger.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
 				EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */,
 				EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */,
@@ -573,6 +549,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		281BE8ED2C7BCBB100A7CB5B /* XCRemoteSwiftPackageReference "auerbachLook" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/joshuaauerbachwatson/auerbachLook";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.6;
+			};
+		};
 		28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/auth0/Auth0.swift";
@@ -584,6 +568,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		281D388C2C7CC84700BB5723 /* AuerbachLook */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AuerbachLook;
+		};
 		28C61D112BD949F800A8A89C /* Auth0 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */;

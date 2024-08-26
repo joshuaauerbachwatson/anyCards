@@ -17,6 +17,7 @@
 import UIKit
 import WebKit
 import MessageUI
+import AuerbachLook
 
 // Controller for a full screen modal view with a web view and a button to dismiss it.  Used to display help texts.
 

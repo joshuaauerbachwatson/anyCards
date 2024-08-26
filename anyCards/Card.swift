@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // Represents a Card as a view, with animated flipping from front to back. The two images for front and back are stored in the
 // card (typically, the cards of a deck would share a common back image by reference).

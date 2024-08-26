@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // Model the UserDefaults keys and types that we use in the game.  By convention we read directly from UserDefaults
 // and write through to UserDefaults on any change.  This yields the simplest maintenance.  Make this single-instance

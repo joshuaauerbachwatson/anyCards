@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // Basic support for game communication.  Two implementations exist.
 // 1.  Multi-peer (proximity).

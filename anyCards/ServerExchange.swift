@@ -15,6 +15,7 @@
  */
 
 import Foundation
+import AuerbachLook
 
 // Constants mimic those in the backend
 fileprivate let argGameToken   = "gameToken"

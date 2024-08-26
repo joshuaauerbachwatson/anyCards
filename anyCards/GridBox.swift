@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // A UIView that is larger than a Card to accommodate a legend area with additional information.  Designed to go behind
 // a stack of cards.  Cards that overlap a GridBox may snap into it, being placed in accordance with the GridBox's rules.

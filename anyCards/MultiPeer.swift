@@ -16,6 +16,7 @@
 
 import Foundation
 import MultipeerConnectivity
+import AuerbachLook
 
 // Communicator implementation for multi-peer
 class MultiPeerCommunicator : NSObject, Communicator {

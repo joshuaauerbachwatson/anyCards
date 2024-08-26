@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // Dialog for game setup in AnyCards
 class GameSetupDialog : UIViewController {

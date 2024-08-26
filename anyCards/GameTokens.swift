@@ -15,6 +15,7 @@
  */
 
 import Foundation
+import AuerbachLook
 
 // Stores game tokens (now generally called "game IDs").  Game tokens are used only when using the server (with MPC,
 // the player group consists of those in proximity, by definition).

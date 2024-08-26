@@ -16,6 +16,7 @@
 
 import UIKit
 import MessageUI
+import AuerbachLook
 
 // Utility to send feedback, possibly including logs
 class Feedback {

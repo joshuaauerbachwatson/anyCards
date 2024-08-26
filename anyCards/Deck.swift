@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // Represents all card decks (via a protocol) and the default deck (which implements the protocol).
 // Players do not have to use the same Deck implementation but do have to agree on the playing Card array,

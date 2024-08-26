@@ -15,6 +15,7 @@
  */
 
 import Foundation
+import AuerbachLook
 
 // Represents a Player.  The player is known by a name and has an "order" field.
 // The leader will have order 1.  All other players have randomly generated orders in the range 2...UInt32.max

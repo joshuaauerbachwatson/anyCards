@@ -15,6 +15,7 @@
  */
 
 import Foundation
+import AuerbachLook
 
 class SavedSetups : Codable {
     // The setups being stored persistently

@@ -15,6 +15,7 @@
  */
 
 import UIKit
+import AuerbachLook
 
 // A table dialog for choosing a category of "target" when dealing.  Choices include "Hands", "Piles", "Owned Decks",
 // "Shared Decks", "Owned Discards", "Shared Discards"
