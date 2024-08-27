@@ -171,9 +171,3 @@ let FeedbackEmail = "anycardsreports@gmail.com"
 let FeedbackText = "Report a Problem"
 let NoEmailTitle = "No Email"
 let NoEmailMessage = "Cannot send problem report because email is not configured on this device or is not available to this app"
-let FeedbackMessageSubject = "AnyCards Game Feedback"
-let FeedbackMessageBody = """
-Replace this text with your specific feedback.   If you are reporting a problem, it is best to leave any log attachments
-in place; they are transcripts of events that occurred in AnyCards games and will help in diagnosing the problem.  If you
-prefer to delete the logs it is your call.
-"""

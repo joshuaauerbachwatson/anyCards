@@ -599,7 +599,7 @@ class ViewController: UIViewController {
 
     // Respond to touch of help button.   Display help html file.
     @objc func helpTouched() {
-        let helpControl = HelpController(HelpFile, ReturnText)
+        let helpControl = HelpController(helpPage: HelpFile, email: FeedbackEmail, returnText: ReturnText, appName: "AnyCards")
         Logger.logPresent(helpControl, host: self, animated: true)
     }
     

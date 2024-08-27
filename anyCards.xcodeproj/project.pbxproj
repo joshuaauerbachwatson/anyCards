@@ -9,16 +9,14 @@
 /* Begin PBXBuildFile section */
 		280065C32BD94BCD003A520D /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = 280065C22BD94BCD003A520D /* Auth0.plist */; };
 		280065C52BD962E1003A520D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280065C42BD962E1003A520D /* CredentialStore.swift */; };
-		281D388D2C7CC84700BB5723 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 281D388C2C7CC84700BB5723 /* AuerbachLook */; };
 		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
 		281EE38B2C4B10FE00750B72 /* launch-image.png in Resources */ = {isa = PBXBuildFile; fileRef = 281EE38A2C4B10FE00750B72 /* launch-image.png */; };
+		2825260A2C7E91560044E5E4 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 282526092C7E91560044E5E4 /* AuerbachLook */; };
 		287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287DD2CB2BD2E7780020FB46 /* ChatController.swift */; };
 		289925C72C7B7187007710E4 /* DealingTargetDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289925C62C7B7187007710E4 /* DealingTargetDialog.swift */; };
 		28C61D122BD949F800A8A89C /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 28C61D112BD949F800A8A89C /* Auth0 */; };
 		EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290B9E2A4B478A0028D364 /* firstTurn.png */; };
 		EE290BA12A4B479A0028D364 /* secondTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290BA02A4B479A0028D364 /* secondTurn.png */; };
-		EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE68816729B7BCC7003F4831 /* HelpController.swift */; };
-		EE68816A29B7CB99003F4831 /* Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE68816929B7CB99003F4831 /* Feedback.swift */; };
 		EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */ = {isa = PBXBuildFile; fileRef = EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */; };
 		EE71CA5029CA1B1300BEC774 /* PlayerManagementDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */; };
 		EE71CA5229D3324A00BEC774 /* playerDialogInitial.png in Resources */ = {isa = PBXBuildFile; fileRef = EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */; };
@@ -66,8 +64,6 @@
 		289925C62C7B7187007710E4 /* DealingTargetDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingTargetDialog.swift; sourceTree = "<group>"; };
 		EE290B9E2A4B478A0028D364 /* firstTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = firstTurn.png; sourceTree = SOURCE_ROOT; };
 		EE290BA02A4B479A0028D364 /* secondTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = secondTurn.png; sourceTree = SOURCE_ROOT; };
-		EE68816729B7BCC7003F4831 /* HelpController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HelpController.swift; sourceTree = "<group>"; };
-		EE68816929B7CB99003F4831 /* Feedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Feedback.swift; sourceTree = "<group>"; };
 		EE68816B29B7CFBF003F4831 /* anyCards.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = anyCards.xcodeproj; sourceTree = SOURCE_ROOT; };
 		EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = AnyCardsHelp.html; sourceTree = SOURCE_ROOT; };
 		EE71CA4F29CA1B1300BEC774 /* PlayerManagementDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerManagementDialog.swift; sourceTree = "<group>"; };
@@ -114,7 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				281D388D2C7CC84700BB5723 /* AuerbachLook in Frameworks */,
+				2825260A2C7E91560044E5E4 /* AuerbachLook in Frameworks */,
 				28C61D122BD949F800A8A89C /* Auth0 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -173,13 +169,11 @@
 				EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */,
 				289925C62C7B7187007710E4 /* DealingTargetDialog.swift */,
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
-				EE68816929B7CB99003F4831 /* Feedback.swift */,
 				EE71CA5329D36C2600BEC774 /* GameSetup.swift */,
 				EE9028FC26DEDF7A00F87FF8 /* GameState.swift */,
 				EEEF9B702716DFAE005994FB /* GameTokens.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
 				EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */,
-				EE68816729B7BCC7003F4831 /* HelpController.swift */,
 				EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */,
 				EE90290626DEDF7A00F87FF8 /* MultiPeer.swift */,
 				EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */,
@@ -217,7 +211,7 @@
 			name = anyCards;
 			packageProductDependencies = (
 				28C61D112BD949F800A8A89C /* Auth0 */,
-				281D388C2C7CC84700BB5723 /* AuerbachLook */,
+				282526092C7E91560044E5E4 /* AuerbachLook */,
 			);
 			productName = anyCards;
 			productReference = EE9028E526DE962400F87FF8 /* anyCards.app */;
@@ -299,13 +293,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				280065C52BD962E1003A520D /* CredentialStore.swift in Sources */,
-				EE68816A29B7CB99003F4831 /* Feedback.swift in Sources */,
 				EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */,
 				EE90291426DEDF7A00F87FF8 /* Communicator.swift in Sources */,
 				EE71CA5A29E3088E00BEC774 /* ModifyGridBox.swift in Sources */,
 				EE90290726DEDF7A00F87FF8 /* AppDelegate.swift in Sources */,
 				EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */,
-				EE68816829B7BCC8003F4831 /* HelpController.swift in Sources */,
 				EE90291926DEE31200F87FF8 /* Useful.swift in Sources */,
 				EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */,
 				EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */,
@@ -554,7 +546,7 @@
 			repositoryURL = "https://github.com/joshuaauerbachwatson/auerbachLook";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.6;
+				minimumVersion = 1.0.8;
 			};
 		};
 		28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */ = {
@@ -568,7 +560,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		281D388C2C7CC84700BB5723 /* AuerbachLook */ = {
+		282526092C7E91560044E5E4 /* AuerbachLook */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuerbachLook;
 		};
