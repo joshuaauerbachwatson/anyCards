@@ -11,8 +11,8 @@
 		280065C52BD962E1003A520D /* CredentialStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280065C42BD962E1003A520D /* CredentialStore.swift */; };
 		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
 		281EE38B2C4B10FE00750B72 /* launch-image.png in Resources */ = {isa = PBXBuildFile; fileRef = 281EE38A2C4B10FE00750B72 /* launch-image.png */; };
+		285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 285FAA4D2C8243A1003A0460 /* AuerbachLook */; };
 		287DD2CC2BD2E7780020FB46 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287DD2CB2BD2E7780020FB46 /* ChatController.swift */; };
-		288BDCB12C7F9F89001BBFCA /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 288BDCB02C7F9F89001BBFCA /* AuerbachLook */; };
 		289925C72C7B7187007710E4 /* DealingTargetDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289925C62C7B7187007710E4 /* DealingTargetDialog.swift */; };
 		28C61D122BD949F800A8A89C /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 28C61D112BD949F800A8A89C /* Auth0 */; };
 		EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290B9E2A4B478A0028D364 /* firstTurn.png */; };
@@ -110,7 +110,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				288BDCB12C7F9F89001BBFCA /* AuerbachLook in Frameworks */,
+				285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */,
 				28C61D122BD949F800A8A89C /* Auth0 in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -211,7 +211,7 @@
 			name = anyCards;
 			packageProductDependencies = (
 				28C61D112BD949F800A8A89C /* Auth0 */,
-				288BDCB02C7F9F89001BBFCA /* AuerbachLook */,
+				285FAA4D2C8243A1003A0460 /* AuerbachLook */,
 			);
 			productName = anyCards;
 			productReference = EE9028E526DE962400F87FF8 /* anyCards.app */;
@@ -546,7 +546,7 @@
 			repositoryURL = "https://github.com/joshuaauerbachwatson/auerbachLook";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.9;
+				minimumVersion = 1.0.21;
 			};
 		};
 		28C61D102BD949F800A8A89C /* XCRemoteSwiftPackageReference "Auth0" */ = {
@@ -560,7 +560,7 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		288BDCB02C7F9F89001BBFCA /* AuerbachLook */ = {
+		285FAA4D2C8243A1003A0460 /* AuerbachLook */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuerbachLook;
 		};

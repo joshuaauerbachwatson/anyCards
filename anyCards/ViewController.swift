@@ -842,7 +842,11 @@ class ViewController: UIViewController {
             if let recognizers = card.gestureRecognizers, recognizers.count > 0 {
                 continue
             }
-            let gestureRecognizer = TapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTap: cardTapped)
+            // TODO consider changing the interpretation of a nil touch recognizer when there is a tap recognizer.
+            // The effect should be 'true' rather than 'false', in which case the following vacuous function would not
+            // be necessary.
+            func beTrue(_ touch: UITouch)-> Bool { return true }
+            let gestureRecognizer = TouchTapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTouch: beTrue, onTap: cardTapped)
             card.addGestureRecognizer(gestureRecognizer)
         }
         return cards
