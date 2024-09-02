@@ -487,14 +487,18 @@ class ViewController: UIViewController {
         }
         // At the end, we adjust the cards individually
         if recognizer.state == .ended {
+            var yielding = false
             for draggedCard in card.dragSet {
-                // Let a box snap up card if appropriate.  We assume all boxes are public so we skip if private
-                if !draggedCard.isPrivate {
-                    let rejectedDecks = draggedCard.maybeBeSnapped(boxViews)
-                    // Make sure an unsnapped card isn't covering too much of a rejected deck
-                    if rejectedDecks.count > 0 {
-                        unhideDeck(draggedCard, rejectedDecks)
+                // Let a box snap up card if appropriate.  If the card is snapped and the box that snapped it
+                // has the autoYield property, then the turn is yielded.
+                let rejectedDecks = draggedCard.maybeBeSnapped(boxViews)
+                if rejectedDecks.count == 0 {
+                    if let box = draggedCard.box {
+                        yielding = box.autoYield
                     }
+                } else {
+                    // Make sure an unsnapped card isn't covering too much of a rejected deck
+                    unhideDeck(draggedCard, rejectedDecks)
                 }
                 // Make sure the card isn't left straddling the hand area line
                 if !publicArea.contains(draggedCard.frame) && publicArea.intersects(draggedCard.frame) {
@@ -514,7 +518,16 @@ class ViewController: UIViewController {
                 draggedCard.isPrivate = !publicArea.contains(draggedCard.frame.center)
             }
             refreshBoxCounts()
-            transmit()
+            if yielding {
+                Logger.log("Firing autoYield logic")
+                if playBegun && (!leadPlayer || setupIsComplete) {
+                    doYield()
+                } else {
+                    Logger.log("AutoYield behavior suppressed because normal play has not started")
+                }
+            } else {
+                transmit()
+            }
         }
     }
 
@@ -585,6 +598,11 @@ class ViewController: UIViewController {
     // Respond to touch of yield button.  Sends the GameState and advances the turn.
     @objc func yieldTouched() {
         Logger.log("Yield Touched")
+        doYield()
+    }
+    
+    // Common logic to yield button touched and autoYield due to discarding
+    private func doYield() {
         let newActivePlayer = (thisPlayer + 1) % players.count
         transmit(activePlayer: newActivePlayer)
         self.activePlayer = newActivePlayer

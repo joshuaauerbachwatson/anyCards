@@ -92,7 +92,7 @@ class ModifyGridBox : UIViewController {
         ownedLabel.text = OwnedTitle
         ownedLabel.textAlignment = .right
         configureTouchableLabel(owned, target: self, action: #selector(ownedTouched), parent: view)
-        owned.text = NoText
+        owned.text = box.owner == GridBox.Unowned ? NoText : YesText
         owned.view.font = getTextFont()
         owned.view.backgroundColor = LabelBackground
 

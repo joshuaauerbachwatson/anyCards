@@ -27,6 +27,7 @@ class GridBox : UIView {
         case Deck     // All face down, remove only
         case Hand     // Locked, except for "Take Hand", touching will result in taking
         case Discard  // All face up, add at top only.  Removal allowed.
+        case DiscardYield // Same as DIscard but adding the "automatic yield on discard" property
         case General  // Potentially mixed, face up added to top and face down to bottom.  Removal allowed.
 
         // Convenience methods to support display and modification dialogs
@@ -38,6 +39,8 @@ class GridBox : UIView {
                 return "hand"
             case .Discard:
                 return "discard"
+            case .DiscardYield:
+                return "discard (yield)"
             case .General:
                 return "general"
             }
@@ -49,7 +52,7 @@ class GridBox : UIView {
                 return "↓"
             case .Hand:
                 return "!"
-            case .Discard:
+            case .Discard, .DiscardYield:
                 return "↑"
             case .General:
                 return "↑↓"
@@ -70,7 +73,7 @@ class GridBox : UIView {
             switch kind {
             case .Deck, .Hand:
                 makeIntoDeck()
-            case .Discard:
+            case .Discard, .DiscardYield:
                 makeIntoDiscard()
             case .General:
                 break
@@ -82,6 +85,11 @@ class GridBox : UIView {
     // GridBox is indicated by a special constant
     static let Unowned = -1
     var owner: Int = Unowned
+
+    // Indicates whether adding to a box causes your turn to end
+    var autoYield : Bool {
+        return kind == .DiscardYield
+    }
 
     // Indicates whether the GridBox may be modified by this player.  This is possible if the GridBox is Unowned or if
     // it is owned by the current player
@@ -257,7 +265,7 @@ class GridBox : UIView {
     func snapUp(_ card: Card) {
         card.frame = snapFrame
         switch kind {
-        case .Discard:
+        case .Discard, .DiscardYield:
             card.turnFaceUp()
         case .Deck:
             card.turnFaceDown()

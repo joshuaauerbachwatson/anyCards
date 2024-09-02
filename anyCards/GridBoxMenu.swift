@@ -118,7 +118,7 @@ class GridBoxMenu : UIViewController {
     // Respond to touch of turn over button
     @objc func turnOverTouched() {
         switch box.kind {
-        case .Discard:
+        case .Discard, .DiscardYield:
             box.kind = .Deck
         case .Deck:
             box.kind = .Discard
