@@ -126,12 +126,12 @@ class Card : UIView {
         func rejects(_ boxes: [GridBox]) -> [GridBox] {
             let nonSnapBoxes = boxes.filter { $0.kind == .Deck || !$0.mayBeModified }
             let rejectedBoxes = nonSnapBoxes.filter { overlaps($0.snapFrame, self.frame) }
-            if rejectedBoxes.isEmpty {
-                Logger.log("No boxes were rejected")
-            } else {
-                let rejectedNames = rejectedBoxes.map { $0.name ?? "unknown" }
-                Logger.log("Rejected boxes: \(rejectedNames)")
-            }
+//            if rejectedBoxes.isEmpty {
+//                Logger.log("No boxes were rejected")
+//            } else {
+//                let rejectedNames = rejectedBoxes.map { $0.name ?? "unknown" }
+//                Logger.log("Rejected boxes: \(rejectedNames)")
+//            }
             return rejectedBoxes
 
         }

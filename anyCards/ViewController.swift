@@ -482,8 +482,10 @@ class ViewController: UIViewController {
             for draggedCard in card.dragSet {
                 let newFrame = CGRect(origin: draggedCard.frame.origin + translation, size: card.frame.size)
                 draggedCard.frame = newFrame
-            }
-            recognizer.setTranslation(CGPoint.zero, in: view)
+                // Mark card public or private
+                draggedCard.isPrivate = !publicArea.contains(draggedCard.frame.center)
+           }
+           recognizer.setTranslation(CGPoint.zero, in: view)
         }
         // At the end, we adjust the cards individually
         if recognizer.state == .ended {
@@ -514,8 +516,6 @@ class ViewController: UIViewController {
                     // Place the card into the most appropriate area (public or hand)
                     draggedCard.frame.origin = newOrigin
                 }
-                // Mark card public or private
-                draggedCard.isPrivate = !publicArea.contains(draggedCard.frame.center)
             }
             refreshBoxCounts()
             if yielding {
