@@ -1,7 +1,0 @@
-name: unigame
-services:
-- name: server
-  github:
-    repo: joshuaauerbachwatson/anyCards
-    branch: main
-  source_dir: backend
