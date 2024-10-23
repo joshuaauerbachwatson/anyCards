@@ -23,7 +23,7 @@ struct AnyCardsApp: App {
     var body: some Scene {
         WindowGroup {
             let gameHandle = AnyCardsGameHandle()
-            unigame.ContentView(gameHandle: gameHandle)
+            unigame.ContentView()
                 .environment(unigame.UnigameModel(gameHandle: gameHandle))
         }
     }
