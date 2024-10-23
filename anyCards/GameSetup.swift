@@ -191,7 +191,7 @@ class GameSetupDialog : UIViewController {
         }
         let useName = UIAlertAction(title: ConfirmButtonTitle, style: .default) { _ in
             if let newName = alert.textFields?.first?.text {
-                let state = GameState(vc)
+                let state = GameState(vc, setup: false)
                 let ok = savedSetups.storeEntry(newName, state, false)
                 if !ok {
                     Logger.logDismiss(alert, host: vc, animated: true)

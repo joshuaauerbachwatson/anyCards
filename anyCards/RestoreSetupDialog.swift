@@ -55,7 +55,8 @@ class RestoreSetupDialog : TableDialogController {
         guard let state = savedSetups.setups[name] else {
             Logger.logFatalError("saved setups are in an inconsistent state")
         }
-        host.restoreGameState(state)
+        // TODO decide on the future of this logic and restore it if appropriate
+        // host.restoreGameState(state)
         return true
     }
 

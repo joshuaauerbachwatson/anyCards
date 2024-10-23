@@ -323,7 +323,8 @@ class GridBox : UIView {
 
     // Display popup when an attempt is made to modify an owned gridbox by someone who isn't the owner
     func mayNotModify() {
-        let message = String(format: OwnedGridBoxTemplate, host.getPlayer(index: owner))
-        bummer(title: MayNotAccess, message: message, host: host)
+        // TODO Get the player some other way
+//        let message = String(format: OwnedGridBoxTemplate, host.getPlayer(index: owner))
+//        bummer(title: MayNotAccess, message: message, host: host)
     }
 }

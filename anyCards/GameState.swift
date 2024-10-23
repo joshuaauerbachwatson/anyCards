@@ -26,8 +26,6 @@ class GameState : Codable, Equatable {
     let setup : Setup?       // Setup information if present.
     let boxes:  [GridBoxState] // The positions and properties of the boxes
     let cards: [CardState]   // The positions and properties of the cards
-    let sendingPlayer : Int  // The index of the player constructing the GameState
-    let activePlayer: Int    // The index of the player whose turn it is (== previous except when yielding)
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
 
     // Initializer from local ViewController state.
@@ -36,19 +34,16 @@ class GameState : Codable, Equatable {
     //  - The activePlayer argument is presented when yielding, since, in that case, the active player after yielding
     // will differ from the active player before yielding.  The local activePlayer value cannot change until after
     // transmission, since transmit is gated by thisPlayersTurn.
-    init(_ controller: ViewController, includeHandArea: Bool = false, activePlayer: Int? = nil) {
-        if controller.leadPlayer && !controller.setupIsComplete {
+    init(_ controller: ViewController, setup: Bool, includeHandArea: Bool = false) {
+        if setup {
             self.setup = Setup(deckType: controller.deckType, handArea: controller.hasHands)
         } else {
             self.setup = nil
         }
-        self.sendingPlayer = controller.thisPlayer
-        self.activePlayer = activePlayer ?? controller.activePlayer
         self.boxes = controller.playingArea.subviews.filter({$0 is GridBox}).map{ GridBoxState($0 as! GridBox) }
         self.cards = controller.playingArea.subviews.filter({isEligibleCard($0, includeHandArea)}).map{ CardState($0 as! Card) }
         self.areaSize = controller.playingArea.bounds.size
     }
-    // decoding initializer is auto-generated
 
     // Conform to Equatable protocol
     static func == (lhs: GameState, rhs: GameState) -> Bool {
@@ -56,8 +51,6 @@ class GameState : Codable, Equatable {
         && lhs.setup?.handArea == rhs.setup?.handArea
         && lhs.boxes == rhs.boxes
         && lhs.cards == rhs.cards
-        && lhs.sendingPlayer == rhs.sendingPlayer
-        && lhs.activePlayer == rhs.activePlayer
         && lhs.areaSize == rhs.areaSize
     }
 }

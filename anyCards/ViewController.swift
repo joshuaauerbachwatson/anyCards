@@ -20,32 +20,6 @@ import AuerbachLook
 // Main ViewController for the AnyCards Game app
 class ViewController: UIViewController {
 
-    // Shadow values for all of the settings
-    var userName : String {
-        get {
-            return OptionSettings.instance.userName
-        }
-        set {
-            OptionSettings.instance.userName = newValue
-        }
-    }
-    var communication : CommunicatorKind {
-        get {
-            return OptionSettings.instance.communication
-        }
-        set {
-            OptionSettings.instance.communication = newValue
-            setChatButtonVisibility()
-        }
-    }
-    var gameToken : String? {
-        switch(communication) {
-        case .MultiPeer:
-            return nil
-        case .ServerBased(let gameToken):
-            return gameToken
-        }
-    }
     var deckType : PlayingDeckTemplate {
         get {
             return OptionSettings.instance.deckType
@@ -61,43 +35,6 @@ class ViewController: UIViewController {
         }
         set {
             OptionSettings.instance.hasHands = newValue
-        }
-    }
-    private var storedNumPlayers : Int { // only use this if leader
-        get {
-            return OptionSettings.instance.numPlayers
-        }
-        set {
-            OptionSettings.instance.numPlayers = newValue
-            // Changes to numPlayers should propagate eagerly
-            transmit()
-        }
-    }
-    private var _numPlayers : Int = 0 // cache for received value
-    var numPlayers : Int { // zero if not leader until value received
-        get {
-            if leadPlayer {
-                return storedNumPlayers
-            }
-            return _numPlayers
-        }
-        set {
-            _numPlayers = newValue
-            if leadPlayer {
-                storedNumPlayers = newValue
-            }
-        }
-    }
-    var leadPlayer : Bool {
-        get {
-            return OptionSettings.instance.leadPlayer
-        }
-        set {
-            OptionSettings.instance.leadPlayer = newValue
-            if newValue {
-                // On becoming leader, transmit state
-                transmit()
-            }
         }
     }
     
@@ -126,20 +63,6 @@ class ViewController: UIViewController {
     var thisPlayersTurn : Bool {
         return thisPlayer == activePlayer
     }
-
-    // The Communicator (nil until player search begins; remains non-nil during actual play)
-    var communicator : Communicator? = nil
-
-    // Indicates that play has begun.  If communicator is non-nil and playBegun is false, the player list is still being
-    // constructed.  Game turns may not occur until play officially begins
-    var playBegun = false
-
-    // Indicates that the first yield by the leader has occurred.  Until this happens, the leader is allowed to change the
-    // setup.  Afterwards, the setup is fixed.  This field is only meaningful in the leader's app instance.
-    var setupIsComplete = false
-    
-    // The transcript of the ongoing chat (if in use)
-    var chatTranscript = ""
     
     //  Controls whether card grouping is active in the private area.  Starts out false
     var groupingInPrivateArea = false
@@ -284,7 +207,6 @@ class ViewController: UIViewController {
         if notYetInitialized {
             notYetInitialized = false // don't repeat this sequence
             doLayout(nil)
-            configurePlayerLabels()
             Logger.log("Game initialized")
         }
     }
@@ -317,7 +239,7 @@ class ViewController: UIViewController {
             bummer(title: "Rotation error", message: "Rotation should have been forbidden", host: self)
             return
         }
-        let gameState = GameState(self, includeHandArea: true)
+        let gameState = GameState(self, setup: false, includeHandArea: true)
         coordinator.animate(alongsideTransition: nil) {_ in
             self.removeAllCardsAndBoxes()
             self.doLayout(gameState)
@@ -489,16 +411,11 @@ class ViewController: UIViewController {
         }
         // At the end, we adjust the cards individually
         if recognizer.state == .ended {
-            var yielding = false
             for draggedCard in card.dragSet {
                 // Let a box snap up card if appropriate.  If the card is snapped and the box that snapped it
                 // has the autoYield property, then the turn is yielded.
                 let rejectedDecks = draggedCard.maybeBeSnapped(boxViews)
-                if rejectedDecks.count == 0 {
-                    if let box = draggedCard.box {
-                        yielding = box.autoYield
-                    }
-                } else {
+                if rejectedDecks.count > 0 {
                     // Make sure an unsnapped card isn't covering too much of a rejected deck
                     unhideDeck(draggedCard, rejectedDecks)
                 }
@@ -518,16 +435,7 @@ class ViewController: UIViewController {
                 }
             }
             refreshBoxCounts()
-            if yielding {
-                Logger.log("Firing autoYield logic")
-                if playBegun && (!leadPlayer || setupIsComplete) {
-                    doYield()
-                } else {
-                    Logger.log("AutoYield behavior suppressed because normal play has not started")
-                }
-            } else {
-                transmit()
-            }
+            transmit()
         }
     }
 
@@ -536,27 +444,6 @@ class ViewController: UIViewController {
     @objc func endGameTouched() {
         Logger.log("End game touched")
         prepareNewGame()
-    }
-
-    // Start the search for players
-    func startPlayerSearch() {
-        if players.count == 0 {
-            players.append(makePlayer())
-        }
-        Logger.log("Making communicator of kind \(communication.displayName)")
-        makeCommunicator(communication, player: players[0], delegate: self, host: self) { (communicator, error) in
-            if let communicator = communicator {
-                Logger.log("Got back valid communicator")
-                self.communicator = communicator
-                self.setChatButtonVisibility()
-                hide(self.playersButton)
-                unhide(self.endGameButton)
-            } else if let error = error {
-                bummer(title: "Could not establish communication", message: error.localizedDescription, host: self)
-            } else {
-                Logger.logFatalError("makeCommunicator got unexpected response")
-            }
-        }
     }
 
     // Respond to long press.  A long press within a GridBox brings up the GridBoxMenu dialog to perform various actions
@@ -591,28 +478,12 @@ class ViewController: UIViewController {
     // Respond to touch of the players button.  Opens the dialog for choosing nearby versus remote, entering a group token for remote,
     // nominating yourself as lead player, setting the number of players, etc.
     @objc func playersTouched() {
-        let dialog = PlayerManagementDialog()
-        Logger.logPresent(dialog, host: self, animated: false)
+        // TODO this need not be part of this view at all
     }
 
     // Respond to touch of yield button.  Sends the GameState and advances the turn.
     @objc func yieldTouched() {
         Logger.log("Yield Touched")
-        doYield()
-    }
-    
-    // Common logic to yield button touched and autoYield due to discarding
-    private func doYield() {
-        let newActivePlayer = (thisPlayer + 1) % players.count
-        transmit(activePlayer: newActivePlayer)
-        self.activePlayer = newActivePlayer
-        if leadPlayer {
-            Logger.log("Leader is yielding, marking setup complete")
-            setupIsComplete = true
-            hide(gameSetupButton)
-        }
-        configurePlayerLabels()
-        checkTurnToPlay()
     }
 
     // Respond to touch of help button.   Display help html file.
@@ -623,21 +494,14 @@ class ViewController: UIViewController {
     
     // Respond to touch of the chat button.  Open the chat view
     @objc func chatTouched() {
-        guard let communicator = self.communicator else {
-            Logger.logFatalError("chat button should not have been visible with no communicator")
-        }
-        let chatWindow = ChatController(chatTranscript, communicator: communicator)
-        Logger.logPresent(chatWindow, host: self, animated: true)
+        // TODO not needed here
     }
 
     // Other functions
     
     // When a card is tapped or dragged, determine if it is in a properly owned Hand Box and, if so, take the hand
     func maybeTakeHand(_ card: Card) -> Bool {
-        if let box = card.box, box.kind == .Hand, box.mayBeModified {
-            takeHand(box)
-            return true
-        }
+        // TODO find behavior in archive and rework
         return false
     }
     
@@ -657,11 +521,7 @@ class ViewController: UIViewController {
     
     // Decide whether chat button should be hidden or not
     func setChatButtonVisibility() {
-        if let communicator = self.communicator, communicator.isChatAvailable {
-            unhide(chatButton)
-        } else {
-            hide(chatButton)
-        }
+        // TODO remove
     }
 
 
@@ -787,39 +647,6 @@ class ViewController: UIViewController {
         yieldButton.isHidden = !thisPlayersTurn
     }
 
-    // Display a player in its label using the appropriate text color and attributes
-    private func configurePlayer(_ label: UILabel, _ playerName: String, _ playerIndex: Int) {
-        if playerIndex == thisPlayer {
-            let attribs = [NSAttributedString.Key.font: UIFont.italicSystemFont(ofSize: label.font.pointSize)]
-            let text = String(format: ThisPlayerTemplate, playerName)
-            label.attributedText = NSAttributedString(string: text, attributes: attribs)
-        } else {
-            label.attributedText = nil
-            label.text = playerName
-        }
-        Logger.log("Setting text color for player \(playerIndex). " +
-                   " This player is \(thisPlayer), playBegun is \(playBegun) and activePlayer is \(activePlayer)")
-        label.textColor = (playBegun && playerIndex == activePlayer) ? ActivePlayerColor : NormalTextColor
-    }
-
-    // Configure the player labels according to latest information.
-    func configurePlayerLabels() {
-        for i in 0..<playerLabels.count {
-            let label = playerLabels[i]
-            unhide(label)
-            if i < players.count {
-                configurePlayer(label, players[i].name, i)
-            } else if i == 0 {
-                // Implies player.count == 0, meaning the game has not started.  Just fill in current player
-                configurePlayer(label, userName, i)
-            } else if i < numPlayers {
-                label.text = communicator == nil ? MustFind : Searching
-            } else {
-                hide(label)
-            }
-        }
-    }
-
     // Find a specific card from its card-state and adjust it to match the card state, possibly rescaling according to the current playingArea bounds
     private func findAndFixCard(from: CardState, rescale: CGFloat) -> Card {
         let card = cards[from.index]
@@ -898,19 +725,14 @@ class ViewController: UIViewController {
     // End current game and prepare a new one (responds to EndGame button and also to lost peer condition)
     private func prepareNewGame() {
         // Clean up former game
-        communicator?.shutdown(false)
-        communicator = nil
-        playBegun = false
         lockedToLandscape = false
         lockedToPortrait = false
-        setupIsComplete = false
         thisPlayer = 0
         activePlayer = 0
         playerLabels.forEach { $0.textColor = NormalTextColor }
         unhide(playersButton)
         hide(endGameButton, yieldButton)
         players = []
-        configurePlayerLabels()
         chatButton.isHidden = true
         // Set up new game
         newShuffle()
@@ -980,239 +802,6 @@ class ViewController: UIViewController {
 
     // Transmit GameState to the other players, either when just showing or when yielding
     func transmit(activePlayer: Int? = nil) {
-        guard let communicator = self.communicator, thisPlayersTurn else {
-            return // Make it possible to call this without worrying.
-        }
-        let gameState = GameState(self, activePlayer: activePlayer)
-        communicator.send(gameState)
-    }
-}
-
-// Conform to protocol for Communicator
-extension ViewController : CommunicatorDelegate {
-    // Respond to a new player list during game initiation.  We do not use this call later for lost players;
-    // we use `lostPlayer` for that.  The received players array is already properly sorted.
-    func newPlayerList(_ newNumPlayers: Int, _ newPlayers: [Player]) {
-        DispatchQueue.main.async {
-            self.doNewPlayerList(newNumPlayers, newPlayers)
-        }
-    }
-    
-    func doNewPlayerList(_ newNumPlayers: Int, _ newPlayers: [Player]) {
-        Logger.log("newPlayerList received, newNumPlayers=\(newNumPlayers), \(newPlayers.count) players present")
-        self.players = newPlayers
-        if players.count > 0 { // Should always be true, probably, but give communicators some slack
-            // Recalculate thisPlayer based on new list
-            guard let thisPlayer = players.firstIndex(where: {$0.name == OptionSettings.instance.userName})
-            else { 
-                Logger.log("The player for this app is not in the received player list")
-                return
-            }
-            self.thisPlayer = thisPlayer
-            
-            // Manage incoming numPlayers.  Ignore it if leader.  For others, store it but 0 means unknown.
-            if !leadPlayer {
-                numPlayers = newNumPlayers
-            }
-            if numPlayers > 0 {
-                // Check whether we now have the right number of players.  It is an error to have too many.
-                // If we have exactly the right number, check that there is exactly one lead player and indicate an error
-                // if there is none or more than one.  If that test is passed, indicate that play can begin.
-                if numPlayers < players.count {
-                    presentTerminalError(PlayerErrorTitle, TooManyPlayersMessage)
-                    return
-                } else if numPlayers == players.count {
-                    for player in 0..<numPlayers {
-                        if players[player].order == 1 {
-                            if player > 0 {
-                                presentTerminalError(PlayerErrorTitle, TooManyLeadsMessage)
-                                return
-                            }
-                        } else if player == 0 {
-                            presentTerminalError(PlayerErrorTitle, NoLeadPlayersMessage)
-                            return
-                        }
-                    }
-                    // Player list is complete with exactly one lead player
-                    playBegun = true
-                    Logger.log("Player list complete, play begun")
-                    checkTurnToPlay()
-                } // else player list not complete
-            } // else we don't know the number of players yet
-            // Always configure the player labels after all information is processed.
-            configurePlayerLabels()
-        } // else this call does not provide any players
-    }
-
-    // Handle a new chat message
-    func newChatMsg(_ msg: String) {
-        chatTranscript = chatTranscript == "" ? msg : chatTranscript + "\n" + msg
-        DispatchQueue.main.async {
-            if let chatController = self.presentedViewController as? ChatController {
-                chatController.updateTranscript(self.chatTranscript)
-            }
-        }
-    }
-    
-    // Display communications-related error and do some cleanup
-    func error(_ error: Error, _ mustDeleteGame: Bool) {
-        Logger.log("Communications error \(error)")
-        var host: UIViewController = self
-        DispatchQueue.main.async {
-            while host.presentedViewController != nil {
-                host = host.presentedViewController!
-            }
-            let alert = UIAlertController(title: CommunicationsErrorTitle, message: "\(error)", preferredStyle: .alert)
-            var stopTitle = EndGameTitle
-            if mustDeleteGame {
-                stopTitle = OkButtonTitle
-            } else {
-                let keepPlaying = UIAlertAction(title: ContinueTitle, style: .default, handler: nil)
-                alert.addAction(keepPlaying)
-            }
-            let stopPlaying = UIAlertAction(title: stopTitle, style: .cancel) { _ in
-                self.communicator?.shutdown(true)
-                self.prepareNewGame()
-            }
-            alert.addAction(stopPlaying)
-            Logger.logPresent(alert, host: self, animated: false)
-        }
-    }
-
-    // Respond to receipt of a new GameState
-    func gameChanged(_ gameState: GameState) {
-        if gameState.sendingPlayer == thisPlayer {
-            // Don't accept remote game state updates that you originated yourself.
-            // TODO Consider whether this should be more properly handled inside the communicator since it is not
-            // something that can happen with all communicators.
-            Logger.log("Rejected incoming game state during own turn")
-            return
-        }
-        if !playBegun {
-            Logger.log("Play has not begun so not processing game state")
-            return
-        }
-        DispatchQueue.main.async {
-            // Doing everything on the main thread for now; some things could be done in the background but not clear that's necessary
-            self.doGameChanged(gameState)
-        }
-    }
-    private func doGameChanged(_ gameState: GameState) {
-        Logger.log("doGameChanged invoked")
-        if let setup = gameState.setup, !leadPlayer {
-            Logger.log("Still in initial setup, processing deck type and public area")
-            cards = makePlayingDeck(Deck, setup.deckType)
-            hasHands = setup.handArea
-            setupPublicArea()
-            setOrientationLocks(gameState.areaSize.landscape)
-        }
-        Logger.log("Received GameState contains \(gameState.boxes.count) boxes and \(gameState.cards.count) cards")
-        if gameState.activePlayer != self.activePlayer {
-            Logger.log("The active player has changed")
-            self.activePlayer = gameState.activePlayer
-            for i in 0..<players.count {
-                configurePlayer(playerLabels[i], players[i].name, i)
-            }
-            checkTurnToPlay()
-        }
-        removePublicCardsAndBoxes()
-        doLayout(gameState)
-    }
-
-    // Restore a saved game state
-    func restoreGameState(_ gameState: GameState) {
-        if let setup = gameState.setup {
-            self.deckType = setup.deckType
-            cards = makePlayingDeck(Deck, setup.deckType)
-            hasHands = setup.handArea
-        }
-        setupPublicArea()
-        removePublicCardsAndBoxes()
-        // Randomize the cards in the restored state (leaving grid boxes alone)
-        var newIndices = shuffle(Array<Int>(0..<gameState.cards.count))
-        for card in gameState.cards {
-            card.index = newIndices.removeFirst()
-        }
-        doLayout(gameState)
-        transmit()
-    }
-
-    // React to lost peer by ending the game with a short dialog
-    func lostPlayer(_ player: Player) {
-        Logger.log("Lost player \(player.display)")
-        let lostPlayerMessage = String(format: LostPlayerTemplate, player.display)
-        presentTerminalError(LostPlayerTitle, lostPlayerMessage)
-    }
-
-    // Present an error message box for a condition that should terminate the game
-    // Designed to be used in callbacks (uses DispatchQueue.main.async)
-    func presentTerminalError(_ title: String, _ message: String) {
-        var host: UIViewController = self
-        DispatchQueue.main.async {
-            while host.presentedViewController != nil {
-                host = host.presentedViewController!
-            }
-            let action = UIAlertAction(title: OkButtonTitle, style: .cancel, handler: nil)
-            let fullMessage = message + EndGame
-            let alert = UIAlertController(title: title, message: fullMessage, preferredStyle: .alert)
-            alert.addAction(action)
-            Logger.logPresent(alert, host: self, animated: false)
-            self.prepareNewGame()
-        }
-    }
-
-    // Get the player name for a playerID, assuming the playerID is found in the 'players' list
-    func getPlayer(_ playerID: String) -> String? {
-        let possibles = players.filter { String($0.order) == playerID}
-        if possibles.count == 1 {
-            return possibles[0].name
-        }
-        return nil
-    }
-    
-    // Perform the "take hand" function
-    func takeHand(_ box: GridBox) {
-        // Calculate the placement points in the private area
-        let lastX = playingArea.bounds.width - cardSize.width - border
-        var currentX = playingArea.bounds.minX + border
-        let step = (lastX - currentX) / (box.cards.count - 1)
-        //Logger.log("currentX=\(currentX), lastX=\(lastX), step=\(step)")
-        let fixedY = playingArea.bounds.maxY - cardSize.height - border
-        // Prepare animation functions to move the cards
-        var animations = [()->Void]()
-        for card in box.cards.sorted(by: { $0.index < $1.index }) {
-            let xValue = currentX // use immutable to ensure value is captured, not reference
-            animations.append({
-                UIView.animate(withDuration: DealCardDuration, animations: {
-                    //Logger.log("card.frame.origin was \(card.frame.origin)")
-                    card.frame.origin = CGPoint(x: xValue, y: fixedY)
-                    //Logger.log("card.frame.origin is now \(card.frame.origin)")
-                    card.turnFaceUp()
-                    card.isPrivate = true
-                    self.playingArea.bringSubviewToFront(card)
-                })
-            })
-            currentX += step
-        }
-        // Move the cards with animation
-        runAnimationSequence(animations) {
-            // Delete the box
-            box.removeFromSuperview()
-            self.transmit()
-        }
-    }
-
-
-    // Get the player name associated with an index position or else use a helpful placeholder phrase
-    func getPlayer(index: Int) -> String {
-        if index < players.count {
-            return players[index].name
-        }
-        return "Player #\(index+1)"
-    }
-
-    // Make a Player object for the current player
-    func makePlayer() -> Player {
-        return Player(userName, leadPlayer)
+        // TODO find replacement
     }
 }

@@ -199,7 +199,7 @@ class DealingDialog : UIViewController {
             dealt.append(hand)
             origin.x += step
             vc.playingArea.addSubview(hand)
-            hand.name = targetKind.isOwned ? vc.getPlayer(index: i) : "\(i)"
+            hand.name = "\(i)" // TODO access UnigameModel for getPlayer
         }
         var animations = [()->Void]()
         for _ in 0..<cards {

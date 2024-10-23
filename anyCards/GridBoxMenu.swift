@@ -112,7 +112,8 @@ class GridBoxMenu : UIViewController {
     // Respond to touch of take hand button
     @objc func takeHandTouched() {
         Logger.logDismiss(self, host: vc, animated: true)
-        vc.takeHand(box)
+        // TODO restore takeHand logic from archive
+        //vc.takeHand(box)
     }
 
     // Respond to touch of turn over button

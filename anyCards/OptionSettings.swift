@@ -24,12 +24,8 @@ import AuerbachLook
 // instance, there is a consistent view within the app, even if the disk's view is lagging.
 class OptionSettings {
     // Preference keys
-    private static let UserNameKey = "UserName"
-    private static let CommunicationKey = "Communication"
     private static let DeckTypeKey = "DeckType"
     private static let HasHandsKey = "HasHands"
-    private static let NumPlayersKey = "NumPlayers"
-    private static let LeadPlayerKey = "LeadPlayer"
 
     // Single instance
     static let instance = OptionSettings()
@@ -38,30 +34,6 @@ class OptionSettings {
     private init() {}
 
     // Values
-
-    var userName : String {
-        get {
-            if let name = UserDefaults.standard.string(forKey: OptionSettings.UserNameKey) {
-                return name
-            }
-            // Else Name never initialized in settings, so start it out with the device name.
-            let name = UIDevice.current.name
-            UserDefaults.standard.set(name, forKey: OptionSettings.UserNameKey)
-            return name
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: OptionSettings.UserNameKey)
-        }
-    }
-
-    var communication : CommunicatorKind {
-        get {
-            return CommunicatorKind.from(UserDefaults.standard.string(forKey: OptionSettings.CommunicationKey))
-        }
-        set {
-            UserDefaults.standard.set(newValue.tag, forKey: OptionSettings.CommunicationKey)
-        }
-    }
 
     var hasHands : Bool {
         get {
@@ -95,25 +67,6 @@ class OptionSettings {
             } catch let error {
                 Logger.log("Error encoding NonStandardDeck information from UserDefaults: " + error.localizedDescription)
             }
-        }
-    }
-
-    var numPlayers : Int {
-        get {
-            return UserDefaults.standard.integer(forKey: OptionSettings.NumPlayersKey) // might be zero
-        }
-        set {
-            // We assume dialogs allow only reasonable values through so no checking here
-            UserDefaults.standard.set(newValue, forKey: OptionSettings.NumPlayersKey)
-        }
-    }
-
-    var leadPlayer : Bool {
-        get {
-            return UserDefaults.standard.bool(forKey: OptionSettings.LeadPlayerKey)
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: OptionSettings.LeadPlayerKey)
         }
     }
 }
