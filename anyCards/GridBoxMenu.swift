@@ -134,7 +134,7 @@ class GridBoxMenu : UIViewController {
     @objc func shuffleTouched() {
         var cards = box.cards
         cards.forEach() { $0.removeFromSuperview() }
-        cards = anyCards.shuffle(cards)
+        cards = AuerbachLook.shuffle(cards)
         cards.forEach() { vc.playingArea.addSubview($0) }
         Logger.logDismiss(self, host: vc, animated: true)
         vc.transmit()

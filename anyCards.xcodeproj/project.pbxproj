@@ -44,7 +44,6 @@
 		EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290026DEDF7A00F87FF8 /* Card.swift */; };
 		EE90291026DEDF7A00F87FF8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290126DEDF7A00F87FF8 /* Constants.swift */; };
 		EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290426DEDF7A00F87FF8 /* Deck.swift */; };
-		EE90291926DEE31200F87FF8 /* Useful.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90291826DEE31200F87FF8 /* Useful.swift */; };
 		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
 		EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */; };
 		EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C62A30B91D00226F07 /* boxMenu.png */; };
@@ -91,7 +90,6 @@
 		EE90290026DEDF7A00F87FF8 /* Card.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		EE90290126DEDF7A00F87FF8 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		EE90290426DEDF7A00F87FF8 /* Deck.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Deck.swift; sourceTree = "<group>"; };
-		EE90291826DEE31200F87FF8 /* Useful.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Useful.swift; sourceTree = "<group>"; };
 		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
 		EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxModifyDialog.png; sourceTree = SOURCE_ROOT; };
 		EEF0E7C62A30B91D00226F07 /* boxMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxMenu.png; sourceTree = SOURCE_ROOT; };
@@ -174,7 +172,6 @@
 				EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */,
 				EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */,
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
-				EE90291826DEE31200F87FF8 /* Useful.swift */,
 				28FE44832CC53A5100477C74 /* ViewController.swift */,
 				EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */,
 				EE9028EC26DE962700F87FF8 /* Assets.xcassets */,
@@ -291,7 +288,6 @@
 				EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */,
 				28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */,
 				28FE44842CC53A5100477C74 /* ViewController.swift in Sources */,
-				EE90291926DEE31200F87FF8 /* Useful.swift in Sources */,
 				EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */,
 				EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */,
 				EE7D378D29FEB093001BED96 /* BoxKindDialog.swift in Sources */,
