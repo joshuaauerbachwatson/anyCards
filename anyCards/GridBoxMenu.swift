@@ -40,7 +40,7 @@ class GridBoxMenu : UIViewController {
     let header = UILabel()
     let takeHand = UIButton()
     let turnOver = UIButton()
-    let shuffle = UIButton()
+    let shuffleButton = UIButton()
     let deal = UIButton()
     let modify = UIButton()
     let delete = UIButton()
@@ -75,7 +75,7 @@ class GridBoxMenu : UIViewController {
         takeHand.isHidden = !settings.hasHands
         configureButton(turnOver, title: TurnOverTitle, target: self, action: #selector(turnOverTouched), parent: view)
         turnOver.isHidden = box.kind == .General
-        configureButton(shuffle, title: ShuffleTitle, target: self, action: #selector(shuffleTouched), parent: view)
+        configureButton(shuffleButton, title: ShuffleTitle, target: self, action: #selector(shuffleTouched), parent: view)
         configureButton(deal, title: DealTitle, target: self, action: #selector(dealTouched), parent: view)
         deal.isHidden = !vc.canDeal
         configureButton(modify, title: ModifyTitle, target: self, action: #selector(modifyTouched), parent: view)
@@ -100,7 +100,7 @@ class GridBoxMenu : UIViewController {
         }
         next(takeHand)
         next(turnOver)
-        next(shuffle)
+        next(shuffleButton)
         next(deal)
         next(modify)
         next(delete)
@@ -134,7 +134,7 @@ class GridBoxMenu : UIViewController {
     @objc func shuffleTouched() {
         var cards = box.cards
         cards.forEach() { $0.removeFromSuperview() }
-        cards = AuerbachLook.shuffle(cards)
+        cards = shuffle(cards)
         cards.forEach() { vc.playingArea.addSubview($0) }
         Logger.logDismiss(self, host: vc, animated: true)
         vc.transmit()
