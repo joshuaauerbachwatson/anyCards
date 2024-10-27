@@ -19,17 +19,21 @@ import unigame
 import SwiftUI
 
 class AnyCardsGameHandle: GameHandle {
+    var numPlayerRange: ClosedRange<Int> = 1...6
+    
+    var appId: String = "anyoldcardgame"
+    
     var tokenProvider: any unigame.TokenProvider = Auth0TokenProvider()
     
-    func stateChanged(_ data: Data, setup: Bool) -> (any LocalizedError)? {
+    func stateChanged(_ data: Data, duringSetup: Bool) -> (any LocalizedError)? {
        return nil // TODO
     }
     
-    func encodeState(setup: Bool) -> Data {
+    func encodeState(duringSetup: Bool) -> Data {
         return Data() // TODO
     }
     
-    var setupView: any View = AnyCardsSetup()
+    var setupView: (any View)? = AnyCardsSetup()
     
     var playingView: any View = AnyCardsPlaying()
 }

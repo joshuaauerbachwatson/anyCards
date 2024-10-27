@@ -34,7 +34,7 @@ class PlayingView: UIView {
     let context: UIViewRepresentableContext<AnyCardsPlaying>
     init(_ context: UIViewRepresentableContext<AnyCardsPlaying>) {
         self.context = context
-        super.init()
+        super.init(frame: CGRect    .zero)
     }
     
     required init?(coder: NSCoder) {
