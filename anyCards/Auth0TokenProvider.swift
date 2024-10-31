@@ -12,16 +12,14 @@ import unigame
 
 // An Auth0 implementation of unigame TokenProvider
 class Auth0TokenProvider: TokenProvider {
-    func login(_ handler: @escaping (unigame.Credentials?, LocalizedError?)->()) {
-        Auth0.webAuth().useHTTPS().audience("https://unigame.com").start { result in
-            switch result {
-            case .success(let auth0creds):
-                let credentials = unigame.Credentials(accessToken: auth0creds.accessToken, expiresIn: auth0creds.expiresIn)
-                handler(credentials, nil)
-            case .failure(let error):
-                Logger.log("Login failed with \(error)")
-                handler(nil, error)
-            }
+    func login() async -> (unigame.Credentials?, LocalizedError?) {
+        do {
+            let auth0creds = try await Auth0.webAuth().useHTTPS().audience("https://unigame.com").start()
+            let credentials = unigame.Credentials(accessToken: auth0creds.accessToken, expiresIn: auth0creds.expiresIn)
+            return (credentials, nil)
+        } catch {
+            let error = error as? WebAuthError ?? WebAuthError.unknown
+            return (nil, error)
         }
     }
 }
