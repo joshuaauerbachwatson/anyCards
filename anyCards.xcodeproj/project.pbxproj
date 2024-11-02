@@ -537,7 +537,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/joshuaauerbachwatson/unigame.git";
 			requirement = {
-				branch = use-async;
+				branch = main;
 				kind = branch;
 			};
 		};
