@@ -25,6 +25,10 @@ class AnyCardsGameHandle: GameHandle {
     
     var tokenProvider: any unigame.TokenProvider = Auth0TokenProvider()
     
+    func reset() {
+        // TODO
+    }
+    
     func stateChanged(_ data: Data, duringSetup: Bool) -> (any LocalizedError)? {
        return nil // TODO
     }
