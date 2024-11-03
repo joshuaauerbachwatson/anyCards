@@ -52,9 +52,9 @@ class RestoreSetupDialog : TableDialogController {
     // Override rowSelected to handle the appropriate action for restoring a saved setup
     override func rowSelected(_ row: Int) -> Bool {
         let name = savedSetups.setupNames[row]
-        guard let state = savedSetups.setups[name] else {
-            Logger.logFatalError("saved setups are in an inconsistent state")
-        }
+//        guard let state = savedSetups.setups[name] else {
+//            Logger.logFatalError("saved setups are in an inconsistent state")
+//        }
         // TODO decide on the future of this logic and restore it if appropriate
         // host.restoreGameState(state)
         return true
