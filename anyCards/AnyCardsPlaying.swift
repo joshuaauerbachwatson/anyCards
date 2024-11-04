@@ -15,30 +15,27 @@
  */
 
 import SwiftUI
+import unigame
 
 // TODO this should handle the main playing view for AnyCards
 // Perhaps this is not SwiftUI View but rather an evolution of the old VIewController wrapped
 // in UIViewRepresentable or something like that.
 struct AnyCardsPlaying: UIViewRepresentable {
     typealias UIViewType = PlayingView
+
+    @Environment(UnigameModel.self) var model
+
     func makeUIView(context: Context) -> PlayingView {
-        return PlayingView(context)
+        let gameHandle = model.gameHandle as! AnyCardsGameHandle
+        if let playingView = gameHandle.mainPlayingView {
+            return playingView
+        }
+        let playingView = PlayingView(model)
+        gameHandle.mainPlayingView = playingView
+        return playingView
     }
     func updateUIView(_ uiView: PlayingView, context: Context) {
-        // TODO
-    }
-}
-
-// TODO populate this class with relevant material from the old ViewController.view
-class PlayingView: UIView {
-    let context: UIViewRepresentableContext<AnyCardsPlaying>
-    init(_ context: UIViewRepresentableContext<AnyCardsPlaying>) {
-        self.context = context
-        super.init(frame: CGRect    .zero)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        uiView.update()
     }
 }
 

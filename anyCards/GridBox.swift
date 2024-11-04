@@ -94,7 +94,7 @@ class GridBox : UIView {
     // Indicates whether the GridBox may be modified by this player.  This is possible if the GridBox is Unowned or if
     // it is owned by the current player
     var mayBeModified: Bool {
-        return owner == GridBox.Unowned || owner == host.thisPlayer
+        return owner == GridBox.Unowned || owner == host.model.thisPlayer
     }
 
     // The "snap frame" subarea of the GridBox (where cards end up)
@@ -108,9 +108,9 @@ class GridBox : UIView {
 
     // A label containing the count of cards currently held by this GridBox
     let countLabel : UILabel
-
-    // The main view controller, to be consulted for various purposes
-    let host : ViewController
+    
+    // The PlayingView that this GridBox belongs to
+    let host: PlayingView
 
     // The cards that are currently held by this GridBox.
     var cards : [Card] {
@@ -128,7 +128,7 @@ class GridBox : UIView {
     }
 
     // Make a GridBox from frame information, provided as an origin and a size
-    init(origin: CGPoint, size: CGSize, host: ViewController) {
+    init(origin: CGPoint, size: CGSize, host: PlayingView) {
         nameLabel = UILabel()
         nameLabel.backgroundColor = LabelBackground
         nameLabel.textAlignment = .center
@@ -157,7 +157,7 @@ class GridBox : UIView {
     }
 
     // Make a GridBox from frame information, provided as a center and a size
-    convenience init(center: CGPoint, size: CGSize, host: ViewController) {
+    convenience init(center: CGPoint, size: CGSize, host: PlayingView) {
         let adjust = CGPoint(x: size.width / 2, y: size.height / 2)
         self.init(origin: center - adjust, size: size, host: host)
     }
@@ -171,7 +171,7 @@ class GridBox : UIView {
 
     // Respond to dragging of the entire box
     @objc func boxDragged(recognizer: UIPanGestureRecognizer) {
-        if recognizer.state == .possible || !host.thisPlayersTurn {
+        if recognizer.state == .possible || !host.model.thisPlayersTurn {
             return
         }
         if let view = recognizer.view {
@@ -186,7 +186,7 @@ class GridBox : UIView {
                     cards.forEach { $0.frame = cardFrame }
                 }
                 if recognizer.state == .ended {
-                    host.transmit()
+                    host.model.transmitState()
                 }
             }
         }
@@ -194,11 +194,12 @@ class GridBox : UIView {
 
     // Respond to touching of the legend
     @objc func legendTouched() {
-        guard let menu = GridBoxMenu(self) else {
-            mayNotModify()
-            return
-        }
-        Logger.logPresent(menu, host: host, animated: true)
+        // TODO figure out how to present modal dialogs in this environment
+//        guard let menu = GridBoxMenu(self) else {
+//            mayNotModify()
+//            return
+//        }
+//        Logger.logPresent(menu, host: host, animated: true)
     }
 
     // Other functions
@@ -300,7 +301,7 @@ class GridBox : UIView {
             newCards.append(card)
         }
         for card in newCards.reversed() {
-            host.playingArea.addSubview(card)
+            host.addSubview(card)
         }
     }
 

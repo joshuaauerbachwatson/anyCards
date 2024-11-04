@@ -16,35 +16,27 @@
 		281F052C2CC2F292002772D4 /* AnyCardsGameHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */; };
 		281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */; };
 		285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 285FAA4D2C8243A1003A0460 /* AuerbachLook */; };
-		289925C72C7B7187007710E4 /* DealingTargetDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 289925C62C7B7187007710E4 /* DealingTargetDialog.swift */; };
+		286629AE2CD9609800D10656 /* CBORCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 286629AD2CD9609800D10656 /* CBORCoding */; };
 		28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */; };
-		28FE44842CC53A5100477C74 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44832CC53A5100477C74 /* ViewController.swift */; };
+		28FE44842CC53A5100477C74 /* PlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44832CC53A5100477C74 /* PlayingView.swift */; };
 		28FE44862CC53CD200477C74 /* AnyCardsPlaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */; };
 		EE290B9F2A4B478A0028D364 /* firstTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290B9E2A4B478A0028D364 /* firstTurn.png */; };
 		EE290BA12A4B479A0028D364 /* secondTurn.png in Resources */ = {isa = PBXBuildFile; fileRef = EE290BA02A4B479A0028D364 /* secondTurn.png */; };
 		EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */ = {isa = PBXBuildFile; fileRef = EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */; };
 		EE71CA5229D3324A00BEC774 /* playerDialogInitial.png in Resources */ = {isa = PBXBuildFile; fileRef = EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */; };
-		EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5329D36C2600BEC774 /* GameSetup.swift */; };
-		EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */; };
-		EE71CA5A29E3088E00BEC774 /* ModifyGridBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */; };
 		EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA5F29E448F900BEC774 /* SavedSetups.swift */; };
-		EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */; };
 		EE7D378929FAB82A001BED96 /* gameSetupDialogInitial.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */; };
 		EE7D378B29FAB833001BED96 /* cardsAndBoxes.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */; };
-		EE7D378D29FEB093001BED96 /* BoxKindDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */; };
-		EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */; };
 		EE7D37952A1BCE8F001BED96 /* playerDialogInternet.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D37942A1BCE8F001BED96 /* playerDialogInternet.png */; };
 		EE7D37972A1BE0F2001BED96 /* rememberTokenDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EE7D37962A1BE0F2001BED96 /* rememberTokenDialog.png */; };
-		EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */; };
 		EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */; };
-		EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028FC26DEDF7A00F87FF8 /* GameState.swift */; };
+		EE90290B26DEDF7A00F87FF8 /* PlayingState.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028FC26DEDF7A00F87FF8 /* PlayingState.swift */; };
 		EE90290C26DEDF7A00F87FF8 /* Base.lproj in Resources */ = {isa = PBXBuildFile; fileRef = EE9028FD26DEDF7A00F87FF8 /* Base.lproj */; };
 		EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9028FE26DEDF7A00F87FF8 /* Player.swift */; };
 		EE90290E26DEDF7A00F87FF8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */; };
 		EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290026DEDF7A00F87FF8 /* Card.swift */; };
 		EE90291026DEDF7A00F87FF8 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290126DEDF7A00F87FF8 /* Constants.swift */; };
 		EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE90290426DEDF7A00F87FF8 /* Deck.swift */; };
-		EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */; };
 		EEF0E7C52A30A80700226F07 /* boxModifyDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */; };
 		EEF0E7C72A30B91D00226F07 /* boxMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C62A30B91D00226F07 /* boxMenu.png */; };
 		EEF0E7C92A3B812500226F07 /* dealingDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = EEF0E7C82A3B812500226F07 /* dealingDialog.png */; };
@@ -58,39 +50,30 @@
 		281EE38A2C4B10FE00750B72 /* launch-image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "launch-image.png"; sourceTree = SOURCE_ROOT; };
 		281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsGameHandle.swift; sourceTree = "<group>"; };
 		281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsSetup.swift; sourceTree = "<group>"; };
-		289925C62C7B7187007710E4 /* DealingTargetDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingTargetDialog.swift; sourceTree = "<group>"; };
 		28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsApp.swift; sourceTree = "<group>"; };
-		28FE44832CC53A5100477C74 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		28FE44832CC53A5100477C74 /* PlayingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayingView.swift; sourceTree = "<group>"; };
 		28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsPlaying.swift; sourceTree = "<group>"; };
 		EE290B9E2A4B478A0028D364 /* firstTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = firstTurn.png; sourceTree = SOURCE_ROOT; };
 		EE290BA02A4B479A0028D364 /* secondTurn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = secondTurn.png; sourceTree = SOURCE_ROOT; };
 		EE68816B29B7CFBF003F4831 /* anyCards.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = anyCards.xcodeproj; sourceTree = SOURCE_ROOT; };
 		EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = AnyCardsHelp.html; sourceTree = SOURCE_ROOT; };
 		EE71CA5129D3324A00BEC774 /* playerDialogInitial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playerDialogInitial.png; sourceTree = SOURCE_ROOT; };
-		EE71CA5329D36C2600BEC774 /* GameSetup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameSetup.swift; sourceTree = "<group>"; };
-		EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridBoxMenu.swift; sourceTree = "<group>"; };
-		EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModifyGridBox.swift; sourceTree = "<group>"; };
 		EE71CA5F29E448F900BEC774 /* SavedSetups.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSetups.swift; sourceTree = "<group>"; };
-		EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestoreSetupDialog.swift; sourceTree = "<group>"; };
 		EE7D378829FAB82A001BED96 /* gameSetupDialogInitial.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gameSetupDialogInitial.png; sourceTree = SOURCE_ROOT; };
 		EE7D378A29FAB833001BED96 /* cardsAndBoxes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cardsAndBoxes.png; sourceTree = SOURCE_ROOT; };
-		EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxKindDialog.swift; sourceTree = "<group>"; };
-		EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayingDeckDialog.swift; sourceTree = "<group>"; };
 		EE7D37942A1BCE8F001BED96 /* playerDialogInternet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = playerDialogInternet.png; sourceTree = SOURCE_ROOT; };
 		EE7D37962A1BE0F2001BED96 /* rememberTokenDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = rememberTokenDialog.png; sourceTree = SOURCE_ROOT; };
 		EE9028E526DE962400F87FF8 /* anyCards.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = anyCards.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE9028EC26DE962700F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EE9028F126DE962700F87FF8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptionSettings.swift; sourceTree = "<group>"; };
 		EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GridBox.swift; sourceTree = "<group>"; };
-		EE9028FC26DEDF7A00F87FF8 /* GameState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		EE9028FC26DEDF7A00F87FF8 /* PlayingState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayingState.swift; sourceTree = "<group>"; };
 		EE9028FD26DEDF7A00F87FF8 /* Base.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Base.lproj; sourceTree = "<group>"; };
 		EE9028FE26DEDF7A00F87FF8 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EE90290026DEDF7A00F87FF8 /* Card.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Card.swift; sourceTree = "<group>"; };
 		EE90290126DEDF7A00F87FF8 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		EE90290426DEDF7A00F87FF8 /* Deck.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Deck.swift; sourceTree = "<group>"; };
-		EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DealingDialog.swift; sourceTree = "<group>"; };
 		EEF0E7C42A30A80700226F07 /* boxModifyDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxModifyDialog.png; sourceTree = SOURCE_ROOT; };
 		EEF0E7C62A30B91D00226F07 /* boxMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = boxMenu.png; sourceTree = SOURCE_ROOT; };
 		EEF0E7C82A3B812500226F07 /* dealingDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dealingDialog.png; sourceTree = SOURCE_ROOT; };
@@ -101,6 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				286629AE2CD9609800D10656 /* CBORCoding in Frameworks */,
 				281F052A2CC2E3FB002772D4 /* Auth0 in Frameworks */,
 				285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */,
 				281F05272CC2E35B002772D4 /* unigame in Frameworks */,
@@ -156,23 +140,14 @@
 				28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */,
 				281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */,
 				280065C42BD962E1003A520D /* Auth0TokenProvider.swift */,
-				EE7D378C29FEB093001BED96 /* BoxKindDialog.swift */,
 				EE90290026DEDF7A00F87FF8 /* Card.swift */,
 				EE90290126DEDF7A00F87FF8 /* Constants.swift */,
-				EEE9EC7A29A95C2800F27CDA /* DealingDialog.swift */,
-				289925C62C7B7187007710E4 /* DealingTargetDialog.swift */,
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
-				EE71CA5329D36C2600BEC774 /* GameSetup.swift */,
-				EE9028FC26DEDF7A00F87FF8 /* GameState.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
-				EE71CA5529DCB9E900BEC774 /* GridBoxMenu.swift */,
-				EE71CA5929E3088E00BEC774 /* ModifyGridBox.swift */,
-				EE9028F926DEDF7A00F87FF8 /* OptionSettings.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
-				EE7D379029FEC265001BED96 /* PlayingDeckDialog.swift */,
-				EE71CA6229E5852C00BEC774 /* RestoreSetupDialog.swift */,
+				EE9028FC26DEDF7A00F87FF8 /* PlayingState.swift */,
+				28FE44832CC53A5100477C74 /* PlayingView.swift */,
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
-				28FE44832CC53A5100477C74 /* ViewController.swift */,
 				EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */,
 				EE9028EC26DE962700F87FF8 /* Assets.xcassets */,
 				EE68816B29B7CFBF003F4831 /* anyCards.xcodeproj */,
@@ -200,6 +175,7 @@
 				285FAA4D2C8243A1003A0460 /* AuerbachLook */,
 				281F05262CC2E35B002772D4 /* unigame */,
 				281F05292CC2E3FB002772D4 /* Auth0 */,
+				286629AD2CD9609800D10656 /* CBORCoding */,
 			);
 			productName = anyCards;
 			productReference = EE9028E526DE962400F87FF8 /* anyCards.app */;
@@ -234,6 +210,7 @@
 				281BE8ED2C7BCBB100A7CB5B /* XCRemoteSwiftPackageReference "auerbachLook" */,
 				281F05252CC2E35B002772D4 /* XCRemoteSwiftPackageReference "unigame" */,
 				281F05282CC2E3FB002772D4 /* XCRemoteSwiftPackageReference "Auth0" */,
+				286629AC2CD9609800D10656 /* XCRemoteSwiftPackageReference "CBORCoding" */,
 			);
 			productRefGroup = EE9028E626DE962400F87FF8 /* Products */;
 			projectDirPath = "";
@@ -283,25 +260,16 @@
 			files = (
 				281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */,
 				280065C52BD962E1003A520D /* Auth0TokenProvider.swift in Sources */,
-				EEE9EC7B29A95C2800F27CDA /* DealingDialog.swift in Sources */,
-				EE71CA5A29E3088E00BEC774 /* ModifyGridBox.swift in Sources */,
-				EE90290826DEDF7A00F87FF8 /* OptionSettings.swift in Sources */,
 				28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */,
-				28FE44842CC53A5100477C74 /* ViewController.swift in Sources */,
+				28FE44842CC53A5100477C74 /* PlayingView.swift in Sources */,
 				EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */,
 				EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */,
-				EE7D378D29FEB093001BED96 /* BoxKindDialog.swift in Sources */,
-				EE71CA5429D36C2600BEC774 /* GameSetup.swift in Sources */,
 				EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */,
 				281F052C2CC2F292002772D4 /* AnyCardsGameHandle.swift in Sources */,
-				EE90290B26DEDF7A00F87FF8 /* GameState.swift in Sources */,
-				EE71CA5629DCB9E900BEC774 /* GridBoxMenu.swift in Sources */,
-				EE71CA6329E5852C00BEC774 /* RestoreSetupDialog.swift in Sources */,
+				EE90290B26DEDF7A00F87FF8 /* PlayingState.swift in Sources */,
 				28FE44862CC53CD200477C74 /* AnyCardsPlaying.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
-				EE7D379129FEC265001BED96 /* PlayingDeckDialog.swift in Sources */,
 				EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */,
-				289925C72C7B7187007710E4 /* DealingTargetDialog.swift in Sources */,
 				EE90291026DEDF7A00F87FF8 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -549,6 +517,14 @@
 				minimumVersion = 2.10.0;
 			};
 		};
+		286629AC2CD9609800D10656 /* XCRemoteSwiftPackageReference "CBORCoding" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SomeRandomiOSDev/CBORCoding";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -565,6 +541,11 @@
 		285FAA4D2C8243A1003A0460 /* AuerbachLook */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AuerbachLook;
+		};
+		286629AD2CD9609800D10656 /* CBORCoding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 286629AC2CD9609800D10656 /* XCRemoteSwiftPackageReference "CBORCoding" */;
+			productName = CBORCoding;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

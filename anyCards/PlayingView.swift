@@ -16,28 +16,31 @@
 
 import UIKit
 import AuerbachLook
+import unigame
+import CBORCoding
 
-// Main ViewController for the AnyCards Game app
-class ViewController: UIViewController {
+// The playing view for the AnyCards Game app
+// Although AnyCards uses the unigame framework, which is SwiftUI-based, this view had much existing code and is
+// retained as a UIKit view.
+class PlayingView: UIView {
+    let model: UnigameModel
+    var gameHandle: AnyCardsGameHandle {
+        model.gameHandle as! AnyCardsGameHandle
+    }
+    init(_ model: UnigameModel) {
+         self.model = model
+         super.init(frame: CGRect.zero)
+        self.cards = makePlayingDeck(Deck, gameHandle.deckType)
+   }
+       
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+        
+   func update() {
+         // TODO figure out what is supposed to happen here
+    }
 
-    var deckType : PlayingDeckTemplate {
-        get {
-            return OptionSettings.instance.deckType
-        }
-        set {
-            OptionSettings.instance.deckType = newValue
-            cards = makePlayingDeck(Deck, deckType)
-        }
-    }
-    var hasHands : Bool {
-        get {
-            return OptionSettings.instance.hasHands
-        }
-        set {
-            OptionSettings.instance.hasHands = newValue
-        }
-    }
-    
     // Model-related fields
 
     // The source deck in current use.
@@ -47,31 +50,11 @@ class ViewController: UIViewController {
 
     // The cards array for the game.  This depends on the values of Deck and deckType but is kept up to date with them.
     var cards : [Card] = []
-
-    // The list of players (always starts with just 'this' player but expands during discovery until play starts.
-    // The array is ordered by
-    // the order fields, ascending)
-    var players = [Player]()
-
-    // The index in the players array assigned to 'this' player (the user of the present device).  Initially zero.
-    var thisPlayer : Int = 0    // Index may change since the order of players is determined by their order fields.
-
-    // The index of the player whose turn it is (moves are allowed iff thisPlayer and activePlayer are the same)
-    var activePlayer : Int = 0  // The player listed first always goes first but play rotates thereafter
-
-    // Says whether it's this player's turn to make moves
-    var thisPlayersTurn : Bool {
-        return thisPlayer == activePlayer
-    }
     
     //  Controls whether card grouping is active in the private area.  Starts out false
     var groupingInPrivateArea = false
 
     // View-related fields
-
-    // Flag for ensuring that the "initial" layout only happens once and isn't repeated when an overlaying view is dismissed.
-    // Layout should only be redone when the device orientation or shape is changed or when a new game state is received.
-    var notYetInitialized = true
 
     // Indicates that any new layout must be landscape
     var lockedToLandscape = false
@@ -82,14 +65,11 @@ class ViewController: UIViewController {
     // Indicates that the current layout is or should be landscape (negated means portrait)
     var isLandscape: Bool {
         get {
-            return lockedToLandscape || (!lockedToPortrait && view.bounds.size.landscape)
+            return lockedToLandscape || (!lockedToPortrait && bounds.size.landscape)
         }
     }
 
-    // The playing area subview
-    let playingArea = UIView()
-
-    // The public area within playingArea.bounds (excludes a possible "hand area" at the bottom)
+    // The public area within this view (excludes a possible "hand area" at the bottom)
     var publicArea = CGRect.zero // calculated later
 
     // The "dealing area" within the publicArea (defined once the publicArea is defined).
@@ -104,37 +84,26 @@ class ViewController: UIViewController {
 
     // Indicates whether dealing is possible.  Dealing is possible if there are no subviews that intersect the dealingArea
     var canDeal: Bool {
-        return !playingArea.subviews.contains(where: { $0.frame.intersects(dealingArea)})
+        return !subviews.contains(where: { $0.frame.intersects(dealingArea)})
     }
 
     // The division marker for the hand area
     let handAreaMarker = UIView()
 
-    // Label subviews for the (up to) maxPlayers players in the game
-    var playerLabels = [UILabel]()
-
-    // Buttons
-    let yieldButton = UIButton()
-    let playersButton = UIButton()
-    let endGameButton = UIButton()
-    let gameSetupButton = UIButton()
-    let helpButton = UIButton()
-    let chatButton = UIButton()
-
     // The subset of the playingArea subviews that are cards.  Normally, the contents of this array is the same as that of the cards
     // array but the order is the subview order rather than index order.
     var cardViews : [Card] {
-        return playingArea.subviews.filter({ $0 is Card }).map { $0 as! Card }
+        return subviews.filter({ $0 is Card }).map { $0 as! Card }
     }
 
-    // The subset of the playingArea subviews that are GridBoxes.
+    // The subset of the subviews that are GridBoxes.
     var boxViews : [GridBox] {
-        return playingArea.subviews.filter({ $0 is GridBox }).map { $0 as! GridBox }
+        return subviews.filter({ $0 is GridBox }).map { $0 as! GridBox }
     }
 
     // The expected size of a card in the current layout
     var cardSize: CGSize {
-        let cardWidth = playingArea.frame.minDimension * CardDisplayWidthRatio
+        let cardWidth = frame.minDimension * CardDisplayWidthRatio
         let cardHeight = cardWidth / Deck.aspectRatio
         return CGSize(width: cardWidth, height: cardHeight)
     }
@@ -145,176 +114,94 @@ class ViewController: UIViewController {
         return cardSize.height / 5
     }
 
-    // Initializers
-
-    // Main initializer, bypass builder stuff
-    init() {
-        super.init(nibName: nil, bundle: nil)
-        cards = makePlayingDeck(Deck, deckType)
-    }
-
-    // Useless but required
-    required init?(coder aDecoder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     // External interface
 
-    // Finish basic initialization when the view loads
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    // Finish basic initialization when the view is constructed
+    func initializeView() {
 
-        // Make the playing area be a subview of the main view and assign its color
-        view.backgroundColor = FillerColor
-        view.addSubview(playingArea)
-        playingArea.backgroundColor = PlayingColor
+        backgroundColor = PlayingColor
 
         // Make the hand area marker be a subview of the playingArea and assign its color. 
         // It is hidden if the hand area is configured as absent.
-        playingArea.addSubview(handAreaMarker)
+        addSubview(handAreaMarker)
         handAreaMarker.backgroundColor = UIColor.black
-        handAreaMarker.isHidden = !hasHands
+        handAreaMarker.isHidden = !gameHandle.hasHands
 
-        // Initialize Labels and buttons
-        for i in 0..<4 {
-            let player = makeLabel(LabelBackground, parent: self.view)
-            playerLabels.append(player)
-            if i > 0 {
-                hide(player)
-            }
-        }
-        configureButton(playersButton, title: PlayersTitle, target: self, action: #selector(playersTouched), parent: self.view)
-        configureButton(yieldButton, title: YieldTitle, target: self, action: #selector(yieldTouched), parent: self.view)
-        configureButton(endGameButton, title: EndGameTitle, target: self, action: #selector(endGameTouched), parent: self.view)
-        hide(endGameButton, yieldButton)
-        configureButton(gameSetupButton, title: GameSetupTitle, target: self, action: #selector(gameSetupTouched), parent: self.view)
-        configureButton(helpButton, title: HelpTitle, target: self, action: #selector(helpTouched), parent: self.view)
-        configureButton(chatButton, title: ChatTitle, target: self, action: #selector(chatTouched), parent: self.view)
-        chatButton.isHidden = true
-
-        // Add GridBox-making and destroying recognizer to the playingArea view
+        // Add GridBox-making and destroying recognizer
         let gridBoxRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressDetected))
         gridBoxRecognizer.minimumPressDuration = 1
         gridBoxRecognizer.allowableMovement = 2
         gridBoxRecognizer.delaysTouchesBegan = true
-        playingArea.addGestureRecognizer(gridBoxRecognizer)
+        addGestureRecognizer(gridBoxRecognizer)
     }
 
     // When the view appears (hence its size is known), check whether an initial layout has been done.  If
     // not, do one.  Also configure the labels.
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        if notYetInitialized {
-            notYetInitialized = false // don't repeat this sequence
-            doLayout(nil)
-            Logger.log("Game initialized")
-        }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        doLayout(nil)
+        Logger.log("Playing area initialized")
     }
 
-    // Allow view to be rotated.   We will redo the layout each time while preserving all controller state.
-    open override var shouldAutorotate: Bool {
-        get {
-            return true
-        }
-    }
-
-    // Support orientations according the "lock" flags.  If not locks, all orientations are accepted.
-    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-        get {
-            if lockedToLandscape {
-                return .landscape
-            }
-            if lockedToPortrait {
-                return .portrait
-            }
-            return .all
-        }
-    }
-
-    // Respond to rotation or other size-changing event by redoing layout.
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
-        // Hopefully temporary:
-        if size.landscape && lockedToPortrait || !size.landscape && lockedToLandscape {
-            bummer(title: "Rotation error", message: "Rotation should have been forbidden", host: self)
-            return
-        }
-        let gameState = GameState(self, setup: false, includeHandArea: true)
-        coordinator.animate(alongsideTransition: nil) {_ in
-            self.removeAllCardsAndBoxes()
-            self.doLayout(gameState)
-        }
-    }
+    // Allow view to be rotated.
+    // TODO this has to be done differently in SwiftUI
+    // https://stackoverflow.com/questions/66037782/swiftui-how-do-i-lock-a-particular-view-in-portrait-mode-whilst-allowing-others
+//    open override var shouldAutorotate: Bool {
+//        get {
+//            return true
+//        }
+//    }
+//
+//    // Support orientations according the "lock" flags.  If not locks, all orientations are accepted.
+//    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+//        get {
+//            if lockedToLandscape {
+//                return .landscape
+//            }
+//            if lockedToPortrait {
+//                return .portrait
+//            }
+//            return .all
+//        }
+//    }
+//
+//    // Respond to rotation or other size-changing event by redoing layout.
+//    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+//        super.viewWillTransition(to: size, with: coordinator)
+//        // Hopefully temporary:
+//        if size.landscape && lockedToPortrait || !size.landscape && lockedToLandscape {
+//            bummer(title: "Rotation error", message: "Rotation should have been forbidden", host: self)
+//            return
+//        }
+//        let gameState = GameState(self, setup: false, includeHandArea: true)
+//        coordinator.animate(alongsideTransition: nil) {_ in
+//            self.removeAllCardsAndBoxes()
+//            self.doLayout(gameState)
+//        }
+//    }
 
     // Layout section
 
     // Perform layout.
-    private func doLayout(_ gs: GameState?) {
-        // First establish a layout area within the safe area.  This area has a fixed "tablet like" aspect ratio regardless of
-        // whether the device is a tablet or a phone.  Even on some tablets (that are not 12.9 iPad pros) this may not exactly
-        // match the safe area.
-        let safeArea = safeAreaOf(view)
-        var layoutWidth: CGFloat, layoutHeight: CGFloat
-        if safeArea.size.landscape {
-            layoutHeight = safeArea.height
-            layoutWidth = safeArea.height * LayoutAreaRatioLandscape
-        } else {
-            layoutWidth = safeArea.width
-            layoutHeight = safeArea.width * LayoutAreaRatioPortrait
-        }
-        let layoutX = safeArea.midX - layoutWidth / 2
-        let layoutY = safeArea.midY - layoutHeight / 2
-
-        // Calculate some values needed to layout buttons and labels
-        let controlHeight = ControlHeightRatio * layoutHeight
-        let ctlWidth = (layoutWidth - 3 * border) / 4
-        var labelX = layoutX
-        let buttonX = layoutX
-        let labelY = layoutY + border
-        let buttonY = labelY + controlHeight + border
-
-        // Layout the player labels
-        for playerLabel in playerLabels {
-            place(playerLabel, labelX, labelY, ctlWidth, controlHeight)
-            labelX += ctlWidth + border
-        }
-
-        // Layout the buttons
-        place(playersButton, buttonX, buttonY, ctlWidth, controlHeight)
-        endGameButton.frame = playersButton.frame
-        gameSetupButton.frame = playersButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        yieldButton.frame = gameSetupButton.frame.offsetBy(dx: ctlWidth + border, dy: 0)
-        place(helpButton, after(yieldButton), buttonY, ctlWidth/2, controlHeight)
-        place(chatButton, after(helpButton), buttonY, ctlWidth/2, controlHeight)
-
-        // The playingArea frame is positioned below the buttons and labels with the fixed aspect ratio determined by the
-        // orientation but limited by the available space (in landscape the natural height might not quite fit).
-        let aspectRatio = safeArea.size.landscape ? PlayingAreaRatioLandscape : PlayingAreaRatioPortrait
-        let height = layoutWidth * aspectRatio
-        Logger.log("natural height is \(height)")
-        let areaY = helpButton.frame.maxY + border
-        let maxHeight = layoutY + layoutHeight - areaY
-        playingArea.frame = CGRect(x: layoutX, y: areaY, width: layoutWidth, height: min(height, maxHeight))
-        Logger.log("Safe area is \(safeArea)")
-        Logger.log("Playing area frame is \(playingArea.frame)")
-        // We can now define the extent of the public area based on the playing area and whether or not there's a private area
+    private func doLayout(_ gs: PlayingState?) {
+        // We first define the extent of the public area based on our own bounds and whether or not there's a private area
         setupPublicArea()
         // Now place the cards and GridBoxes, with possible rescaling
         if let gameState = gs {
-            let rescale = playingArea.bounds.minDimension / gameState.areaSize.minDimension
+            let rescale = bounds.minDimension / gameState.areaSize.minDimension
             Logger.log("rescale is \(rescale)")
             for boxState in gameState.boxes {
                 let box = GridBox(origin: boxState.origin * rescale, size: cardSize, host: self)
                 box.name = boxState.name
                 box.owner = boxState.owner
                 box.kind = boxState.kind
-                playingArea.addSubview(box)
+                addSubview(box)
             }
             for cardState in gameState.cards {
                 let card = findAndFixCard(from: cardState, rescale: rescale)
                 // Ensure that the card has sufficient pixels overlapping the playing area so as to be easily seen
                 let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
-                let legal = playingArea.bounds.inset(by: insets)
+                let legal = bounds.inset(by: insets)
                 let actual = card.frame
                 if !actual.intersects(legal) {
                     var (newX, newY) = (actual.minX, actual.minY)
@@ -330,7 +217,7 @@ class ViewController: UIViewController {
                     }
                     card.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: card.frame.size)
                 }
-                playingArea.addSubview(card)
+                addSubview(card)
             }
             refreshBoxCounts()
         } else {
@@ -349,18 +236,18 @@ class ViewController: UIViewController {
             if maybeTakeHand(card) {
                 return
             }
-            if !thisPlayersTurn {
+            if !model.thisPlayersTurn {
                 Logger.log("Card tap when not this player's turn (ignored)")
                 return
             }
             if isCovered(card) {
-                playingArea.bringSubviewToFront(card)
+                bringSubviewToFront(card)
             } else if card.isFaceUp {
                 card.turnFaceDown(true)
             } else {
                 card.turnFaceUp(true)
             }
-            transmit()
+            model.transmitState()
         } else {
             Logger.logFatalError("Card gesture recognizer called with non-card")
         }
@@ -378,7 +265,7 @@ class ViewController: UIViewController {
         if maybeTakeHand(card) {
             return
         }
-        if !card.isPrivate && !thisPlayersTurn {
+        if !card.isPrivate && !model.thisPlayersTurn {
             Logger.log("Public card cannot be dragged when not the player's turn")
         }
         if let box = card.box, !box.mayBeModified {
@@ -387,27 +274,27 @@ class ViewController: UIViewController {
         }
         if recognizer.state == .began {
             let dragSet = findDragSet(card)
-            playingArea.bringSubviewToFront(card)
+            bringSubviewToFront(card)
             dragSet.forEach() {
-                playingArea.bringSubviewToFront($0)
+                bringSubviewToFront($0)
             }
             card.dragSet = dragSet
         }
         // In any active drag state we move all the cards in the drag set
-        let translation = recognizer.translation(in: playingArea)
+        let translation = recognizer.translation(in: self)
         // We allow the drag as long as the actual card is in the playing area and, if the player is not the active player,
         // as long as no part of it is in the public area.  We don't check the other cards, which may leave them off the screen,
         // although when the drag ends they will be adjusted individually.
         let primaryNewFrame = CGRect(origin: card.frame.origin + translation, size: card.frame.size)
-        if playingArea.bounds.contains(primaryNewFrame) &&
-                (thisPlayersTurn || primaryNewFrame.minY > publicArea.maxY - privateAreaCardOverlap) {
+        if bounds.contains(primaryNewFrame) &&
+                (model.thisPlayersTurn || primaryNewFrame.minY > publicArea.maxY - privateAreaCardOverlap) {
             for draggedCard in card.dragSet {
                 let newFrame = CGRect(origin: draggedCard.frame.origin + translation, size: card.frame.size)
                 draggedCard.frame = newFrame
                 // Mark card public or private
                 draggedCard.isPrivate = !publicArea.contains(draggedCard.frame.center)
            }
-           recognizer.setTranslation(CGPoint.zero, in: view)
+           recognizer.setTranslation(CGPoint.zero, in: self)
         }
         // At the end, we adjust the cards individually
         if recognizer.state == .ended {
@@ -435,15 +322,41 @@ class ViewController: UIViewController {
                 }
             }
             refreshBoxCounts()
-            transmit()
+            model.transmitState()
         }
     }
-
-    // Respond to touch of the end game button.  Shuts down the communicator, effectively removing the player from the game, and resets
-    // local game state for a fresh start.
-    @objc func endGameTouched() {
-        Logger.log("End game touched")
-        prepareNewGame()
+    
+    // Supply encoded form of the state of the view on request from the game handle
+    func encodeState(duringSetup: Bool) -> [UInt8] {
+        let encoder = CBOREncoder()
+        do {
+            if duringSetup {
+                let playingState = PlayingStateWithSetup(self)
+                return try [UInt8](encoder.encode(playingState))
+            } else {
+                let playingState = PlayingState(self)
+                return try [UInt8](encoder.encode(playingState))
+            }
+        } catch {
+            Logger.logFatalError("Error while encoding state: \(error)")
+        }
+    }
+    
+    // Accept new game state
+    func newPlayingState(_ data: [UInt8], duringSetup: Bool) -> Error? {
+        let decoder = CBORDecoder()
+        let newState: PlayingState
+        do {
+            if duringSetup {
+                newState = try decoder.decode(PlayingStateWithSetup.self, from: Data(data))
+            } else {
+                newState = try decoder.decode(PlayingState.self, from: Data(data))
+            }
+        } catch {
+            return error
+        }
+        doLayout(newState)
+        return nil
     }
 
     // Respond to long press.  A long press within a GridBox brings up the GridBoxMenu dialog to perform various actions
@@ -453,13 +366,14 @@ class ViewController: UIViewController {
     // one GridBox.
     @objc func longPressDetected(_ recognizer: UILongPressGestureRecognizer) {
         if recognizer.state == .ended {
-            let location = recognizer.location(in: playingArea)
+            let location = recognizer.location(in: self)
             if let box = boxViews.first(where:  { $0.frame.contains(location) }) {
-                guard let menu = GridBoxMenu(box) else {
-                    box.mayNotModify()
-                    return
-                }
-                Logger.logPresent(menu, host: self, animated: true)
+                // TODO figure out how we present modal dialogs in this environment
+//                guard let menu = GridBoxMenu(box) else {
+//                    box.mayNotModify()
+//                    return
+//                }
+//                Logger.logPresent(menu, host: self, animated: true)
             } else if publicArea.contains(location ){
                 attemptNewGridBox(location)
             } else {
@@ -467,34 +381,6 @@ class ViewController: UIViewController {
                 chooseGroupingInPrivateArea()
             }
         }
-    }
-
-    // Respond to touch of gameSetup button
-    @objc func gameSetupTouched() {
-        let dialog = GameSetupDialog()
-        Logger.logPresent(dialog, host: self, animated: false)
-    }
-
-    // Respond to touch of the players button.  Opens the dialog for choosing nearby versus remote, entering a group token for remote,
-    // nominating yourself as lead player, setting the number of players, etc.
-    @objc func playersTouched() {
-        // TODO this need not be part of this view at all
-    }
-
-    // Respond to touch of yield button.  Sends the GameState and advances the turn.
-    @objc func yieldTouched() {
-        Logger.log("Yield Touched")
-    }
-
-    // Respond to touch of help button.   Display help html file.
-    @objc func helpTouched() {
-        let helpControl = HelpController(helpPage: HelpFile, email: FeedbackEmail, returnText: ReturnText, appName: "AnyCards")
-        Logger.logPresent(helpControl, host: self, animated: true)
-    }
-    
-    // Respond to touch of the chat button.  Open the chat view
-    @objc func chatTouched() {
-        // TODO not needed here
     }
 
     // Other functions
@@ -516,14 +402,9 @@ class ViewController: UIViewController {
         let alert = UIAlertController(title: "Card Grouping", message: "How to drag cards in hand", preferredStyle: .alert)
         alert.addAction(groupAction)
         alert.addAction(ungroupAction)
-        Logger.logPresent(alert, host: self, animated: false)
+        // TODO modal dialogs
+//        Logger.logPresent(alert, host: self, animated: false)
     }
-    
-    // Decide whether chat button should be hidden or not
-    func setChatButtonVisibility() {
-        // TODO remove
-    }
-
 
     // Given a card, find all the other cards that cover it or that cover cards that cover it (transitive closure).
     // The original card plus the found others constitutes the "drag set" which is going to be dragged as a whole
@@ -642,11 +523,6 @@ class ViewController: UIViewController {
         }
     }
 
-    // Check whether this player is the the player whose turn it is and enable the End Turn button if so
-    private func checkTurnToPlay() {
-        yieldButton.isHidden = !thisPlayersTurn
-    }
-
     // Find a specific card from its card-state and adjust it to match the card state, possibly rescaling according to the current playingArea bounds
     private func findAndFixCard(from: CardState, rescale: CGFloat) -> Card {
         let card = cards[from.index]
@@ -663,7 +539,8 @@ class ViewController: UIViewController {
 
     // Indicate that a GridBox cannot be placed
     private func gridBoxFails() {
-        bummer(title: BadGridBoxTitle, message: BadGridBoxMessage, host: self)
+        // TODO modal dialogs and alerts
+//        bummer(title: BadGridBoxTitle, message: BadGridBoxMessage, host: self)
     }
 
     // Determine if a card is covered by another card
@@ -700,17 +577,18 @@ class ViewController: UIViewController {
     // Place a new GridBox into the playingArea after determining that it fits
     // Note: the GridBox should still be modifiable at this point since it is newly created.
     private func placeNewGridBox(_ gridBox: GridBox) {
-        playingArea.addSubview(gridBox)
-        playingArea.sendSubviewToBack(gridBox)
+        addSubview(gridBox)
+        sendSubviewToBack(gridBox)
         gridBox.maybeSnapUp(cardViews)
         gridBox.refreshCount()
         if gridBox.name == nil {
-            guard let menu = ModifyGridBox(gridBox) else {
-                // Should not happen
-                Logger.log("ModifyGridBox constructor failed in a context where it shouldn't have")
-                return
-            }
-            Logger.logPresent(menu, host: self, animated: true)
+            // TODO modal dialogs
+//            guard let menu = ModifyGridBox(gridBox) else {
+//                // Should not happen
+//                Logger.log("ModifyGridBox constructor failed in a context where it shouldn't have")
+//                return
+//            }
+//            Logger.logPresent(menu, host: self, animated: true)
         }
     }
 
@@ -719,22 +597,16 @@ class ViewController: UIViewController {
         Logger.log("Leader has sent setup information.  Orientation locked to \(landscape ? "landscape" : "portrait")")
         self.lockedToLandscape = landscape
         self.lockedToPortrait = !landscape
-        self.setNeedsUpdateOfSupportedInterfaceOrientations()
+        // TODO orientation locking needs attention
+ //       self.setNeedsUpdateOfSupportedInterfaceOrientations()
     }
 
-    // End current game and prepare a new one (responds to EndGame button and also to lost peer condition)
-    private func prepareNewGame() {
+    // Reset the playing state (called from gameHandle.reset() as appropriate)
+    func reset() {
         // Clean up former game
         lockedToLandscape = false
         lockedToPortrait = false
-        thisPlayer = 0
-        activePlayer = 0
-        playerLabels.forEach { $0.textColor = NormalTextColor }
-        unhide(playersButton)
-        hide(endGameButton, yieldButton)
-        players = []
-        chatButton.isHidden = true
-        // Set up new game
+        // Shuffle cards
         newShuffle()
     }
 
@@ -746,7 +618,7 @@ class ViewController: UIViewController {
     // Remove all Card and GridBox subviews (including cards in the hand area) from the playing area.
     // We do this when doing a complete layout (not in response to a received GameState, which typically only affects public cards).
     private func removeAllCardsAndBoxes() {
-        for subview in playingArea.subviews {
+        for subview in subviews {
             if subview is Card || subview is GridBox {
                 subview.removeFromSuperview()
             }
@@ -756,7 +628,7 @@ class ViewController: UIViewController {
     // Remove "public" Card and GridBox subviews from the playing area (leaving cards that are in the hand area).
     // We do this when receiving a new GameState, which will include public cards only.
     private func removePublicCardsAndBoxes() {
-        for subview in playingArea.subviews {
+        for subview in subviews {
             if subview is GridBox || (subview is Card && publicArea.contains(subview.center)) {
                 subview.removeFromSuperview()
             }
@@ -774,12 +646,12 @@ class ViewController: UIViewController {
 
     // Set up the public area and the hand area marker based on the current settings
     func setupPublicArea() {
-        if hasHands {
-            publicArea = playingArea.bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height * HandAreaExpansion, right: 0))
+        if gameHandle.hasHands {
+            publicArea = bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height * HandAreaExpansion, right: 0))
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
             unhide(handAreaMarker)
         } else {
-            publicArea = playingArea.bounds
+            publicArea = bounds
             hide(handAreaMarker)
         }
     }
@@ -792,16 +664,11 @@ class ViewController: UIViewController {
         cards.forEach { card in
             card.turnFaceDown()
             card.frame = CGRect(origin: deckOrigin, size: cardSize)
-            playingArea.addSubview(card)
+            addSubview(card)
         }
         let deckBox = GridBox(center: cards[0].center, size: cardSize, host: self)
         deckBox.name = MainDeckName
         deckBox.kind = .Deck
         placeNewGridBox(deckBox)
-    }
-
-    // Transmit GameState to the other players, either when just showing or when yielding
-    func transmit(activePlayer: Int? = nil) {
-        // TODO find replacement
     }
 }

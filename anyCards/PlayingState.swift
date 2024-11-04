@@ -16,42 +16,33 @@
 
 import UIKit
 
-// Represents the state of a game.  Transmitted between devices.   Also used to facilitate layout within a single device.
-class GameState : Codable, Equatable {
-    // Setup is only sent by the leader and only until the leader's first yield
-    struct Setup : Codable {
-        let deckType : PlayingDeckTemplate
-        let handArea : Bool
-    }
-    let setup : Setup?       // Setup information if present.
+// Represents the state of the playing view to be transmitted between devices.
+// Also used to facilitate layout within a single device.
+class PlayingState : Codable {
     let boxes:  [GridBoxState] // The positions and properties of the boxes
     let cards: [CardState]   // The positions and properties of the cards
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
 
-    // Initializer from local ViewController state.
+    // Initializer from local PlayingView state.
     //  - The 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
     // done when transmitting but is done when using the GameState locally to facilitate layout.
-    //  - The activePlayer argument is presented when yielding, since, in that case, the active player after yielding
-    // will differ from the active player before yielding.  The local activePlayer value cannot change until after
-    // transmission, since transmit is gated by thisPlayersTurn.
-    init(_ controller: ViewController, setup: Bool, includeHandArea: Bool = false) {
-        if setup {
-            self.setup = Setup(deckType: controller.deckType, handArea: controller.hasHands)
-        } else {
-            self.setup = nil
-        }
-        self.boxes = controller.playingArea.subviews.filter({$0 is GridBox}).map{ GridBoxState($0 as! GridBox) }
-        self.cards = controller.playingArea.subviews.filter({isEligibleCard($0, includeHandArea)}).map{ CardState($0 as! Card) }
-        self.areaSize = controller.playingArea.bounds.size
+    init(_ playingView: PlayingView, includeHandArea: Bool = false) {
+        self.boxes = playingView.subviews.filter({$0 is GridBox}).map{ GridBoxState($0 as! GridBox) }
+        self.cards = playingView.subviews.filter({isEligibleCard($0, includeHandArea)}).map{ CardState($0 as! Card) }
+        self.areaSize = playingView.bounds.size
     }
+}
 
-    // Conform to Equatable protocol
-    static func == (lhs: GameState, rhs: GameState) -> Bool {
-        return lhs.setup?.deckType.displayName == rhs.setup?.deckType.displayName
-        && lhs.setup?.handArea == rhs.setup?.handArea
-        && lhs.boxes == rhs.boxes
-        && lhs.cards == rhs.cards
-        && lhs.areaSize == rhs.areaSize
+class PlayingStateWithSetup: PlayingState {
+    let deckType: PlayingDeckTemplate
+    let hasHands: Bool
+    override init(_ playingView: PlayingView, includeHandArea: Bool = false) {
+        deckType = playingView.gameHandle.deckType
+        hasHands = playingView.gameHandle.hasHands
+        super.init(playingView, includeHandArea: includeHandArea)
+    }
+    required init(from decoder: any Decoder) throws {
+        fatalError("init(from:) has not been implemented")
     }
 }
 
@@ -62,7 +53,7 @@ fileprivate func isEligibleCard(_ maybe: UIView, _ privateOk: Bool) -> Bool {
 }
 
 // Represents the transmissable state unique to a Card
-final class CardState : Codable, Equatable {
+final class CardState : Codable {
     let origin : CGPoint
     var index : Int   // permit overwrite when reordering a restored game state used as a restored setup
     let faceUp : Bool
@@ -80,17 +71,10 @@ final class CardState : Codable, Equatable {
         origin = card.frame.origin
         isPrivate = card.isPrivate
     }
-
-    // Conform to Equatable protocol
-    static func == (lhs: CardState, rhs: CardState) -> Bool {
-        lhs.origin == rhs.origin
-        && lhs.index == rhs.index
-        && lhs.faceUp == rhs.faceUp
-    }
 }
 
 // Represents the transmissable state unique to a GridBox
-final class GridBoxState : Codable, Equatable {
+final class GridBoxState : Codable {
     let origin : CGPoint
     let name : String?
     let kind : GridBox.Kind
@@ -102,13 +86,5 @@ final class GridBoxState : Codable, Equatable {
         kind = box.kind
         owner = box.owner
         origin = box.frame.origin
-    }
-
-    // Conform to Equatable protocol
-    static func == (lhs: GridBoxState, rhs: GridBoxState) -> Bool {
-        lhs.origin == rhs.origin
-        && lhs.name == rhs.name
-        && lhs.kind == rhs.kind
-        && lhs.owner == rhs.owner
     }
 }

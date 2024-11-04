@@ -19,7 +19,7 @@ import AuerbachLook
 
 class SavedSetups : Codable {
     // The setups being stored persistently
-    var setups = Dictionary<String, GameState>()
+    var setups = Dictionary<String, PlayingState>()
 
     var setupNames: [String] {
         get {
@@ -27,7 +27,7 @@ class SavedSetups : Codable {
         }
     }
 
-    var first: (String, GameState)? {
+    var first: (String, PlayingState)? {
         get {
             return setups.first
         }
@@ -55,7 +55,7 @@ class SavedSetups : Codable {
     // Store a new entry (name, GameState) in the dictionary.  This may be protected against overwriting
     // depending on the third argument
     @discardableResult
-    func storeEntry(_ name: String, _ gameState: GameState, _ overwrite: Bool) -> Bool {
+    func storeEntry(_ name: String, _ gameState: PlayingState, _ overwrite: Bool) -> Bool {
         if !overwrite && setups[name] != nil {
             return false
         }
