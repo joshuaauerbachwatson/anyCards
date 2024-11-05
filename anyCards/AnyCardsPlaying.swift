@@ -16,6 +16,7 @@
 
 import SwiftUI
 import unigame
+import AuerbachLook
 
 // TODO this should handle the main playing view for AnyCards
 // Perhaps this is not SwiftUI View but rather an evolution of the old VIewController wrapped
@@ -24,14 +25,22 @@ struct AnyCardsPlaying: UIViewRepresentable {
     typealias UIViewType = PlayingView
 
     @Environment(UnigameModel.self) var model
-
-    func makeUIView(context: Context) -> PlayingView {
-        let gameHandle = model.gameHandle as! AnyCardsGameHandle
+    var gameHandle: AnyCardsGameHandle {
+        if let ans = model.gameHandle as? AnyCardsGameHandle {
+            return ans
+        }
+        Logger.logFatalError("Model does not have the right kind of gameHandle stored")
+    }
+    var playingView: PlayingView {
         if let playingView = gameHandle.mainPlayingView {
             return playingView
         }
         let playingView = PlayingView(model)
         gameHandle.mainPlayingView = playingView
+        return playingView
+    }
+
+    func makeUIView(context: Context) -> PlayingView {
         return playingView
     }
     func updateUIView(_ uiView: PlayingView, context: Context) {
@@ -41,4 +50,5 @@ struct AnyCardsPlaying: UIViewRepresentable {
 
 #Preview {
     AnyCardsPlaying()
+        .environment(UnigameModel(gameHandle: AnyCardsGameHandle()))
 }

@@ -17,6 +17,7 @@
 		281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */; };
 		285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 285FAA4D2C8243A1003A0460 /* AuerbachLook */; };
 		286629AE2CD9609800D10656 /* CBORCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 286629AD2CD9609800D10656 /* CBORCoding */; };
+		286629B02CDA619B00D10656 /* SetupControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629AF2CDA619B00D10656 /* SetupControls.swift */; };
 		28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */; };
 		28FE44842CC53A5100477C74 /* PlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44832CC53A5100477C74 /* PlayingView.swift */; };
 		28FE44862CC53CD200477C74 /* AnyCardsPlaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */; };
@@ -50,6 +51,7 @@
 		281EE38A2C4B10FE00750B72 /* launch-image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "launch-image.png"; sourceTree = SOURCE_ROOT; };
 		281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsGameHandle.swift; sourceTree = "<group>"; };
 		281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsSetup.swift; sourceTree = "<group>"; };
+		286629AF2CDA619B00D10656 /* SetupControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupControls.swift; sourceTree = "<group>"; };
 		28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsApp.swift; sourceTree = "<group>"; };
 		28FE44832CC53A5100477C74 /* PlayingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayingView.swift; sourceTree = "<group>"; };
 		28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsPlaying.swift; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				EE9028FC26DEDF7A00F87FF8 /* PlayingState.swift */,
 				28FE44832CC53A5100477C74 /* PlayingView.swift */,
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
+				286629AF2CDA619B00D10656 /* SetupControls.swift */,
 				EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */,
 				EE9028EC26DE962700F87FF8 /* Assets.xcassets */,
 				EE68816B29B7CFBF003F4831 /* anyCards.xcodeproj */,
@@ -189,7 +192,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastSwiftUpdateCheck = 1250;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 1610;
 				TargetAttributes = {
 					EE9028E426DE962400F87FF8 = {
 						CreatedOnToolsVersion = 12.5.1;
@@ -267,6 +270,7 @@
 				EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */,
 				281F052C2CC2F292002772D4 /* AnyCardsGameHandle.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* PlayingState.swift in Sources */,
+				286629B02CDA619B00D10656 /* SetupControls.swift in Sources */,
 				28FE44862CC53CD200477C74 /* AnyCardsPlaying.swift in Sources */,
 				EE90290D26DEDF7A00F87FF8 /* Player.swift in Sources */,
 				EE90290A26DEDF7A00F87FF8 /* GridBox.swift in Sources */,

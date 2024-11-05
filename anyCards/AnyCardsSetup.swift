@@ -15,14 +15,19 @@
  */
 
 import SwiftUI
+import unigame
 
-// TODO this should handle setup for AnyCards.
+// Handle setup for AnyCards.
 struct AnyCardsSetup: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            SetupControls()
+            AnyCardsPlaying()
+        }
     }
 }
 
 #Preview {
     AnyCardsSetup()
+        .environment(UnigameModel(gameHandle: AnyCardsGameHandle()))
 }
