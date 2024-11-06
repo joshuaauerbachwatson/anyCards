@@ -18,37 +18,27 @@ import SwiftUI
 import unigame
 import AuerbachLook
 
-// TODO this should handle the main playing view for AnyCards
-// Perhaps this is not SwiftUI View but rather an evolution of the old VIewController wrapped
-// in UIViewRepresentable or something like that.
+// The playing view for AnyCards uses UIViewRepresentable to incorporate code from
+// the older (UIKit) version of AnyCards.
 struct AnyCardsPlaying: UIViewRepresentable {
-    typealias UIViewType = PlayingView
+    typealias UIViewType = PlayingSurface
 
     @Environment(UnigameModel.self) var model
-    var gameHandle: AnyCardsGameHandle {
-        if let ans = model.gameHandle as? AnyCardsGameHandle {
-            return ans
-        }
-        Logger.logFatalError("Model does not have the right kind of gameHandle stored")
-    }
-    var playingView: PlayingView {
-        if let playingView = gameHandle.mainPlayingView {
-            return playingView
-        }
-        let playingView = PlayingView(model)
-        gameHandle.mainPlayingView = playingView
-        return playingView
-    }
+    @Environment(AnyCardsGameHandle.self) var gameHandle
 
-    func makeUIView(context: Context) -> PlayingView {
-        return playingView
+    func makeUIView(context: Context) -> PlayingSurface {
+        let playingSurface = PlayingSurface(model, gameHandle)
+        gameHandle.playingSurface = playingSurface
+        return playingSurface
     }
-    func updateUIView(_ uiView: PlayingView, context: Context) {
+    func updateUIView(_ uiView: PlayingSurface, context: Context) {
         uiView.update()
     }
 }
 
 #Preview {
+    let handle = AnyCardsGameHandle()
     AnyCardsPlaying()
-        .environment(UnigameModel(gameHandle: AnyCardsGameHandle()))
+        .environment(UnigameModel(gameHandle: handle))
+        .environment(handle)
 }

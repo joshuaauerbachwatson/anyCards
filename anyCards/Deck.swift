@@ -17,6 +17,8 @@
 import UIKit
 import AuerbachLook
 
+fileprivate let DeckTypeKey = "DeckType"
+
 // Represents all card decks (via a protocol) and the default deck (which implements the protocol).
 // Players do not have to use the same Deck implementation but do have to agree on the playing Card array,
 // which must be formed from the cards of a "source" Deck, either directly (standard 52 card deck with 0, 1, or 2 jokers)
@@ -38,7 +40,7 @@ protocol SourceDeck {
 }
 
 // Represents a set of instructions for creating a playing deck (as a [Card]) from the cards of a SourceDeck
-class PlayingDeckTemplate : Codable {
+class PlayingDeckTemplate : Codable, Hashable, Identifiable {
     // The number of times each card of the source deck should appear (would be 1 for a standard deck)
     let multiplier : Int
 
@@ -67,6 +69,51 @@ class PlayingDeckTemplate : Codable {
             return denom < 2 || denom > omitFrom2To
         }
         self.init(multiplier: multiplier, mask: mask, jokers: 0, displayName: displayName)
+    }
+    
+    // Conform to Equatable
+    static func == (lhs: PlayingDeckTemplate, rhs: PlayingDeckTemplate) -> Bool {
+        return
+            lhs.displayName == rhs.displayName &&
+            lhs.jokers == rhs.jokers &&
+            lhs.mask == rhs.mask &&
+            lhs.multiplier == rhs.multiplier
+    }
+    
+    // Conform to Hashable
+    func hash(into hasher: inout Hasher) {
+        displayName.hash(into: &hasher)
+    }
+ 
+    // Conform to Identifiable without using object identity
+    var id: String {
+        displayName
+    }
+    
+    // Save to UserDefaults
+    @discardableResult
+    func save() -> PlayingDeckTemplate {
+        let encoder = JSONEncoder()
+        do {
+            let encoded = try encoder.encode(self)
+            UserDefaults.standard.set(encoded, forKey: DeckTypeKey)
+        } catch let error {
+            Logger.log("Error encoding playing deck information to UserDefaults: " + error.localizedDescription)
+        }
+        return self // for convenience
+    }
+    
+    // Load from UserDefaults
+    class func load() -> PlayingDeckTemplate? {
+        if let data = UserDefaults.standard.data(forKey: DeckTypeKey) {
+            let decoder = JSONDecoder()
+            do {
+                return try decoder.decode(PlayingDeckTemplate.self, from: data)
+            } catch let error {
+                Logger.log("Error decoding deck type information from UserDefaults: " + error.localizedDescription)
+            }
+        }
+        return nil // Either wasn't there or was found invalid by decoder
     }
 }
 

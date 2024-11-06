@@ -26,7 +26,7 @@ class PlayingState : Codable {
     // Initializer from local PlayingView state.
     //  - The 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
     // done when transmitting but is done when using the GameState locally to facilitate layout.
-    init(_ playingView: PlayingView, includeHandArea: Bool = false) {
+    init(_ playingView: PlayingSurface, includeHandArea: Bool = false) {
         self.boxes = playingView.subviews.filter({$0 is GridBox}).map{ GridBoxState($0 as! GridBox) }
         self.cards = playingView.subviews.filter({isEligibleCard($0, includeHandArea)}).map{ CardState($0 as! Card) }
         self.areaSize = playingView.bounds.size
@@ -36,7 +36,7 @@ class PlayingState : Codable {
 class PlayingStateWithSetup: PlayingState {
     let deckType: PlayingDeckTemplate
     let hasHands: Bool
-    override init(_ playingView: PlayingView, includeHandArea: Bool = false) {
+    override init(_ playingView: PlayingSurface, includeHandArea: Bool = false) {
         deckType = playingView.gameHandle.deckType
         hasHands = playingView.gameHandle.hasHands
         super.init(playingView, includeHandArea: includeHandArea)

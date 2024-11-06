@@ -18,49 +18,29 @@ import Foundation
 import unigame
 import SwiftUI
 import AuerbachLook
+import Observation
 
-fileprivate let DeckTypeKey = "DeckType"
 fileprivate let HasHandsKey = "HasHands"
 
+// This class is both the `GameHandle` for AnyCards and also its model object.
+// It goes into the environment as an @Observable, alongside the UnigameModel.
+@Observable
 class AnyCardsGameHandle: GameHandle {
-    // Settings stored permanently
 
-    var hasHands : Bool {
-        get {
-            return UserDefaults.standard.bool(forKey: HasHandsKey)
-        }
-        set {
-            UserDefaults.standard.set(newValue, forKey: HasHandsKey)
+    // Settings stored permanently
+    var hasHands : Bool = UserDefaults.standard.bool(forKey: HasHandsKey) {
+        didSet {
+            UserDefaults.standard.set(hasHands, forKey: HasHandsKey)
         }
     }
 
-    var deckType  : PlayingDeckTemplate {
-        get {
-            if let data = UserDefaults.standard.data(forKey: DeckTypeKey) {
-                let decoder = JSONDecoder()
-                do {
-                    return try decoder.decode(PlayingDeckTemplate.self, from: data)
-                } catch let error {
-                    Logger.log("Error decoding deck type information from UserDefaults: " + error.localizedDescription)
-                }
-            }
-            // Never set or the current value didn't decode correctly (treat the same as 'never set')
-            let ans = Decks.available[0]  // The first available deck is the implicit default (by convention, this is a standard deck)
-            self.deckType = ans // invokes setter
-            return ans
-        }
-        set {
-            let encoder = JSONEncoder()
-            do {
-                let encoded = try encoder.encode(newValue)
-                UserDefaults.standard.set(encoded, forKey: DeckTypeKey)
-            } catch let error {
-                Logger.log("Error encoding NonStandardDeck information from UserDefaults: " + error.localizedDescription)
-            }
+    var deckType  : PlayingDeckTemplate = PlayingDeckTemplate.load() ?? Decks.available[0].save() {
+        didSet {
+            deckType.save()
         }
     }
     
-    // Tolerate a broad range of players (including solitaire).  Conforms toe GameHandle
+    // Tolerate a broad range of players (including solitaire).  Conforms to GameHandle
     var numPlayerRange: ClosedRange<Int> = 1...6
 
     // The name of this app (conforms to GameHandle)
@@ -68,36 +48,33 @@ class AnyCardsGameHandle: GameHandle {
     
     // The TokenProvider (conforms to GameHandle)
     var tokenProvider: any unigame.TokenProvider = Auth0TokenProvider()
-    
-    var mainPlayingView: PlayingView? = nil
+
+    // The playing surface view, which fills the unigame "playing" view and is also part of the unigame "setup" view.
+    var playingSurface: PlayingSurface!
     
     // Conforms to GameHandle
     func reset() {
         // TODO more may be needed here
-        mainPlayingView?.reset()
+        playingSurface?.reset()
     }
     
     // Conforms to GameHandle
     func stateChanged(_ data: [UInt8], duringSetup: Bool) -> (any Error)? {
-        if let playing = mainPlayingView {
-            return playing.newPlayingState(data, duringSetup: duringSetup)
-        }
-        Logger.logFatalError("The main playing view was never initialized")
+        return playingSurface.newPlayingState(data, duringSetup: duringSetup)
     }
     
     // Conforms to GameHandle
     func encodeState(duringSetup: Bool) -> [UInt8] {
-        if let playing = mainPlayingView {
-            return playing.encodeState(duringSetup: duringSetup)
-        }
-        Logger.logFatalError("The main playing view was never initialized")
+        return playingSurface.encodeState(duringSetup: duringSetup)
     }
     
-    // TODO can we get away with single instances of the views (as below)?
+    // Conforms to GameHandle
+    var setupView: (any View)? {
+        AnyCardsSetup()
+    }
     
     // Conforms to GameHandle
-    var setupView: (any View)? = AnyCardsSetup()
-    
-    // Conforms to GameHandle
-    var playingView: any View = AnyCardsPlaying()
+    var playingView: any View {
+        AnyCardsPlaying()
+    }
 }

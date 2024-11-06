@@ -110,7 +110,7 @@ class GridBox : UIView {
     let countLabel : UILabel
     
     // The PlayingView that this GridBox belongs to
-    let host: PlayingView
+    let host: PlayingSurface
 
     // The cards that are currently held by this GridBox.
     var cards : [Card] {
@@ -128,7 +128,7 @@ class GridBox : UIView {
     }
 
     // Make a GridBox from frame information, provided as an origin and a size
-    init(origin: CGPoint, size: CGSize, host: PlayingView) {
+    init(origin: CGPoint, size: CGSize, host: PlayingSurface) {
         nameLabel = UILabel()
         nameLabel.backgroundColor = LabelBackground
         nameLabel.textAlignment = .center
@@ -157,7 +157,7 @@ class GridBox : UIView {
     }
 
     // Make a GridBox from frame information, provided as a center and a size
-    convenience init(center: CGPoint, size: CGSize, host: PlayingView) {
+    convenience init(center: CGPoint, size: CGSize, host: PlayingSurface) {
         let adjust = CGPoint(x: size.width / 2, y: size.height / 2)
         self.init(origin: center - adjust, size: size, host: host)
     }

@@ -18,18 +18,19 @@ import UIKit
 import AuerbachLook
 import unigame
 import CBORCoding
+import SwiftUI
 
-// The playing view for the AnyCards Game app
-// Although AnyCards uses the unigame framework, which is SwiftUI-based, this view had much existing code and is
-// retained as a UIKit view.
-class PlayingView: UIView {
+// The playing surface view for the AnyCards Game app.
+// Although AnyCards uses the unigame framework, which is SwiftUI-based, this view had much existing code from before
+// the dependency on unigame was introduced.  So, it is retained as a UIKit view.
+class PlayingSurface: UIView {
     let model: UnigameModel
-    var gameHandle: AnyCardsGameHandle {
-        model.gameHandle as! AnyCardsGameHandle
-    }
-    init(_ model: UnigameModel) {
-         self.model = model
-         super.init(frame: CGRect.zero)
+    let gameHandle: AnyCardsGameHandle
+
+    init(_ model: UnigameModel, _ gameHandle: AnyCardsGameHandle) {
+        self.model = model
+        self.gameHandle = gameHandle
+        super.init(frame: CGRect.zero)
         self.cards = makePlayingDeck(Deck, gameHandle.deckType)
    }
        

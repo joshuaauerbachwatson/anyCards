@@ -17,6 +17,7 @@
 import Foundation
 import AuerbachLook
 
+// Keeps the game setups being stored persistently
 class SavedSetups : Codable {
     // The setups being stored persistently
     var setups = Dictionary<String, PlayingState>()
