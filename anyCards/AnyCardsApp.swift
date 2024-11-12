@@ -19,12 +19,13 @@ import unigame
 
 @main
 struct AnyCardsApp: App {
-    @State private var model = unigame.UnigameModel(gameHandle: AnyCardsGameHandle())
- 
+    @State private var surface = PlayingSurface()
+    
     var body: some Scene {
         WindowGroup {
             unigame.ContentView()
-                .environment(model)
+                .environment(surface.model)
+                .environment(surface.gameHandle)
         }
     }
 }

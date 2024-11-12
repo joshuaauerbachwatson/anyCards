@@ -70,9 +70,13 @@ var savedSetups: SavedSetups = {
     let storageFile = getDocDirectory().appendingPathComponent(SavedSetupsFile)
     do {
         let archived = try Data(contentsOf: storageFile)
-        Logger.log("savedSetups loaded from disk: \(String(bytes: archived, encoding: .utf8) ?? "")")
+        Logger.log("savedSetups loaded from disk")
         let decoder = JSONDecoder()
         let ans = try decoder.decode(SavedSetups.self, from: archived)
+        Logger.log("\(ans.setups.count) setups found")
+        for setup in ans.setups {
+            Logger.log(" \(setup.0)")
+        }
         return ans
     } catch {
         Logger.log("Saved setups not found, a new instance was created")

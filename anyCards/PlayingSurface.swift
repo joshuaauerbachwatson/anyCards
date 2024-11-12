@@ -23,14 +23,17 @@ import SwiftUI
 // The playing surface view for the AnyCards Game app.
 // Although AnyCards uses the unigame framework, which is SwiftUI-based, this view had much existing code from before
 // the dependency on unigame was introduced.  So, it is retained as a UIKit view.
+// Because it holds references to both the UnigameModel and the AnyCardsGameHandle, we treat it as the root object
+// when instantiating the app.
 class PlayingSurface: UIView {
     let model: UnigameModel
     let gameHandle: AnyCardsGameHandle
 
-    init(_ model: UnigameModel, _ gameHandle: AnyCardsGameHandle) {
-        self.model = model
-        self.gameHandle = gameHandle
+    init() {
+        self.gameHandle = AnyCardsGameHandle()
+        self.model = UnigameModel(gameHandle: gameHandle)
         super.init(frame: CGRect.zero)
+        self.gameHandle.playingSurface = self
         self.cards = makePlayingDeck(Deck, gameHandle.deckType)
    }
        
@@ -113,6 +116,11 @@ class PlayingSurface: UIView {
     // ending up there.
     var privateAreaCardOverlap: CGFloat {
         return cardSize.height / 5
+    }
+    
+    // "The" deck for this playing surface
+    var deck: GridBox? {
+        boxViews.first(where: {$0.name == MainDeckName})
     }
 
     // External interface
@@ -326,7 +334,51 @@ class PlayingSurface: UIView {
             model.transmitState()
         }
     }
-    
+ 
+    // Function to perform a deal
+    func deal(hands: Int, cards: Int, kind: TargetKind, from box: GridBox) {
+        let step = dealingArea.width / hands
+        let start = (step - cardSize.width) / 2
+        var origin = CGPoint(x: dealingArea.minX + start, y: dealingArea.minY)
+        var dealt = [GridBox]()
+        for i in 0..<hands {
+            let hand = GridBox(origin: origin, size: box.snapFrame.size, host: self)
+            hand.kind = kind.boxKind
+            hand.owner = kind.isOwned ? i : GridBox.Unowned
+            dealt.append(hand)
+            origin.x += step
+            addSubview(hand)
+            hand.name = kind.isOwned ? model.getPlayer(index: i) : "\(i)"
+        }
+        var animations = [()->Void]()
+        for _ in 0..<cards {
+            for hand in dealt {
+                animations.append(makeOneCardDealFunction(hand, from: box))
+            }
+        }
+        runAnimationSequence(animations) {
+            if kind == .Piles {
+                for hand in dealt {
+                    hand.removeFromSuperview()
+                }
+            }
+            self.model.transmitSetup()
+        }
+    }
+
+    // Make an animation function for dealing single card to a specific hand
+    private func makeOneCardDealFunction(_ hand: GridBox, from: GridBox) -> ()->Void {
+        func once() {
+            UIView.animate(withDuration: DealCardDuration) {
+                hand.snapUp(from.cards[0])
+                hand.refreshCount()
+                from.refreshCount()
+            }
+        }
+        return once
+    }
+
+
     // Supply encoded form of the state of the view on request from the game handle
     func encodeState(duringSetup: Bool) -> [UInt8] {
         let encoder = CBOREncoder()

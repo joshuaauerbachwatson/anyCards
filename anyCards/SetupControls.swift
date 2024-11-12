@@ -15,6 +15,14 @@ struct SetupControls: View {
     
     @State private var currentSetup: String? = savedSetups.first?.0
     @State private var showDealDialog: Bool = false
+
+    var surface: PlayingSurface {
+        gameHandle.playingSurface
+    }
+    
+    var deck: GridBox? {
+        surface.deck
+    }
     
     var body: some View {
         @Bindable var gameHandle = gameHandle
@@ -45,8 +53,11 @@ struct SetupControls: View {
             }
             HStack {
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                    // TODO open the deal dialog here
+                    showDealDialog = true
                 }.buttonStyle(.borderedProminent)
+                    .popover(isPresented: $showDealDialog) {
+                        DealDialog(box: deck!)
+                    }.disabled(deck == nil || !surface.canDeal)
                 Spacer()
                 Button("Save", systemImage: "square.and.arrow.down.fill") {
                     // TODO save the current setup here
@@ -67,8 +78,8 @@ struct SetupControls: View {
 }
 
 #Preview {
-    let handle = AnyCardsGameHandle()
+    let surface = PlayingSurface()
     SetupControls()
-        .environment(UnigameModel(gameHandle: handle))
-        .environment(handle)
+        .environment(surface.model)
+        .environment(surface.gameHandle)
 }

@@ -17,6 +17,7 @@
 		285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 285FAA4D2C8243A1003A0460 /* AuerbachLook */; };
 		286629AE2CD9609800D10656 /* CBORCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 286629AD2CD9609800D10656 /* CBORCoding */; };
 		286629B02CDA619B00D10656 /* SetupControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629AF2CDA619B00D10656 /* SetupControls.swift */; };
+		286629B22CDEAB6100D10656 /* DealDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629B12CDEAB6100D10656 /* DealDialog.swift */; };
 		28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */; };
 		28FE44842CC53A5100477C74 /* PlayingSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44832CC53A5100477C74 /* PlayingSurface.swift */; };
 		28FE44862CC53CD200477C74 /* AnyCardsPlaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */; };
@@ -40,6 +41,7 @@
 		281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsGameHandle.swift; sourceTree = "<group>"; };
 		281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsSetup.swift; sourceTree = "<group>"; };
 		286629AF2CDA619B00D10656 /* SetupControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupControls.swift; sourceTree = "<group>"; };
+		286629B12CDEAB6100D10656 /* DealDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DealDialog.swift; sourceTree = "<group>"; };
 		28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsApp.swift; sourceTree = "<group>"; };
 		28FE44832CC53A5100477C74 /* PlayingSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayingSurface.swift; sourceTree = "<group>"; };
 		28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsPlaying.swift; sourceTree = "<group>"; };
@@ -111,6 +113,7 @@
 				280065C42BD962E1003A520D /* Auth0TokenProvider.swift */,
 				EE90290026DEDF7A00F87FF8 /* Card.swift */,
 				EE90290126DEDF7A00F87FF8 /* Constants.swift */,
+				286629B12CDEAB6100D10656 /* DealDialog.swift */,
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
@@ -223,6 +226,7 @@
 				28FE44842CC53A5100477C74 /* PlayingSurface.swift in Sources */,
 				EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */,
 				EE90291326DEDF7A00F87FF8 /* Deck.swift in Sources */,
+				286629B22CDEAB6100D10656 /* DealDialog.swift in Sources */,
 				EE90290F26DEDF7A00F87FF8 /* Card.swift in Sources */,
 				281F052C2CC2F292002772D4 /* AnyCardsGameHandle.swift in Sources */,
 				EE90290B26DEDF7A00F87FF8 /* PlayingState.swift in Sources */,

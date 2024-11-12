@@ -27,9 +27,7 @@ struct AnyCardsPlaying: UIViewRepresentable {
     @Environment(AnyCardsGameHandle.self) var gameHandle
 
     func makeUIView(context: Context) -> PlayingSurface {
-        let playingSurface = PlayingSurface(model, gameHandle)
-        gameHandle.playingSurface = playingSurface
-        return playingSurface
+        return gameHandle.playingSurface
     }
     func updateUIView(_ uiView: PlayingSurface, context: Context) {
         uiView.update()
@@ -37,8 +35,8 @@ struct AnyCardsPlaying: UIViewRepresentable {
 }
 
 #Preview {
-    let handle = AnyCardsGameHandle()
+    let surface = PlayingSurface()
     AnyCardsPlaying()
-        .environment(UnigameModel(gameHandle: handle))
-        .environment(handle)
+        .environment(surface.model)
+        .environment(surface.gameHandle)
 }

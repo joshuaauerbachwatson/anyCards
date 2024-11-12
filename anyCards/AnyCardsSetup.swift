@@ -28,8 +28,8 @@ struct AnyCardsSetup: View {
 }
 
 #Preview {
-    let handle = AnyCardsGameHandle()
+    let surface = PlayingSurface()
     AnyCardsSetup()
-        .environment(UnigameModel(gameHandle: handle))
-        .environment(handle)
+        .environment(surface.model)
+        .environment(surface.gameHandle)
 }
