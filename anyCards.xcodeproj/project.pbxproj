@@ -14,10 +14,10 @@
 		281F052A2CC2E3FB002772D4 /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 281F05292CC2E3FB002772D4 /* Auth0 */; };
 		281F052C2CC2F292002772D4 /* AnyCardsGameHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */; };
 		281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */; };
-		285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 285FAA4D2C8243A1003A0460 /* AuerbachLook */; };
 		286629AE2CD9609800D10656 /* CBORCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 286629AD2CD9609800D10656 /* CBORCoding */; };
 		286629B02CDA619B00D10656 /* SetupControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629AF2CDA619B00D10656 /* SetupControls.swift */; };
 		286629B22CDEAB6100D10656 /* DealDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629B12CDEAB6100D10656 /* DealDialog.swift */; };
+		28D17EFB2CE39D9100CDFBFF /* SavedSetupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D17EFA2CE39D9100CDFBFF /* SavedSetupsView.swift */; };
 		28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */; };
 		28FE44842CC53A5100477C74 /* PlayingSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44832CC53A5100477C74 /* PlayingSurface.swift */; };
 		28FE44862CC53CD200477C74 /* AnyCardsPlaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */; };
@@ -42,6 +42,7 @@
 		281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsSetup.swift; sourceTree = "<group>"; };
 		286629AF2CDA619B00D10656 /* SetupControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupControls.swift; sourceTree = "<group>"; };
 		286629B12CDEAB6100D10656 /* DealDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DealDialog.swift; sourceTree = "<group>"; };
+		28D17EFA2CE39D9100CDFBFF /* SavedSetupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSetupsView.swift; sourceTree = "<group>"; };
 		28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsApp.swift; sourceTree = "<group>"; };
 		28FE44832CC53A5100477C74 /* PlayingSurface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayingSurface.swift; sourceTree = "<group>"; };
 		28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsPlaying.swift; sourceTree = "<group>"; };
@@ -68,7 +69,6 @@
 			files = (
 				286629AE2CD9609800D10656 /* CBORCoding in Frameworks */,
 				281F052A2CC2E3FB002772D4 /* Auth0 in Frameworks */,
-				285FAA4E2C8243A1003A0460 /* AuerbachLook in Frameworks */,
 				281F05272CC2E35B002772D4 /* unigame in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -76,6 +76,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		28D17EFD2CE79B2500CDFBFF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		EE68816C29B7CFBF003F4831 /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
@@ -86,6 +93,7 @@
 			children = (
 				281EE3872C4B101400750B72 /* LaunchScreen.storyboard */,
 				EE9028E726DE962400F87FF8 /* anyCards */,
+				28D17EFD2CE79B2500CDFBFF /* Frameworks */,
 				EE9028E626DE962400F87FF8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -121,6 +129,7 @@
 				28FE44832CC53A5100477C74 /* PlayingSurface.swift */,
 				EE71CA5F29E448F900BEC774 /* SavedSetups.swift */,
 				286629AF2CDA619B00D10656 /* SetupControls.swift */,
+				28D17EFA2CE39D9100CDFBFF /* SavedSetupsView.swift */,
 				EE9028FF26DEDF7A00F87FF8 /* Assets.xcassets */,
 				EE9028EC26DE962700F87FF8 /* Assets.xcassets */,
 				EE68816B29B7CFBF003F4831 /* anyCards.xcodeproj */,
@@ -145,7 +154,6 @@
 			);
 			name = anyCards;
 			packageProductDependencies = (
-				285FAA4D2C8243A1003A0460 /* AuerbachLook */,
 				281F05262CC2E35B002772D4 /* unigame */,
 				281F05292CC2E3FB002772D4 /* Auth0 */,
 				286629AD2CD9609800D10656 /* CBORCoding */,
@@ -180,7 +188,6 @@
 			);
 			mainGroup = EE9028DC26DE962400F87FF8;
 			packageReferences = (
-				281BE8ED2C7BCBB100A7CB5B /* XCRemoteSwiftPackageReference "auerbachLook" */,
 				281F05252CC2E35B002772D4 /* XCRemoteSwiftPackageReference "unigame" */,
 				281F05282CC2E3FB002772D4 /* XCRemoteSwiftPackageReference "Auth0" */,
 				286629AC2CD9609800D10656 /* XCRemoteSwiftPackageReference "CBORCoding" */,
@@ -222,6 +229,7 @@
 			files = (
 				281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */,
 				280065C52BD962E1003A520D /* Auth0TokenProvider.swift in Sources */,
+				28D17EFB2CE39D9100CDFBFF /* SavedSetupsView.swift in Sources */,
 				28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */,
 				28FE44842CC53A5100477C74 /* PlayingSurface.swift in Sources */,
 				EE71CA6029E448F900BEC774 /* SavedSetups.swift in Sources */,
@@ -457,14 +465,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		281BE8ED2C7BCBB100A7CB5B /* XCRemoteSwiftPackageReference "auerbachLook" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/joshuaauerbachwatson/auerbachLook";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.21;
-			};
-		};
 		281F05252CC2E35B002772D4 /* XCRemoteSwiftPackageReference "unigame" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/joshuaauerbachwatson/unigame.git";
@@ -501,10 +501,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 281F05282CC2E3FB002772D4 /* XCRemoteSwiftPackageReference "Auth0" */;
 			productName = Auth0;
-		};
-		285FAA4D2C8243A1003A0460 /* AuerbachLook */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = AuerbachLook;
 		};
 		286629AD2CD9609800D10656 /* CBORCoding */ = {
 			isa = XCSwiftPackageProductDependency;

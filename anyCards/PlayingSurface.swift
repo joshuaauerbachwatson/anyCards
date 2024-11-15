@@ -30,11 +30,17 @@ class PlayingSurface: UIView {
     let gameHandle: AnyCardsGameHandle
 
     init() {
+        Logger.log("A new playing surface is being constructed")
         self.gameHandle = AnyCardsGameHandle()
+        Logger.log("AnyCardsGameHandle has been created")
         self.model = UnigameModel(gameHandle: gameHandle)
+        Logger.log("Unigame model has been created")
         super.init(frame: CGRect.zero)
+        Logger.log("Playing surface init has been run")
         self.gameHandle.playingSurface = self
+        Logger.log("Constructed circular reference between PlayingSurface and AnyCardsGemeHandle")
         self.cards = makePlayingDeck(Deck, gameHandle.deckType)
+        Logger.log("PlayingSurface init has run to completion")
    }
        
     required init?(coder: NSCoder) {
@@ -382,14 +388,12 @@ class PlayingSurface: UIView {
     // Supply encoded form of the state of the view on request from the game handle
     func encodeState(duringSetup: Bool) -> [UInt8] {
         let encoder = CBOREncoder()
+        let playingState = PlayingState(self)
+        if duringSetup {
+            playingState.addSetupInfo(deckType: gameHandle.deckType, hasHands: gameHandle.hasHands)
+                 }
         do {
-            if duringSetup {
-                let playingState = PlayingStateWithSetup(self)
-                return try [UInt8](encoder.encode(playingState))
-            } else {
-                let playingState = PlayingState(self)
-                return try [UInt8](encoder.encode(playingState))
-            }
+            return try [UInt8](encoder.encode(playingState))
         } catch {
             Logger.logFatalError("Error while encoding state: \(error)")
         }
@@ -400,13 +404,12 @@ class PlayingSurface: UIView {
         let decoder = CBORDecoder()
         let newState: PlayingState
         do {
-            if duringSetup {
-                newState = try decoder.decode(PlayingStateWithSetup.self, from: Data(data))
-            } else {
-                newState = try decoder.decode(PlayingState.self, from: Data(data))
-            }
+            newState = try decoder.decode(PlayingState.self, from: Data(data))
         } catch {
             return error
+        }
+        if !duringSetup {
+            newState.setup = nil
         }
         doLayout(newState)
         return nil
@@ -708,6 +711,24 @@ class PlayingSurface: UIView {
             hide(handAreaMarker)
         }
     }
+
+    // Restore a saved game state.  Note that saved game states must include setup info.
+    func restoreGameState(_ gameState: PlayingState) {
+        guard let setup = gameState.setup else { Logger.logFatalError("game state saved without setup") }
+        gameHandle.deckType = setup.deckType
+        gameHandle.hasHands = setup.hasHands
+        cards = makePlayingDeck(Deck, gameHandle.deckType)
+        setupPublicArea()
+        removePublicCardsAndBoxes()
+        // Randomize the cards in the restored state (leaving grid boxes alone)
+        var newIndices = shuffle(Array<Int>(0..<gameState.cards.count))
+        for card in gameState.cards {
+            card.index = newIndices.removeFirst()
+        }
+        doLayout(gameState)
+        model.transmitSetup()
+    }
+
 
     // Shuffle cards and form deck.  Add a GridBox to hold the deck and place everything on the playingArea
     private func shuffleAndPlace() {

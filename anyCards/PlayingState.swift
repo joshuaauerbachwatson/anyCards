@@ -16,14 +16,20 @@
 
 import UIKit
 
+struct SetupInfo: Codable {
+    let deckType: PlayingDeckTemplate
+    let hasHands: Bool
+}
+
 // Represents the state of the playing view to be transmitted between devices.
 // Also used to facilitate layout within a single device.
 class PlayingState : Codable {
     let boxes:  [GridBoxState] // The positions and properties of the boxes
     let cards: [CardState]   // The positions and properties of the cards
     let areaSize : CGSize    // The size of the playing area of the transmitting player (for rescaling with unlike-sized devices)
-
-    // Initializer from local PlayingView state.
+    var setup: SetupInfo? = nil // The setup information, only present during the setup phase
+    
+    // Initializer from local PlayingView state.  Does not include setup info.
     //  - The 'includeHandArea' flag is presented when the items should include cards in the hand area.  This is _never_
     // done when transmitting but is done when using the GameState locally to facilitate layout.
     init(_ playingView: PlayingSurface, includeHandArea: Bool = false) {
@@ -31,18 +37,10 @@ class PlayingState : Codable {
         self.cards = playingView.subviews.filter({isEligibleCard($0, includeHandArea)}).map{ CardState($0 as! Card) }
         self.areaSize = playingView.bounds.size
     }
-}
 
-class PlayingStateWithSetup: PlayingState {
-    let deckType: PlayingDeckTemplate
-    let hasHands: Bool
-    override init(_ playingView: PlayingSurface, includeHandArea: Bool = false) {
-        deckType = playingView.gameHandle.deckType
-        hasHands = playingView.gameHandle.hasHands
-        super.init(playingView, includeHandArea: includeHandArea)
-    }
-    required init(from decoder: any Decoder) throws {
-        fatalError("init(from:) has not been implemented")
+    // Adds setup info
+    func addSetupInfo(deckType: PlayingDeckTemplate, hasHands: Bool) {
+        self.setup = SetupInfo(deckType: deckType, hasHands: hasHands)
     }
 }
 

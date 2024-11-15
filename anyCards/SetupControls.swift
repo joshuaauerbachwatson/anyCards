@@ -13,7 +13,6 @@ struct SetupControls: View {
     @Environment(UnigameModel.self) var model
     @Environment(AnyCardsGameHandle.self) var gameHandle
     
-    @State private var currentSetup: String? = savedSetups.first?.0
     @State private var showDealDialog: Bool = false
 
     var surface: PlayingSurface {
@@ -28,30 +27,16 @@ struct SetupControls: View {
         @Bindable var gameHandle = gameHandle
         VStack {
             HStack {
-                VStack {
-                    Text("Deck Type").bold()
-                    Picker("Deck Type", selection: $gameHandle.deckType) {
-                        ForEach(Decks.available) { deck in
-                            Text(deck.displayName).tag(deck)
-                        }
+                Text("Deck Type").bold()
+                Picker("Deck Type", selection: $gameHandle.deckType) {
+                    ForEach(Decks.available) { deck in
+                        Text(deck.displayName).tag(deck)
                     }
                 }
                 Spacer()
                 Toggle("Hand area", isOn: $gameHandle.hasHands)
                     .fixedSize()
-                if currentSetup != nil {
-                    Spacer()
-                    VStack {
-                        Text("Saved Setups").bold()
-                        Picker("Saved Setups", selection: $currentSetup) {
-                            ForEach(savedSetups.setupNames, id: \.self) { setup in
-                                Text(setup).tag(setup)
-                            }
-                        }
-                    }
-                }
-            }
-            HStack {
+                Spacer()
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
                     showDealDialog = true
                 }.buttonStyle(.borderedProminent)
@@ -59,19 +44,11 @@ struct SetupControls: View {
                         DealDialog(box: deck!)
                     }.disabled(deck == nil || !surface.canDeal)
                 Spacer()
-                Button("Save", systemImage: "square.and.arrow.down.fill") {
-                    // TODO save the current setup here
-                }.buttonStyle(.borderedProminent)
-                Spacer()
-                Button("Restore", systemImage: "square.and.arrow.up.fill") {
-                    // TODO use the saved setup from the picker
-                }.buttonStyle(.borderedProminent)
-                    .disabled(currentSetup == nil)
-                Spacer()
                 Button("Reset", systemImage: "clear") {
                     // TODO Perform reset here
                 }.buttonStyle(.borderedProminent)
             }
+            SavedSetupsView()
         }.padding().border(.black, width: 2)
 
     }

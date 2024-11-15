@@ -24,7 +24,7 @@ class SavedSetups : Codable {
 
     var setupNames: [String] {
         get {
-            return setups.keys.map { $0 } // Why the vacuous map is needed is quite unclear ... compiler bug?
+            return setups.keys.map { String($0) } // Surprisingly, the type of setups.keys is not [String]
         }
     }
 
@@ -64,22 +64,22 @@ class SavedSetups : Codable {
         save()
         return true
     }
-}
-
-var savedSetups: SavedSetups = {
-    let storageFile = getDocDirectory().appendingPathComponent(SavedSetupsFile)
-    do {
-        let archived = try Data(contentsOf: storageFile)
-        Logger.log("savedSetups loaded from disk")
-        let decoder = JSONDecoder()
-        let ans = try decoder.decode(SavedSetups.self, from: archived)
-        Logger.log("\(ans.setups.count) setups found")
-        for setup in ans.setups {
-            Logger.log(" \(setup.0)")
+    
+    class func load() -> SavedSetups {
+        let storageFile = getDocDirectory().appendingPathComponent(SavedSetupsFile)
+        do {
+            let archived = try Data(contentsOf: storageFile)
+            Logger.log("savedSetups loaded from disk")
+            let decoder = JSONDecoder()
+            let ans = try decoder.decode(SavedSetups.self, from: archived)
+            Logger.log("\(ans.setups.count) setups found")
+            for setup in ans.setups {
+                Logger.log(" \(setup.0)")
+            }
+            return ans
+        } catch {
+            Logger.log("Saved setups not found, a new instance was created")
+            return SavedSetups()
         }
-        return ans
-    } catch {
-        Logger.log("Saved setups not found, a new instance was created")
-        return SavedSetups()
     }
-}()
+}

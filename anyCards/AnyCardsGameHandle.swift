@@ -40,6 +40,9 @@ class AnyCardsGameHandle: GameHandle {
         }
     }
     
+    // SavedSetups stored permanently
+    var savedSetups: SavedSetups = SavedSetups.load()
+    
     // Tolerate a broad range of players (including solitaire).  Conforms to GameHandle
     var numPlayerRange: ClosedRange<Int> = 1...6
 
