@@ -620,11 +620,7 @@ class PlayingSurface: UIView {
             if let recognizers = card.gestureRecognizers, recognizers.count > 0 {
                 continue
             }
-            // TODO consider changing the interpretation of a nil touch recognizer when there is a tap recognizer.
-            // The effect should be 'true' rather than 'false', in which case the following vacuous function would not
-            // be necessary.
-            func beTrue(_ touch: UITouch)-> Bool { return true }
-            let gestureRecognizer = TouchTapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTouch: beTrue, onTap: cardTapped)
+            let gestureRecognizer = TouchTapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTouch: nil, onTap: cardTapped)
             card.addGestureRecognizer(gestureRecognizer)
         }
         return cards

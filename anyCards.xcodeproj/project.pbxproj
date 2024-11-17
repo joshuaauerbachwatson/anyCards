@@ -10,7 +10,6 @@
 		280065C32BD94BCD003A520D /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = 280065C22BD94BCD003A520D /* Auth0.plist */; };
 		280065C52BD962E1003A520D /* Auth0TokenProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280065C42BD962E1003A520D /* Auth0TokenProvider.swift */; };
 		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
-		281F05272CC2E35B002772D4 /* unigame in Frameworks */ = {isa = PBXBuildFile; productRef = 281F05262CC2E35B002772D4 /* unigame */; };
 		281F052A2CC2E3FB002772D4 /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 281F05292CC2E3FB002772D4 /* Auth0 */; };
 		281F052C2CC2F292002772D4 /* AnyCardsGameHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */; };
 		281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */; };
@@ -18,6 +17,8 @@
 		286629B02CDA619B00D10656 /* SetupControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629AF2CDA619B00D10656 /* SetupControls.swift */; };
 		286629B22CDEAB6100D10656 /* DealDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629B12CDEAB6100D10656 /* DealDialog.swift */; };
 		28D17EFB2CE39D9100CDFBFF /* SavedSetupsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28D17EFA2CE39D9100CDFBFF /* SavedSetupsView.swift */; };
+		28E25B792CE79FB0005BF16E /* AuerbachLook in Frameworks */ = {isa = PBXBuildFile; productRef = 28E25B782CE79FB0005BF16E /* AuerbachLook */; };
+		28E25B7C2CE79FD9005BF16E /* unigame in Frameworks */ = {isa = PBXBuildFile; productRef = 28E25B7B2CE79FD9005BF16E /* unigame */; };
 		28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */; };
 		28FE44842CC53A5100477C74 /* PlayingSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44832CC53A5100477C74 /* PlayingSurface.swift */; };
 		28FE44862CC53CD200477C74 /* AnyCardsPlaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */; };
@@ -68,8 +69,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				286629AE2CD9609800D10656 /* CBORCoding in Frameworks */,
+				28E25B7C2CE79FD9005BF16E /* unigame in Frameworks */,
 				281F052A2CC2E3FB002772D4 /* Auth0 in Frameworks */,
-				281F05272CC2E35B002772D4 /* unigame in Frameworks */,
+				28E25B792CE79FB0005BF16E /* AuerbachLook in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,9 +156,10 @@
 			);
 			name = anyCards;
 			packageProductDependencies = (
-				281F05262CC2E35B002772D4 /* unigame */,
 				281F05292CC2E3FB002772D4 /* Auth0 */,
 				286629AD2CD9609800D10656 /* CBORCoding */,
+				28E25B782CE79FB0005BF16E /* AuerbachLook */,
+				28E25B7B2CE79FD9005BF16E /* unigame */,
 			);
 			productName = anyCards;
 			productReference = EE9028E526DE962400F87FF8 /* anyCards.app */;
@@ -188,9 +191,10 @@
 			);
 			mainGroup = EE9028DC26DE962400F87FF8;
 			packageReferences = (
-				281F05252CC2E35B002772D4 /* XCRemoteSwiftPackageReference "unigame" */,
 				281F05282CC2E3FB002772D4 /* XCRemoteSwiftPackageReference "Auth0" */,
 				286629AC2CD9609800D10656 /* XCRemoteSwiftPackageReference "CBORCoding" */,
+				28E25B772CE79FB0005BF16E /* XCRemoteSwiftPackageReference "auerbachLook" */,
+				28E25B7A2CE79FD9005BF16E /* XCRemoteSwiftPackageReference "unigame" */,
 			);
 			productRefGroup = EE9028E626DE962400F87FF8 /* Products */;
 			projectDirPath = "";
@@ -465,14 +469,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		281F05252CC2E35B002772D4 /* XCRemoteSwiftPackageReference "unigame" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/joshuaauerbachwatson/unigame.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		281F05282CC2E3FB002772D4 /* XCRemoteSwiftPackageReference "Auth0" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/auth0/Auth0.swift";
@@ -489,14 +485,25 @@
 				minimumVersion = 1.4.0;
 			};
 		};
+		28E25B772CE79FB0005BF16E /* XCRemoteSwiftPackageReference "auerbachLook" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/joshuaauerbachwatson/auerbachLook.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		28E25B7A2CE79FD9005BF16E /* XCRemoteSwiftPackageReference "unigame" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/joshuaauerbachwatson/unigame.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		281F05262CC2E35B002772D4 /* unigame */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 281F05252CC2E35B002772D4 /* XCRemoteSwiftPackageReference "unigame" */;
-			productName = unigame;
-		};
 		281F05292CC2E3FB002772D4 /* Auth0 */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 281F05282CC2E3FB002772D4 /* XCRemoteSwiftPackageReference "Auth0" */;
@@ -506,6 +513,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 286629AC2CD9609800D10656 /* XCRemoteSwiftPackageReference "CBORCoding" */;
 			productName = CBORCoding;
+		};
+		28E25B782CE79FB0005BF16E /* AuerbachLook */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 28E25B772CE79FB0005BF16E /* XCRemoteSwiftPackageReference "auerbachLook" */;
+			productName = AuerbachLook;
+		};
+		28E25B7B2CE79FD9005BF16E /* unigame */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 28E25B7A2CE79FD9005BF16E /* XCRemoteSwiftPackageReference "unigame" */;
+			productName = unigame;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
