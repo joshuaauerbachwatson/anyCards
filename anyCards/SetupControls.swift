@@ -26,30 +26,33 @@ struct SetupControls: View {
     var body: some View {
         @Bindable var gameHandle = gameHandle
         VStack {
-            HStack {
-                Text("Deck Type").bold()
-                Picker("Deck Type", selection: $gameHandle.deckType) {
-                    ForEach(Decks.available) { deck in
-                        Text(deck.displayName).tag(deck)
+            Group {
+                HStack {
+                    Text("Deck Type").bold()
+                    Picker("Deck Type", selection: $gameHandle.deckType) {
+                        ForEach(Decks.available) { deck in
+                            Text(deck.displayName).tag(deck)
+                        }
                     }
                 }
                 Spacer()
                 Toggle("Hand area", isOn: $gameHandle.hasHands)
                     .fixedSize()
                 Spacer()
-                Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                    showDealDialog = true
-                }.buttonStyle(.borderedProminent)
-                    .popover(isPresented: $showDealDialog) {
-                        DealDialog(box: deck!)
-                    }.disabled(deck == nil || !surface.canDeal)
-                Spacer()
-                Button("Reset", systemImage: "clear") {
-                    // TODO Perform reset here
-                }.buttonStyle(.borderedProminent)
+                HStack {
+                    Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
+                        showDealDialog = true
+                    }.buttonStyle(.borderedProminent)
+                        .popover(isPresented: $showDealDialog) {
+                            DealDialog(box: deck!)
+                        }.disabled(deck == nil || !surface.canDeal)
+                    Button("Reset", systemImage: "clear") {
+                        // TODO Perform reset here
+                    }.buttonStyle(.borderedProminent)
+                }
             }
             SavedSetupsView()
-        }.padding().border(.black, width: 2)
+        }
 
     }
 }

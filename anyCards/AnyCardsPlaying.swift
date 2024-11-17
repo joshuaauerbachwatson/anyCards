@@ -20,10 +20,9 @@ import AuerbachLook
 
 // The playing view for AnyCards uses UIViewRepresentable to incorporate code from
 // the older (UIKit) version of AnyCards.
-struct AnyCardsPlaying: UIViewRepresentable {
+struct PlayingSurfaceWrapper: UIViewRepresentable {
     typealias UIViewType = PlayingSurface
 
-    @Environment(UnigameModel.self) var model
     @Environment(AnyCardsGameHandle.self) var gameHandle
 
     func makeUIView(context: Context) -> PlayingSurface {
@@ -34,9 +33,22 @@ struct AnyCardsPlaying: UIViewRepresentable {
     }
 }
 
+struct AnyCardsPlaying: View {
+    var body: some View {
+        VStack {
+            GeometryReader { metrics in
+                let portraitRatio = CGSize(width: 1024, height: 1322)
+                let landscapeRatio = CGSize(width: 1366, height: 980)
+                let aspectRatio = metrics.size.landscape ? landscapeRatio : portraitRatio
+                PlayingSurfaceWrapper()
+                    .aspectRatio(aspectRatio, contentMode: .fit)
+            }
+        }
+        .border(.black, width: 2)
+    }
+}
+
 #Preview {
-    let surface = PlayingSurface()
     AnyCardsPlaying()
-        .environment(surface.model)
-        .environment(surface.gameHandle)
+        .environment(PlayingSurface().gameHandle)
 }

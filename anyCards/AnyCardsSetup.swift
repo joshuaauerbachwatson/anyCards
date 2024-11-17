@@ -20,9 +20,12 @@ import unigame
 // Handle setup for AnyCards.
 struct AnyCardsSetup: View {
     var body: some View {
-        VStack {
-            SetupControls()
-            AnyCardsPlaying()
+        GeometryReader { metrics in
+            VStack {
+                SetupControls()
+                  .frame(maxHeight: metrics.size.height / 9)
+                AnyCardsPlaying()
+            }
         }
     }
 }
