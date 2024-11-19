@@ -26,30 +26,27 @@ struct SetupControls: View {
     var body: some View {
         @Bindable var gameHandle = gameHandle
         VStack {
-            Group {
-                HStack {
-                    Text("Deck Type").bold()
-                    Picker("Deck Type", selection: $gameHandle.deckType) {
-                        ForEach(Decks.available) { deck in
-                            Text(deck.displayName).tag(deck)
-                        }
+            HStack {
+                Text("Deck Type").bold()
+                Picker("Deck Type", selection: $gameHandle.deckType) {
+                    ForEach(Decks.available) { deck in
+                        Text(deck.displayName).tag(deck)
                     }
                 }
-                Spacer()
+            }
+            HStack {
                 Toggle("Hand area", isOn: $gameHandle.hasHands)
                     .fixedSize()
                 Spacer()
-                HStack {
-                    Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                        showDealDialog = true
-                    }.buttonStyle(.borderedProminent)
-                        .popover(isPresented: $showDealDialog) {
-                            DealDialog(box: deck!)
-                        }.disabled(deck == nil || !surface.canDeal)
-                    Button("Reset", systemImage: "clear") {
-                        // TODO Perform reset here
-                    }.buttonStyle(.borderedProminent)
-                }
+                Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
+                    showDealDialog = true
+                }.buttonStyle(.borderedProminent)
+                    .popover(isPresented: $showDealDialog) {
+                        DealDialog(box: deck!)
+                    }.disabled(deck == nil || !surface.canDeal)
+                Button("Reset", systemImage: "clear") {
+                    // TODO Perform reset here
+                }.buttonStyle(.borderedProminent)
             }
             SavedSetupsView()
         }
