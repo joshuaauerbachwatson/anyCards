@@ -23,8 +23,9 @@ struct AnyCardsSetup: View {
         GeometryReader { metrics in
             VStack {
                 SetupControls()
-                  .frame(maxHeight: metrics.size.height / 9)
+                    .frame(maxHeight: metrics.size.height / 9)
                 AnyCardsPlaying()
+                    .ignoresSafeArea()
             }
         }
     }

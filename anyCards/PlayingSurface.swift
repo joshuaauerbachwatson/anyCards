@@ -39,8 +39,9 @@ class PlayingSurface: UIView {
         Logger.log("Playing surface init has been run")
         self.gameHandle.playingSurface = self
         Logger.log("Constructed circular reference between PlayingSurface and AnyCardsGemeHandle")
-        self.cards = makePlayingDeck(Deck, gameHandle.deckType)
-        Logger.log("PlayingSurface init has run to completion")
+        self.cards = Deck.makePlayingDeck(gameHandle.deckType)
+        Logger.log("Initial cards array constructed (without gesture recognizers)")
+        Logger.log("Initialization of playing view is completen")
    }
        
     required init?(coder: NSCoder) {
@@ -91,6 +92,11 @@ class PlayingSurface: UIView {
         let y = publicArea.maxY - border - (cardSize.height * GridBoxExpansion)
         return CGRect(x: publicArea.minX, y: y, width: publicArea.width, height: cardSize.height)
     }
+    
+    // One time flag for doing final initialization of the view.  We cannot do this in the constructor because the
+    // view is constructed too early in the lifecycle of the app and the gesture recognition is not yet setup then.
+    var viewIsInitialized = false
+    
 
     // Indicates whether dealing is possible.  Dealing is possible if there are no subviews that intersect the dealingArea
     var canDeal: Bool {
@@ -133,6 +139,11 @@ class PlayingSurface: UIView {
 
     // Finish basic initialization when the view is constructed
     func initializeView() {
+        
+        if viewIsInitialized {
+            return
+        }
+        viewIsInitialized = true
 
         backgroundColor = PlayingColor
 
@@ -148,6 +159,9 @@ class PlayingSurface: UIView {
         gridBoxRecognizer.allowableMovement = 2
         gridBoxRecognizer.delaysTouchesBegan = true
         addGestureRecognizer(gridBoxRecognizer)
+        
+        // Ensure card gesture recognizers are in place
+        addCardGestureRecognizers()
     }
 
     // When the view appears (hence its size is known), check whether an initial layout has been done.  If
@@ -235,7 +249,7 @@ class PlayingSurface: UIView {
                 addSubview(card)
             }
             refreshBoxCounts()
-        } else {
+        } else if boxViews.count == 0 && cardViews.count == 0 {
             // First ever layout, no gameState exists yet.  Just create and place the deck, without rescaling.
             shuffleAndPlace()
         }
@@ -611,10 +625,9 @@ class PlayingSurface: UIView {
         Logger.logFatalError("Card that should be a subview is not found in subviews")
     }
 
-    // Front for Deck.makePlayingDeck, ensures that every card gets a gesture recognizer, but only once.
-    private func makePlayingDeck(_ deck: SourceDeck, _ instructions: PlayingDeckTemplate) -> [Card] {
-        Logger.log("making playing deck")
-        let cards = deck.makePlayingDeck(instructions)
+    // Ensure that every card gets a gesture recognizer, but only once.
+    private func addCardGestureRecognizers() {
+        Logger.log("adding gesture recognizers to cards")
         Logger.log("there are \(cards.count) cards")
         for card in cards {
             if let recognizers = card.gestureRecognizers, recognizers.count > 0 {
@@ -623,7 +636,14 @@ class PlayingSurface: UIView {
             let gestureRecognizer = TouchTapAndDragRecognizer(target: self, onDrag: #selector(dragging), onTouch: nil, onTap: cardTapped)
             card.addGestureRecognizer(gestureRecognizer)
         }
-        return cards
+    }
+    
+    // Set a new deck type
+    func newDeckType(_ deckType: PlayingDeckTemplate) {
+        cards = Deck.makePlayingDeck(deckType)
+        addCardGestureRecognizers()
+        newShuffle()
+        model.transmitSetup()
     }
 
     // Place a new GridBox into the playingArea after determining that it fits
@@ -697,14 +717,22 @@ class PlayingSurface: UIView {
     }
 
     // Set up the public area and the hand area marker based on the current settings
-    func setupPublicArea() {
+    func setupPublicArea(_ transmit: Bool = false) {
         if gameHandle.hasHands {
+            Logger.log("Setting up public area and private hands area")
+            Logger.log("PlayingSurface bounds are \(bounds)")
             publicArea = bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height * HandAreaExpansion, right: 0))
+            Logger.log("Public area is \(publicArea)")
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
+            Logger.log("Hand area marker frame is \(handAreaMarker.frame)")
             unhide(handAreaMarker)
         } else {
+            Logger.log("Setting up public area with no private hands area")
             publicArea = bounds
             hide(handAreaMarker)
+        }
+        if transmit {
+            model.transmitSetup()
         }
     }
 
@@ -713,7 +741,8 @@ class PlayingSurface: UIView {
         guard let setup = gameState.setup else { Logger.logFatalError("game state saved without setup") }
         gameHandle.deckType = setup.deckType
         gameHandle.hasHands = setup.hasHands
-        cards = makePlayingDeck(Deck, gameHandle.deckType)
+        cards = Deck.makePlayingDeck(gameHandle.deckType)
+        addCardGestureRecognizers()
         setupPublicArea()
         removePublicCardsAndBoxes()
         // Randomize the cards in the restored state (leaving grid boxes alone)

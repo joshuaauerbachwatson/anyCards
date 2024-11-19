@@ -31,12 +31,14 @@ class AnyCardsGameHandle: GameHandle {
     var hasHands : Bool = UserDefaults.standard.bool(forKey: HasHandsKey) {
         didSet {
             UserDefaults.standard.set(hasHands, forKey: HasHandsKey)
+            playingSurface.setupPublicArea(true)
         }
     }
 
     var deckType  : PlayingDeckTemplate = PlayingDeckTemplate.load() ?? Decks.available[0].save() {
         didSet {
             deckType.save()
+            playingSurface.newDeckType(deckType)
         }
     }
     

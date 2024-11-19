@@ -26,6 +26,7 @@ struct PlayingSurfaceWrapper: UIViewRepresentable {
     @Environment(AnyCardsGameHandle.self) var gameHandle
 
     func makeUIView(context: Context) -> PlayingSurface {
+        gameHandle.playingSurface.initializeView()
         return gameHandle.playingSurface
     }
     func updateUIView(_ uiView: PlayingSurface, context: Context) {
@@ -35,8 +36,8 @@ struct PlayingSurfaceWrapper: UIViewRepresentable {
 
 struct AnyCardsPlaying: View {
     var body: some View {
-        VStack {
-            GeometryReader { metrics in
+        GeometryReader { metrics in
+            VStack {
                 let portraitRatio = CGSize(width: 1024, height: 1322)
                 let landscapeRatio = CGSize(width: 1366, height: 980)
                 let aspectRatio = metrics.size.landscape ? landscapeRatio : portraitRatio
@@ -44,7 +45,6 @@ struct AnyCardsPlaying: View {
                     .aspectRatio(aspectRatio, contentMode: .fit)
             }
         }
-        .border(.black, width: 2)
     }
 }
 
