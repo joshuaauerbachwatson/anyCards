@@ -55,6 +55,7 @@ enum TargetKind : Int, CaseIterable {
 // A dialog view for performing the deal (shows as popover)
 struct DealDialog: View {
     @Environment(AnyCardsGameHandle.self) var model
+    @Environment(\.dismiss) private var dismiss
     
     let box: GridBox
     
@@ -91,11 +92,16 @@ struct DealDialog: View {
                     Text("\(targets)")
                 }
             }
-            // TODO DealButton should be mutually exclusive with Error label
-            Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                let kind = TargetKind(rawValue: targetKind) ?? TargetKind.Hands
-                model.playingSurface.deal(hands: hands, cards: cards, kind: kind, from: box)
-            }.buttonStyle(.borderedProminent)
+            if hands * cards > box.cards.count {
+                Text("Not enough cards available for this deal")
+                    .foregroundStyle(.red)
+            } else {
+                Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
+                    let kind = TargetKind(rawValue: targetKind) ?? TargetKind.Hands
+                    model.playingSurface.deal(hands: hands, cards: cards, kind: kind, from: box)
+                    dismiss()
+                }.buttonStyle(.borderedProminent)
+            }
         }.padding().border(.black, width: 2)
     }
 }
