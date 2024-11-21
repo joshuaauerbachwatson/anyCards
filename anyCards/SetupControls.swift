@@ -7,6 +7,7 @@
 
 import SwiftUI
 import unigame
+import AuerbachLook
 
 // Controls for setting up the game (to be shown in the setup view above the playing surface, which can also be modified during setup)
 struct SetupControls: View {
@@ -20,7 +21,10 @@ struct SetupControls: View {
     }
     
     var deck: GridBox? {
-        surface.deck
+        let non = surface.deck == nil ? "" : "non"
+        Logger.log("Deck is \(non)nil")
+        Logger.log("canDeal=\(surface.canDeal)")
+        return surface.deck
     }
     
     var body: some View {
@@ -41,9 +45,9 @@ struct SetupControls: View {
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
                     showDealDialog = true
                 }.buttonStyle(.borderedProminent)
-                    .popover(isPresented: $showDealDialog) {
-                        DealDialog(box: deck!)
-                    }.disabled(deck == nil || !surface.canDeal)
+                .popover(isPresented: $showDealDialog) {
+                    DealDialog(box: deck!)
+                }.disabled(deck == nil || !surface.canDeal)
                 Button("Reset", systemImage: "clear") {
                     // TODO Perform reset here
                 }.buttonStyle(.borderedProminent)
