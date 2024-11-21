@@ -10,6 +10,9 @@ import unigame
 
 // Enumeration of possible dealing targets
 enum TargetKind : Int, CaseIterable {
+    // Hands and Piles cases must be the first two cases respectively
+    // since we rely on stepping through the cases and they are the default
+    // starting points (depending on whether there is a hand area).
     case Hands, Piles, OwnedDecks, SharedDecks, OwnedDiscards, SharedDiscards
     
     var display: String {
@@ -54,16 +57,28 @@ enum TargetKind : Int, CaseIterable {
 
 // A dialog view for performing the deal (shows as popover)
 struct DealDialog: View {
-    @Environment(AnyCardsGameHandle.self) var model
+    @Environment(AnyCardsGameHandle.self) var gameHandle
     @Environment(\.dismiss) private var dismiss
     
     let box: GridBox
     
     @State private var hands: Int = 2
     @State private var cards: Int = 5
-    @State private var targetKind: Int = 0
-    var targets: String {
+    @State var targetKind: Int
+    var targetKindText: String {
         TargetKind(rawValue: targetKind)?.display ?? "Unknown"
+    }
+    var targetRange: ClosedRange<Int>
+    
+    init(box: GridBox, hasHands: Bool) {
+        self.box = box
+        if hasHands {
+            targetRange = 0...TargetKind.allCases.count - 1
+            targetKind = 0
+        } else {
+            targetRange = 1...TargetKind.allCases.count - 1
+            targetKind = 1
+        }
     }
     
     var body: some View {
@@ -85,11 +100,11 @@ struct DealDialog: View {
                 }
             }
             Stepper(value: $targetKind,
-                    in: 0...TargetKind.allCases.count-1) {
+                    in: targetRange) {
                 HStack {
                     Text("Type of groupings:").bold()
                     Spacer()
-                    Text("\(targets)")
+                    Text("\(targetKindText)")
                 }
             }
             if hands * cards > box.cards.count {
@@ -98,7 +113,7 @@ struct DealDialog: View {
             } else {
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
                     let kind = TargetKind(rawValue: targetKind) ?? TargetKind.Hands
-                    model.playingSurface.deal(hands: hands, cards: cards, kind: kind, from: box)
+                    gameHandle.playingSurface.deal(hands: hands, cards: cards, kind: kind, from: box)
                     dismiss()
                 }.buttonStyle(.borderedProminent)
             }
@@ -108,6 +123,6 @@ struct DealDialog: View {
 
 #Preview {
     let playingSurface = PlayingSurface()
-    DealDialog(box: playingSurface.deck!)
+    DealDialog(box: playingSurface.deck!, hasHands: true)
         .environment(playingSurface.gameHandle)
 }
