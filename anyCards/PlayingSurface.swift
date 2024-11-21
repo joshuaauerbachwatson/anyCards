@@ -41,7 +41,7 @@ class PlayingSurface: UIView {
         Logger.log("Constructed circular reference between PlayingSurface and AnyCardsGemeHandle")
         self.cards = Deck.makePlayingDeck(gameHandle.deckType)
         Logger.log("Initial cards array constructed (without gesture recognizers)")
-        Logger.log("Initialization of playing view is completen")
+        Logger.log("Initialization of playing view is complete")
    }
        
     required init?(coder: NSCoder) {
@@ -81,7 +81,7 @@ class PlayingSurface: UIView {
     }
 
     // The public area within this view (excludes a possible "hand area" at the bottom)
-    var publicArea = CGRect.zero // calculated later
+    var publicArea: CGRect!  // Initialized in setupPublicArea which must be called before possible access
 
     // The "dealing area" within the publicArea (defined once the publicArea is defined).
     // This is where cards are dealt by the dealing dialog
@@ -89,8 +89,9 @@ class PlayingSurface: UIView {
         if publicArea == CGRect.zero {
             return publicArea
         }
-        let y = publicArea.maxY - border - (cardSize.height * GridBoxExpansion)
-        return CGRect(x: publicArea.minX, y: y, width: publicArea.width, height: cardSize.height)
+        let boxHeight = cardSize.height * GridBoxExpansion
+        let y = publicArea.maxY - border - boxHeight
+        return CGRect(x: publicArea.minX, y: y, width: publicArea.width, height: boxHeight)
     }
     
     // One time flag for doing final initialization of the view.  We cannot do this in the constructor because the
@@ -722,7 +723,7 @@ class PlayingSurface: UIView {
             Logger.log("Setting up public area and private hands area")
             Logger.log("PlayingSurface bounds are \(bounds)")
             publicArea = bounds.inset(by: UIEdgeInsets(top: 0, left: 0, bottom: cardSize.height * HandAreaExpansion, right: 0))
-            Logger.log("Public area is \(publicArea)")
+            Logger.log("Public area is \(publicArea ?? CGRect.zero)")
             place(handAreaMarker, publicArea.minX, publicArea.maxY, publicArea.width, border)
             Logger.log("Hand area marker frame is \(handAreaMarker.frame)")
             unhide(handAreaMarker)
