@@ -45,7 +45,7 @@ struct SetupControls: View {
                 }.buttonStyle(.borderedProminent)
                 .popover(isPresented: $showDealDialog) {
                     DealDialog(box: deck!)
-                }.disabled(!surface.canDeal)
+                }.disabled(deck == nil || !surface.canDeal)
                 Button("Reset", systemImage: "clear") {
                     // TODO Perform reset here
                 }.buttonStyle(.borderedProminent)
