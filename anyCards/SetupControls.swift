@@ -21,7 +21,6 @@ struct SetupControls: View {
     }
     
     var deck: GridBox? {
-        surface.initializeView()
         return surface.deck
     }
     
@@ -45,7 +44,7 @@ struct SetupControls: View {
                 }.buttonStyle(.borderedProminent)
                 .popover(isPresented: $showDealDialog) {
                     DealDialog(box: deck!)
-                }.disabled(deck == nil || !surface.canDeal)
+                }.disabled(!surface.canDeal)
                 Button("Reset", systemImage: "clear") {
                     // TODO Perform reset here
                 }.buttonStyle(.borderedProminent)
