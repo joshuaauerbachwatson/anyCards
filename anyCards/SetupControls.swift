@@ -46,7 +46,7 @@ struct SetupControls: View {
                     DealDialog(box: deck!, hasHands: gameHandle.hasHands)
                 }.disabled(!surface.canDeal)
                 Button("Reset", systemImage: "clear") {
-                    // TODO Perform reset here
+                    surface.newShuffle()
                 }.buttonStyle(.borderedProminent)
             }
             SavedSetupsView()
