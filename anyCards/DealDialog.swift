@@ -122,7 +122,7 @@ struct DealDialog: View {
 }
 
 #Preview {
-    let playingSurface = PlayingSurface()
+    let playingSurface = PlayingSurface().initializeView().newShuffle()
     DealDialog(box: playingSurface.deck!, hasHands: true)
         .environment(playingSurface.gameHandle)
 }

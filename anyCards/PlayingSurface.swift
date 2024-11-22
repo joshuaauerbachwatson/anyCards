@@ -139,10 +139,12 @@ class PlayingSurface: UIView {
     // External interface
 
     // Finish basic initialization when the view is constructed
-    func initializeView() {
+    // Returns self for convenient chaining when setting up previews
+    @discardableResult
+    func initializeView() -> PlayingSurface {
         
         if viewIsInitialized {
-            return
+            return self
         }
         viewIsInitialized = true
 
@@ -163,6 +165,7 @@ class PlayingSurface: UIView {
         
         // Ensure card gesture recognizers are in place
         addCardGestureRecognizers()
+        return self
     }
 
     // When the view appears (hence its size is known), check whether an initial layout has been done.  If
@@ -710,11 +713,14 @@ class PlayingSurface: UIView {
 
     // Called when the deck type or hand area setting changes.  
     // Does the initial setup for that combination of decktype and hand area.
-    func newShuffle() {
+    // Returns self for convenient chaining in previews
+    @discardableResult
+    func newShuffle() -> PlayingSurface {
         Logger.log("Request for newShuffle (deck change?)")
         setupPublicArea()
         removeAllCardsAndBoxes()
         shuffleAndPlace()
+        return self
     }
 
     // Set up the public area and the hand area marker based on the current settings
