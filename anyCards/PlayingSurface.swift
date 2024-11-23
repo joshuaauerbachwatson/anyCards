@@ -39,7 +39,7 @@ class PlayingSurface: UIView {
         Logger.log("Playing surface init has been run")
         self.gameHandle.playingSurface = self
         Logger.log("Constructed circular reference between PlayingSurface and AnyCardsGemeHandle")
-        self.cards = Deck.makePlayingDeck(gameHandle.deckType)
+        self.cards = sourceDeck.makePlayingDeck(gameHandle.deckType)
         Logger.log("Initial cards array constructed (without gesture recognizers)")
         Logger.log("Initialization of playing view is complete")
    }
@@ -47,17 +47,19 @@ class PlayingSurface: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-        
-   func update() {
-         // TODO figure out what is supposed to happen here
+
+    // Respond to update request from SwiftUI world.
+    // Note: present logic is kind of heavyweight.  Will need to evaluate whether it is a performance issue.
+    func update() {
+        let playingState = PlayingState(self, includeHandArea: true)
+        removeAllCardsAndBoxes()
+        doLayout(playingState)
     }
 
     // Model-related fields
 
-    // The source deck in current use.
-    // TODO this is not yet settable.   When it does become settable, then changes to it should be handled dynamically
-    // just like changes to the deck type.
-    let Deck = DefaultDeck.deck
+    // The source deck in current use (not currently settable)
+    let sourceDeck = DefaultDeck.deck
 
     // The cards array for the game.  This depends on the values of Deck and deckType but is kept up to date with them.
     var cards : [Card] = []
@@ -67,17 +69,10 @@ class PlayingSurface: UIView {
 
     // View-related fields
 
-    // Indicates that any new layout must be landscape
-    var lockedToLandscape = false
-
-    // Indicates that any new layout must be portrait
-    var lockedToPortrait = false
-
-    // Indicates that the current layout is or should be landscape (negated means portrait)
-    var isLandscape: Bool {
-        get {
-            return lockedToLandscape || (!lockedToPortrait && bounds.size.landscape)
-        }
+    // Set the orientation lock fields
+    private func setOrientationLocks(_ landscape: Bool) {
+        Logger.log("Leader has sent setup information.  Orientation locked to \(landscape ? "landscape" : "portrait")")
+        AppDelegate.orientationLock = landscape ? .landscape : .portrait
     }
 
     // The public area within this view (excludes a possible "hand area" at the bottom)
@@ -121,7 +116,7 @@ class PlayingSurface: UIView {
     // The expected size of a card in the current layout
     var cardSize: CGSize {
         let cardWidth = frame.minDimension * CardDisplayWidthRatio
-        let cardHeight = cardWidth / Deck.aspectRatio
+        let cardHeight = cardWidth / sourceDeck.aspectRatio
         return CGSize(width: cardWidth, height: cardHeight)
     }
     
@@ -176,51 +171,20 @@ class PlayingSurface: UIView {
         Logger.log("Playing area initialized")
     }
 
-    // Allow view to be rotated.
-    // TODO this has to be done differently in SwiftUI
-    // https://stackoverflow.com/questions/66037782/swiftui-how-do-i-lock-a-particular-view-in-portrait-mode-whilst-allowing-others
-//    open override var shouldAutorotate: Bool {
-//        get {
-//            return true
-//        }
-//    }
-//
-//    // Support orientations according the "lock" flags.  If not locks, all orientations are accepted.
-//    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
-//        get {
-//            if lockedToLandscape {
-//                return .landscape
-//            }
-//            if lockedToPortrait {
-//                return .portrait
-//            }
-//            return .all
-//        }
-//    }
-//
-//    // Respond to rotation or other size-changing event by redoing layout.
-//    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-//        super.viewWillTransition(to: size, with: coordinator)
-//        // Hopefully temporary:
-//        if size.landscape && lockedToPortrait || !size.landscape && lockedToLandscape {
-//            bummer(title: "Rotation error", message: "Rotation should have been forbidden", host: self)
-//            return
-//        }
-//        let gameState = GameState(self, setup: false, includeHandArea: true)
-//        coordinator.animate(alongsideTransition: nil) {_ in
-//            self.removeAllCardsAndBoxes()
-//            self.doLayout(gameState)
-//        }
-//    }
-
     // Layout section
 
     // Perform layout.
     private func doLayout(_ gs: PlayingState?) {
-        // We first define the extent of the public area based on our own bounds and whether or not there's a private area
-        setupPublicArea()
-        // Now place the cards and GridBoxes, with possible rescaling
+        // If given a new state, process it.
         if let gameState = gs {
+            if let setup = gs?.setup, !model.leadPlayer {
+                Logger.log("Still in initial setup, processing deck type and public area, locking orientation")
+                cards = sourceDeck.makePlayingDeck(setup.deckType)
+                addCardGestureRecognizers()
+                gameHandle.hasHands = setup.hasHands
+                setupPublicArea()
+                setOrientationLocks(gameState.areaSize.landscape)
+            }
             let rescale = bounds.minDimension / gameState.areaSize.minDimension
             Logger.log("rescale is \(rescale)")
             for boxState in gameState.boxes {
@@ -255,6 +219,7 @@ class PlayingSurface: UIView {
             refreshBoxCounts()
         } else if boxViews.count == 0 && cardViews.count == 0 {
             // First ever layout, no gameState exists yet.  Just create and place the deck, without rescaling.
+            setupPublicArea()
             shuffleAndPlace()
         }
         Logger.log("Layout performed")
@@ -442,17 +407,15 @@ class PlayingSurface: UIView {
         if recognizer.state == .ended {
             let location = recognizer.location(in: self)
             if let box = boxViews.first(where:  { $0.frame.contains(location) }) {
-                // TODO figure out how we present modal dialogs in this environment
-//                guard let menu = GridBoxMenu(box) else {
-//                    box.mayNotModify()
-//                    return
-//                }
-//                Logger.logPresent(menu, host: self, animated: true)
+                if box.mayBeModified {
+                    gameHandle.modifyBox(box)
+                    return
+                }
             } else if publicArea.contains(location ){
                 attemptNewGridBox(location)
             } else {
                 // Long press in the private area brings up the card grouping dislog
-                chooseGroupingInPrivateArea()
+                gameHandle.showGroupingAlert = true
             }
         }
     }
@@ -461,23 +424,43 @@ class PlayingSurface: UIView {
     
     // When a card is tapped or dragged, determine if it is in a properly owned Hand Box and, if so, take the hand
     func maybeTakeHand(_ card: Card) -> Bool {
-        // TODO find behavior in archive and rework
+        if let box = card.box, box.kind == .Hand, box.mayBeModified {
+            takeHand(box)
+            return true
+        }
         return false
     }
     
-    // Display alert allowing user to toggle card grouping in the private area
-    func chooseGroupingInPrivateArea() {
-        let groupAction = UIAlertAction(title: "Grouped", style: .default) { _ in
-            self.groupingInPrivateArea = true
+    // Perform the "take hand" function
+    func takeHand(_ box: GridBox) {
+        // Calculate the placement points in the private area
+        let lastX = bounds.width - cardSize.width - border
+        var currentX = bounds.minX + border
+        let step = (lastX - currentX) / (box.cards.count - 1)
+        //Logger.log("currentX=\(currentX), lastX=\(lastX), step=\(step)")
+        let fixedY = bounds.maxY - cardSize.height - border
+        // Prepare animation functions to move the cards
+        var animations = [()->Void]()
+        for card in box.cards.sorted(by: { $0.index < $1.index }) {
+            let xValue = currentX // use immutable to ensure value is captured, not reference
+            animations.append({
+                UIView.animate(withDuration: DealCardDuration, animations: {
+                    //Logger.log("card.frame.origin was \(card.frame.origin)")
+                    card.frame.origin = CGPoint(x: xValue, y: fixedY)
+                    //Logger.log("card.frame.origin is now \(card.frame.origin)")
+                    card.turnFaceUp()
+                    card.isPrivate = true
+                    self.bringSubviewToFront(card)
+                })
+            })
+            currentX += step
         }
-        let ungroupAction = UIAlertAction(title: "Individual", style: .default) { _ in
-            self.groupingInPrivateArea = false
+        // Move the cards with animation
+        runAnimationSequence(animations) {
+            // Delete the box
+            box.removeFromSuperview()
+            self.model.transmitState()
         }
-        let alert = UIAlertController(title: "Card Grouping", message: "How to drag cards in hand", preferredStyle: .alert)
-        alert.addAction(groupAction)
-        alert.addAction(ungroupAction)
-        // TODO modal dialogs
-//        Logger.logPresent(alert, host: self, animated: false)
     }
 
     // Given a card, find all the other cards that cover it or that cover cards that cover it (transitive closure).
@@ -613,8 +596,7 @@ class PlayingSurface: UIView {
 
     // Indicate that a GridBox cannot be placed
     private func gridBoxFails() {
-        // TODO modal dialogs and alerts
-//        bummer(title: BadGridBoxTitle, message: BadGridBoxMessage, host: self)
+        model.displayError(BadGridBoxMessage)
     }
 
     // Determine if a card is covered by another card
@@ -644,7 +626,7 @@ class PlayingSurface: UIView {
     
     // Set a new deck type
     func newDeckType(_ deckType: PlayingDeckTemplate) {
-        cards = Deck.makePlayingDeck(deckType)
+        cards = sourceDeck.makePlayingDeck(deckType)
         addCardGestureRecognizers()
         newShuffle()
         model.transmitSetup()
@@ -657,31 +639,15 @@ class PlayingSurface: UIView {
         sendSubviewToBack(gridBox)
         gridBox.maybeSnapUp(cardViews)
         gridBox.refreshCount()
-        if gridBox.name == nil {
-            // TODO modal dialogs
-//            guard let menu = ModifyGridBox(gridBox) else {
-//                // Should not happen
-//                Logger.log("ModifyGridBox constructor failed in a context where it shouldn't have")
-//                return
-//            }
-//            Logger.logPresent(menu, host: self, animated: true)
+        if gridBox.name == nil && gridBox.mayBeModified {
+            gameHandle.modifyBox(gridBox)
         }
-    }
-
-    // Set the orientation lock fields
-    private func setOrientationLocks(_ landscape: Bool) {
-        Logger.log("Leader has sent setup information.  Orientation locked to \(landscape ? "landscape" : "portrait")")
-        self.lockedToLandscape = landscape
-        self.lockedToPortrait = !landscape
-        // TODO orientation locking needs attention
- //       self.setNeedsUpdateOfSupportedInterfaceOrientations()
     }
 
     // Reset the playing state (called from gameHandle.reset() as appropriate)
     func reset() {
         // Clean up former game
-        lockedToLandscape = false
-        lockedToPortrait = false
+        AppDelegate.orientationLock = .all
         // Shuffle cards
         newShuffle()
     }
@@ -748,7 +714,7 @@ class PlayingSurface: UIView {
         guard let setup = gameState.setup else { Logger.logFatalError("game state saved without setup") }
         gameHandle.deckType = setup.deckType
         gameHandle.hasHands = setup.hasHands
-        cards = Deck.makePlayingDeck(gameHandle.deckType)
+        cards = sourceDeck.makePlayingDeck(gameHandle.deckType)
         addCardGestureRecognizers()
         setupPublicArea()
         removePublicCardsAndBoxes()

@@ -59,7 +59,6 @@ class AnyCardsGameHandle: GameHandle {
     
     // Conforms to GameHandle
     func reset() {
-        // TODO more may be needed here
         playingSurface?.reset()
     }
     
@@ -81,5 +80,20 @@ class AnyCardsGameHandle: GameHandle {
     // Conforms to GameHandle
     var playingView: any View {
         AnyCardsPlaying()
+    }
+    
+    // Holds the box being modified when presenting the GridBox menu
+    var box: GridBox? = nil
+    
+    // Indicates that the GridBox menu should be shown
+    var showGridBoxMenu: Bool = false
+    
+    // Indicates that the grouping alert should be shown
+    var showGroupingAlert: Bool = false
+    
+    // Upcall from PlayingSurface to cause GridBox menu to show
+    func modifyBox(_ box: GridBox) {
+        self.box = box
+        showGridBoxMenu = true
     }
 }

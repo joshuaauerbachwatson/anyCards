@@ -20,7 +20,8 @@ import unigame
 @main
 struct AnyCardsApp: App {
     @State private var surface = PlayingSurface()
-    
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
         WindowGroup {
             unigame.ContentView()
