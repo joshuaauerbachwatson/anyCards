@@ -55,11 +55,6 @@ final class CardState : Codable {
     let origin : CGPoint
     var index : Int   // permit overwrite when reordering a restored game state used as a restored setup
     let faceUp : Bool
-    // TODO: Consider that the following will always be false in any card state that is serialized since the intent is
-    // never to store or transmit private cards.  However, it can be true in some CardStates when, for example,
-    // using a GameState to help facilitate the rotation of the playing view.  It is a possible optimization to
-    // omit the isPrivate flag when serializing and set it to false when deserializing but the benefit will likely
-    // be small.
     let isPrivate : Bool
 
     // Initializer from a Card

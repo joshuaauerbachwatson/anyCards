@@ -81,7 +81,7 @@ class GridBox : UIView {
         }
     }
 
-    // The owner of the GridBox.  This is an index into the player labels (ie. a number from 0..3).  An unowned
+    // The owner of the GridBox.  This is an index into the player labels (ie. a number from 0...5).  An unowned
     // GridBox is indicated by a special constant
     static let Unowned = -1
     var owner: Int = Unowned
@@ -194,12 +194,11 @@ class GridBox : UIView {
 
     // Respond to touching of the legend
     @objc func legendTouched() {
-        // TODO figure out how to present modal dialogs in this environment
-//        guard let menu = GridBoxMenu(self) else {
-//            mayNotModify()
-//            return
-//        }
-//        Logger.logPresent(menu, host: host, animated: true)
+        if mayBeModified {
+            host.gameHandle.boxMenu(self)
+        } else {
+            mayNotModify()
+        }
     }
 
     // Other functions
@@ -324,8 +323,7 @@ class GridBox : UIView {
 
     // Display popup when an attempt is made to modify an owned gridbox by someone who isn't the owner
     func mayNotModify() {
-        // TODO Get the player some other way
-//        let message = String(format: OwnedGridBoxTemplate, host.getPlayer(index: owner))
-//        bummer(title: MayNotAccess, message: message, host: host)
+        let message = String(format: OwnedGridBoxTemplate, host.model.getPlayer(index: owner))
+        host.model.displayError(message)
     }
 }

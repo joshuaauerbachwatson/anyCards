@@ -408,8 +408,9 @@ class PlayingSurface: UIView {
             let location = recognizer.location(in: self)
             if let box = boxViews.first(where:  { $0.frame.contains(location) }) {
                 if box.mayBeModified {
-                    gameHandle.modifyBox(box)
-                    return
+                    gameHandle.boxMenu(box)
+                } else {
+                    box.mayNotModify()
                 }
             } else if publicArea.contains(location ){
                 attemptNewGridBox(location)
@@ -641,6 +642,8 @@ class PlayingSurface: UIView {
         gridBox.refreshCount()
         if gridBox.name == nil && gridBox.mayBeModified {
             gameHandle.modifyBox(gridBox)
+        } else {
+            gridBox.mayNotModify()
         }
     }
 

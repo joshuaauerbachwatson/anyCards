@@ -55,7 +55,7 @@ class AnyCardsGameHandle: GameHandle {
     var tokenProvider: any unigame.TokenProvider = Auth0TokenProvider()
 
     // The playing surface view, which fills the unigame "playing" view and is also part of the unigame "setup" view.
-    var playingSurface: PlayingSurface!
+    unowned var playingSurface: PlayingSurface!
     
     // Conforms to GameHandle
     func reset() {
@@ -82,18 +82,26 @@ class AnyCardsGameHandle: GameHandle {
         AnyCardsPlaying()
     }
     
-    // Holds the box being modified when presenting the GridBox menu
+    // Holds the box on which the either of the two grid box menus should operate
     var box: GridBox? = nil
     
-    // Indicates that the GridBox menu should be shown
+    // Indicates that the main GridBox menu should be shown
     var showGridBoxMenu: Bool = false
     
-    // Indicates that the grouping alert should be shown
-    var showGroupingAlert: Bool = false
-    
-    // Upcall from PlayingSurface to cause GridBox menu to show
-    func modifyBox(_ box: GridBox) {
+    // Upcall from PlayingSurface to cause main GridBox menu to show
+    func boxMenu(_ box: GridBox) {
         self.box = box
         showGridBoxMenu = true
     }
+    // Indicates that the GridBox modification menu should be shown
+    var showModifyBoxMenu: Bool = false
+    
+    // Upcall from PlayingSurface to cause GridBox modify menu to show
+    func modifyBox(_ box: GridBox) {
+        self.box = box
+        showModifyBoxMenu = true
+    }
+
+    // Indicates that the grouping alert should be shown
+    var showGroupingAlert: Bool = false
 }
