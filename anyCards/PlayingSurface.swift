@@ -94,11 +94,14 @@ class PlayingSurface: UIView {
     var viewIsInitialized = false
     
 
-    // Indicates whether dealing is possible.  Dealing is possible if there are no subviews that intersect the dealingArea
-    var canDeal: Bool {
+    // Indicates whether the dealing area is free to receive dealt hands or boxes.
+    var dealingAreaClear: Bool {
+        if dealingArea == .zero {
+            return false
+        }
         return !subviews.contains(where: { $0.frame.intersects(dealingArea)})
     }
-
+    
     // The division marker for the hand area
     let handAreaMarker = UIView()
 
@@ -130,8 +133,6 @@ class PlayingSurface: UIView {
     var deck: GridBox? {
         boxViews.first(where: {$0.name == MainDeckName})
     }
-
-    // External interface
 
     // Finish basic initialization when the view is constructed
     // Returns self for convenient chaining when setting up previews
@@ -322,6 +323,12 @@ class PlayingSurface: UIView {
             refreshBoxCounts()
             model.transmitState()
         }
+    }
+    
+    // Function to set the observable canDeal flag
+    func setCanDeal() {
+        let cards = deck?.cards.count ?? 0
+        gameHandle.canDeal = cards > 0 && dealingAreaClear
     }
  
     // Function to perform a deal
@@ -647,6 +654,7 @@ class PlayingSurface: UIView {
                 gridBox.mayNotModify()
             }
         }
+        setCanDeal()
     }
 
     // Reset the playing state (called from gameHandle.reset() as appropriate)

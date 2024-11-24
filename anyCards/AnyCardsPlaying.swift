@@ -36,6 +36,14 @@ struct PlayingSurfaceWrapper: UIViewRepresentable {
 
 struct AnyCardsPlaying: View {
     @Environment(AnyCardsGameHandle.self) var gameHandle
+    
+    var box: GridBox {
+        if let ans = gameHandle.box {
+            return ans
+        }
+        Logger.logFatalError("GameHandle.box requested in context where it is nil")
+    }
+    
     var body: some View {
         @Bindable var handle = gameHandle
         GeometryReader { metrics in
@@ -48,6 +56,9 @@ struct AnyCardsPlaying: View {
                     .popover(isPresented: $handle.showGridBoxMenu,
                              attachmentAnchor: .point(handle.boxAnchor)) {
                         GridBoxMenu()
+                    }
+                    .popover(isPresented: $handle.showDealDialog) {
+                        DealDialog(box: box, hasHands: gameHandle.hasHands)
                     }
             }
         }

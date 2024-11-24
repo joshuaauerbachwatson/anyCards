@@ -97,13 +97,19 @@ class GridBox : UIView {
 
     // Indicates whether adding to a box causes your turn to end
     var autoYield : Bool {
-        return kind == .DiscardYield
+        kind == .DiscardYield
     }
 
     // Indicates whether the GridBox may be modified by this player.  This is possible if the GridBox is Unowned or if
     // it is owned by the current player
     var mayBeModified: Bool {
-        return owner == GridBox.Unowned || owner == host.model.thisPlayer
+        owner == GridBox.Unowned || owner == host.model.thisPlayer
+    }
+    
+    // Indicates that the GridBox is capable of supporting a deal.  It must have at least two cards and the
+    // dealing area must be clear.
+    var canDeal: Bool {
+        cards.count > 1 && host.dealingAreaClear
     }
 
     // The "snap frame" subarea of the GridBox (where cards end up)
@@ -328,6 +334,9 @@ class GridBox : UIView {
     // Refresh the displayed count in the countLabel
     func refreshCount() {
         countLabel.text = String(cards.count)
+        if name == MainDeckName {
+            host.setCanDeal()
+        }
     }
 
     // Display popup when an attempt is made to modify an owned gridbox by someone who isn't the owner

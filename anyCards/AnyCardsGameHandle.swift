@@ -82,7 +82,10 @@ class AnyCardsGameHandle: GameHandle {
         AnyCardsPlaying()
     }
     
-    // Holds the box on which the either of the two grid box menus should operate
+    // Shows that a setup global deal is possible (there is a main deck present and the dealing area is clear)
+    var canDeal: Bool = false
+    
+    // Holds the box on which the various grid box menus should operate
     var box: GridBox? = nil
     
     // Provides the anchor for box-related popup menus as a UnitPoint
@@ -98,7 +101,7 @@ class AnyCardsGameHandle: GameHandle {
     // Indicates that the main GridBox menu should be shown
     var showGridBoxMenu: Bool = false
     
-    // Upcall from PlayingSurface to cause main GridBox menu to show
+    // Use this to set showGridBoxMenu, ensuring that 'box' is set
     func boxMenu(_ box: GridBox) {
         self.box = box
         showGridBoxMenu = true
@@ -106,7 +109,7 @@ class AnyCardsGameHandle: GameHandle {
     // Indicates that the GridBox modification menu should be shown
     var showModifyBoxMenu: Bool = false
     
-    // Upcall from PlayingSurface to cause GridBox modify menu to show
+    // Use this to set showModifyBox, ensuring that 'box' is set
     func modifyBox(_ box: GridBox) {
         self.box = box
         showModifyBoxMenu = true
@@ -117,4 +120,10 @@ class AnyCardsGameHandle: GameHandle {
     
     // Indicates that the deal dialog should be shown
     var showDealDialog: Bool = false
+    
+    // Use this to set showDealDialog, ensuring that 'box' is set
+    func dealDialog(_ box: GridBox) {
+        self.box = box
+        showDealDialog = true
+    }
 }

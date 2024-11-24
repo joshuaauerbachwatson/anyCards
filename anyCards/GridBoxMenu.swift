@@ -77,13 +77,13 @@ struct GridBoxMenu: View {
                     .frame(maxWidth: .infinity)
             }
             Button {
-                gameHandle.showDealDialog = true
+                gameHandle.dealDialog(box)
                 dismiss()
             } label: {
                 Label("Deal", systemImage: "rectangle.portrait.and.arrow.right")
                     .frame(maxWidth: .infinity)
             }
-            .disabled(!gameHandle.playingSurface.canDeal)
+            .disabled(!box.canDeal)
             Button {
                 gameHandle.showModifyBoxMenu = true
                 dismiss()
@@ -93,6 +93,7 @@ struct GridBoxMenu: View {
             }
             Button {
                 box.removeFromSuperview()
+                surface.setCanDeal()
                 done()
             } label: {
                 Label("Delete", systemImage: "trash")

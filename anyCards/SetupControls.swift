@@ -11,17 +11,20 @@ import AuerbachLook
 
 // Controls for setting up the game (to be shown in the setup view above the playing surface, which can also be modified during setup)
 struct SetupControls: View {
-    @Environment(UnigameModel.self) var model
     @Environment(AnyCardsGameHandle.self) var gameHandle
     
     var surface: PlayingSurface {
         gameHandle.playingSurface
     }
     
-    var deck: GridBox? {
-        return surface.deck
+    var deck: GridBox {
+        if let ans = surface.deck {
+            return ans
+        }
+        Logger.logFatalError("Logic should have ruled out access to PlayingSurface.deck if absent")
     }
-    
+
+
     var body: some View {
         @Bindable var gameHandle = gameHandle
         VStack {
@@ -38,11 +41,9 @@ struct SetupControls: View {
                     .fixedSize()
                 Spacer()
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                    gameHandle.showDealDialog = true
+                    gameHandle.dealDialog(deck)
                 }.buttonStyle(.borderedProminent)
-                    .popover(isPresented: $gameHandle.showDealDialog) {
-                    DealDialog(box: deck!, hasHands: gameHandle.hasHands)
-                }.disabled(!surface.canDeal)
+                    .disabled(!gameHandle.canDeal)
                 Button("Reset", systemImage: "clear") {
                     surface.newShuffle()
                 }.buttonStyle(.borderedProminent)
