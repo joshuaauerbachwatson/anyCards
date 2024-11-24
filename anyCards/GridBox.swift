@@ -202,6 +202,7 @@ class GridBox : UIView {
                 }
                 if recognizer.state == .ended {
                     host.model.transmitState()
+                    host.setCanDeal()
                 }
             }
         }
