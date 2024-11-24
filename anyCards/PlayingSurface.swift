@@ -322,13 +322,14 @@ class PlayingSurface: UIView {
             }
             refreshBoxCounts()
             model.transmitState()
+            setCanDeal()
         }
     }
     
     // Function to set the observable canDeal flag
     func setCanDeal() {
         let cards = deck?.cards.count ?? 0
-        gameHandle.canDeal = cards > 0 && dealingAreaClear
+        gameHandle.canDeal = cards > 1 && dealingAreaClear
     }
  
     // Function to perform a deal
