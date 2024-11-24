@@ -57,7 +57,8 @@ struct AnyCardsPlaying: View {
                              attachmentAnchor: .point(handle.boxAnchor)) {
                         GridBoxMenu()
                     }
-                    .popover(isPresented: $handle.showDealDialog) {
+                    .popover(isPresented: $handle.showDealDialog,
+                             attachmentAnchor: .point(gameHandle.boxAnchor)) {
                         DealDialog(box: box, hasHands: gameHandle.hasHands)
                     }
             }
