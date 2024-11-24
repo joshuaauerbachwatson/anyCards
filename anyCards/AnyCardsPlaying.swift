@@ -35,7 +35,9 @@ struct PlayingSurfaceWrapper: UIViewRepresentable {
 }
 
 struct AnyCardsPlaying: View {
+    @Environment(AnyCardsGameHandle.self) var gameHandle
     var body: some View {
+        @Bindable var handle = gameHandle
         GeometryReader { metrics in
             VStack {
                 let portraitRatio = CGSize(width: 1024, height: 1322)
@@ -43,12 +45,18 @@ struct AnyCardsPlaying: View {
                 let aspectRatio = metrics.size.landscape ? landscapeRatio : portraitRatio
                 PlayingSurfaceWrapper()
                     .aspectRatio(aspectRatio, contentMode: .fit)
+                    .popover(isPresented: $handle.showGridBoxMenu,
+                             attachmentAnchor: .point(handle.boxAnchor)) {
+                        GridBoxMenu()
+                    }
             }
         }
     }
 }
 
 #Preview {
+    let surface = PlayingSurface()
     AnyCardsPlaying()
-        .environment(PlayingSurface().gameHandle)
+        .environment(surface.gameHandle)
+        .environment(surface.model)
 }

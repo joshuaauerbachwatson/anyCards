@@ -14,8 +14,6 @@ struct SetupControls: View {
     @Environment(UnigameModel.self) var model
     @Environment(AnyCardsGameHandle.self) var gameHandle
     
-    @State private var showDealDialog: Bool = false
-
     var surface: PlayingSurface {
         gameHandle.playingSurface
     }
@@ -40,9 +38,9 @@ struct SetupControls: View {
                     .fixedSize()
                 Spacer()
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                    showDealDialog = true
+                    gameHandle.showDealDialog = true
                 }.buttonStyle(.borderedProminent)
-                .popover(isPresented: $showDealDialog) {
+                    .popover(isPresented: $gameHandle.showDealDialog) {
                     DealDialog(box: deck!, hasHands: gameHandle.hasHands)
                 }.disabled(!surface.canDeal)
                 Button("Reset", systemImage: "clear") {
@@ -56,7 +54,7 @@ struct SetupControls: View {
 }
 
 #Preview {
-    let surface = PlayingSurface()
+    let surface = PlayingSurface().initializeView().newShuffle()    
     SetupControls()
         .environment(surface.model)
         .environment(surface.gameHandle)

@@ -69,4 +69,5 @@ struct SavedSetupsView: View {
 
 #Preview {
     SavedSetupsView()
+        .environment(PlayingSurface().gameHandle)
 }

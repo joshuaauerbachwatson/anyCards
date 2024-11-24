@@ -640,10 +640,12 @@ class PlayingSurface: UIView {
         sendSubviewToBack(gridBox)
         gridBox.maybeSnapUp(cardViews)
         gridBox.refreshCount()
-        if gridBox.name == nil && gridBox.mayBeModified {
-            gameHandle.modifyBox(gridBox)
-        } else {
-            gridBox.mayNotModify()
+        if gridBox.name == nil {
+            if gridBox.mayBeModified {
+                gameHandle.modifyBox(gridBox)
+            } else {
+                gridBox.mayNotModify()
+            }
         }
     }
 

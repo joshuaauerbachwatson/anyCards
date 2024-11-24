@@ -58,6 +58,15 @@ class GridBox : UIView {
                 return "↑↓"
             }
         }
+        
+        var canTurnOver: Bool {
+            switch self {
+            case .Hand, .General:
+                return false
+            default:
+                return true
+            }
+        }
     }
 
     // An variable to save the previous "kind" of a GridBox as it is being changed.

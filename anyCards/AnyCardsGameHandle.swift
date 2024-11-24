@@ -55,7 +55,7 @@ class AnyCardsGameHandle: GameHandle {
     var tokenProvider: any unigame.TokenProvider = Auth0TokenProvider()
 
     // The playing surface view, which fills the unigame "playing" view and is also part of the unigame "setup" view.
-    unowned var playingSurface: PlayingSurface!
+    var playingSurface: PlayingSurface!
     
     // Conforms to GameHandle
     func reset() {
@@ -85,6 +85,16 @@ class AnyCardsGameHandle: GameHandle {
     // Holds the box on which the either of the two grid box menus should operate
     var box: GridBox? = nil
     
+    // Provides the anchor for box-related popup menus as a UnitPoint
+    var boxAnchor: UnitPoint {
+        guard let boxCenter = box?.center else {
+            return .center
+        }
+        let x = boxCenter.x / playingSurface.bounds.width
+        let y = boxCenter.y / playingSurface.bounds.height
+        return UnitPoint(x: x, y: y)
+    }
+    
     // Indicates that the main GridBox menu should be shown
     var showGridBoxMenu: Bool = false
     
@@ -104,4 +114,7 @@ class AnyCardsGameHandle: GameHandle {
 
     // Indicates that the grouping alert should be shown
     var showGroupingAlert: Bool = false
+    
+    // Indicates that the deal dialog should be shown
+    var showDealDialog: Bool = false
 }
