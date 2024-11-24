@@ -18,10 +18,7 @@ import SwiftUI
 import unigame
 
 // Enumeration of possible dealing targets
-enum TargetKind : Int, CaseIterable {
-    // Hands and Piles cases must be the first two cases respectively
-    // since we rely on stepping through the cases and they are the default
-    // starting points (depending on whether there is a hand area).
+enum TargetKind : CaseIterable, Identifiable {
     case Hands, Piles, OwnedDecks, SharedDecks, OwnedDiscards, SharedDiscards
     
     var display: String {
@@ -39,6 +36,11 @@ enum TargetKind : Int, CaseIterable {
         case .SharedDiscards:
             return "Shared Discards"
         }
+    }
+   
+    // Conform to Identifiable to enable Picker use
+    var id: String {
+        display
     }
     
     var boxKind : GridBox.Kind {
@@ -73,20 +75,17 @@ struct DealDialog: View {
     
     @State private var hands: Int = 2
     @State private var cards: Int = 5
-    @State var targetKind: Int
-    var targetKindText: String {
-        TargetKind(rawValue: targetKind)?.display ?? "Unknown"
-    }
-    var targetRange: ClosedRange<Int>
+    @State var targetKind: TargetKind
+    let availableKinds: [TargetKind]
     
     init(box: GridBox, hasHands: Bool) {
         self.box = box
         if hasHands {
-            targetRange = 0...TargetKind.allCases.count - 1
-            targetKind = 0
+            availableKinds = TargetKind.allCases
+            targetKind = .Hands
         } else {
-            targetRange = 1...TargetKind.allCases.count - 1
-            targetKind = 1
+            availableKinds = [TargetKind](TargetKind.allCases.dropFirst())
+            targetKind = .Piles
         }
     }
     
@@ -95,7 +94,7 @@ struct DealDialog: View {
             Stepper(value: $hands,
                     in: 2...6) {
                 HStack {
-                    Text("Number of groupings:").bold()
+                    Text("Number of targets:").bold()
                     Spacer()
                     Text("\(hands)")
                 }
@@ -103,17 +102,18 @@ struct DealDialog: View {
             Stepper(value: $cards,
                     in: 2...200) {
                 HStack {
-                    Text("Cards per grouping:").bold()
+                    Text("Cards per target:").bold()
                     Spacer()
                     Text("\(cards)")
                 }
             }
-            Stepper(value: $targetKind,
-                    in: targetRange) {
-                HStack {
-                    Text("Type of groupings:").bold()
-                    Spacer()
-                    Text("\(targetKindText)")
+            HStack {
+                Text("Type of target:").bold()
+                Spacer()
+                Picker("", selection: $targetKind) {
+                    ForEach(availableKinds) { kind in
+                        Text(kind.display).tag(kind)
+                    }
                 }
             }
             if hands * cards > box.cards.count {
@@ -121,8 +121,8 @@ struct DealDialog: View {
                     .foregroundStyle(.red)
             } else {
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                    let kind = TargetKind(rawValue: targetKind) ?? TargetKind.Hands
-                    gameHandle.playingSurface.deal(hands: hands, cards: cards, kind: kind, from: box)
+                    gameHandle.playingSurface.deal(hands: hands, cards: cards,
+                                                   kind: targetKind, from: box)
                     dismiss()
                 }.buttonStyle(.borderedProminent)
             }
