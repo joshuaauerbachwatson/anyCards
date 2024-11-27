@@ -23,7 +23,7 @@ import AuerbachLook
 // of GridBox should require examining the implications for GridBoxState.
 class GridBox : UIView {
     // Classifies the GridBox according to the rules that apply
-    enum Kind : Codable, CaseIterable {
+    enum Kind : Codable, CaseIterable, Identifiable {
         case Deck     // All face down, remove only
         case Hand     // Locked, except for "Take Hand", touching will result in taking
         case Discard  // All face up, add at top only.  Removal allowed.
@@ -44,6 +44,11 @@ class GridBox : UIView {
             case .General:
                 return "general"
             }
+        }
+        
+        // Conform to Identifiable
+        var id: String {
+            label
         }
 
         var symbol: String {

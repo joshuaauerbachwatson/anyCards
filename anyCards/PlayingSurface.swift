@@ -49,11 +49,9 @@ class PlayingSurface: UIView {
     }
 
     // Respond to update request from SwiftUI world.
-    // Note: present logic is kind of heavyweight.  Will need to evaluate whether it is a performance issue.
-    func update() {
-        let playingState = PlayingState(self, includeHandArea: true)
-        removeAllCardsAndBoxes()
-        doLayout(playingState)
+    // Note: still not sure what should happen here.
+    func update(_ context: UIViewRepresentableContext<PlayingSurfaceWrapper>) {
+        Logger.log("Update of PlayingSurface requested by SwiftUI ... ignored for now")
     }
 
     // Model-related fields
@@ -164,66 +162,65 @@ class PlayingSurface: UIView {
         return self
     }
 
-    // When the view appears (hence its size is known), check whether an initial layout has been done.  If
-    // not, do one.  Also configure the labels.
+    // When the view first appears (hence its size is known) do the initial layout.
+    // This method is called repeatedly for various reasons; after the first time we ignore it.
     override func layoutSubviews() {
         super.layoutSubviews()
-        doLayout(nil)
-        Logger.log("Playing area initialized")
+        if boxViews.count == 0 && cardViews.count == 0 {
+            // First ever layout, no gameState exists yet.  Just create and place the deck, without rescaling.
+            setupPublicArea()
+            shuffleAndPlace()
+            Logger.log("Playing area initialized")
+        }
     }
 
     // Layout section
 
-    // Perform layout.
-    private func doLayout(_ gs: PlayingState?) {
-        // If given a new state, process it.
-        if let gameState = gs {
-            if let setup = gs?.setup, !model.leadPlayer {
-                Logger.log("Still in initial setup, processing deck type and public area, locking orientation")
-                cards = sourceDeck.makePlayingDeck(setup.deckType)
-                addCardGestureRecognizers()
-                gameHandle.hasHands = setup.hasHands
-                setupPublicArea()
-                setOrientationLocks(gameState.areaSize.landscape)
-            }
-            let rescale = bounds.minDimension / gameState.areaSize.minDimension
-            Logger.log("rescale is \(rescale)")
-            for boxState in gameState.boxes {
-                let box = GridBox(origin: boxState.origin * rescale, size: cardSize, host: self)
-                box.name = boxState.name
-                box.owner = boxState.owner
-                box.kind = boxState.kind
-                addSubview(box)
-            }
-            for cardState in gameState.cards {
-                let card = findAndFixCard(from: cardState, rescale: rescale)
-                // Ensure that the card has sufficient pixels overlapping the playing area so as to be easily seen
-                let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
-                let legal = bounds.inset(by: insets)
-                let actual = card.frame
-                if !actual.intersects(legal) {
-                    var (newX, newY) = (actual.minX, actual.minY)
-                    if actual.maxX <= legal.minX {
-                        newX = legal.minX - (actual.width / 2)
-                    } else if actual.minX >= legal.maxX {
-                        newX = legal.maxX - (actual.width / 2)
-                    }
-                    if actual.maxY <= legal.minY {
-                        newY = legal.minY - (actual.height / 2)
-                    } else if actual.minY >= legal.maxY {
-                        newY = legal.maxY - (actual.height / 2)
-                    }
-                    card.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: card.frame.size)
-                }
-                addSubview(card)
-            }
-            refreshBoxCounts()
-        } else if boxViews.count == 0 && cardViews.count == 0 {
-            // First ever layout, no gameState exists yet.  Just create and place the deck, without rescaling.
+    // Perform layout after changes.  The PlayingState argument contains the new desired state.
+    private func doLayoutFromState(_ gs: PlayingState) {
+        if let setup = gs.setup, !model.leadPlayer {
+            Logger.log("Still in initial setup, processing deck type and public area, locking orientation")
+            cards = sourceDeck.makePlayingDeck(setup.deckType)
+            addCardGestureRecognizers()
+            gameHandle.hasHands = setup.hasHands
             setupPublicArea()
-            shuffleAndPlace()
+            setOrientationLocks(gs.areaSize.landscape)
         }
-        Logger.log("Layout performed")
+        let currentScale = bounds.minDimension
+        let newScale = gs.areaSize.minDimension
+        let rescale = currentScale > 0 && newScale > 0 ? currentScale/newScale : 1.0
+        Logger.log("rescale is \(rescale)")
+        for boxState in gs.boxes {
+            let box = GridBox(origin: boxState.origin * rescale, size: cardSize, host: self)
+            box.name = boxState.name
+            box.owner = boxState.owner
+            box.kind = boxState.kind
+            addSubview(box)
+        }
+        for cardState in gs.cards {
+            let card = findAndFixCard(from: cardState, rescale: rescale)
+            // Ensure that the card has sufficient pixels overlapping the playing area so as to be easily seen
+            let insets = UIEdgeInsets(top: MinCardPixels, left: MinCardPixels, bottom: MinCardPixels, right: MinCardPixels)
+            let legal = bounds.inset(by: insets)
+            let actual = card.frame
+            if !actual.intersects(legal) {
+                var (newX, newY) = (actual.minX, actual.minY)
+                if actual.maxX <= legal.minX {
+                    newX = legal.minX - (actual.width / 2)
+                } else if actual.minX >= legal.maxX {
+                    newX = legal.maxX - (actual.width / 2)
+                }
+                if actual.maxY <= legal.minY {
+                    newY = legal.minY - (actual.height / 2)
+                } else if actual.minY >= legal.maxY {
+                    newY = legal.maxY - (actual.height / 2)
+                }
+                card.frame = CGRect(origin: CGPoint(x: newX, y: newY), size: card.frame.size)
+            }
+            addSubview(card)
+        }
+        refreshBoxCounts()
+        Logger.log("New layout was performed for a new PlayingState")
     }
 
     // Actions
@@ -402,7 +399,7 @@ class PlayingSurface: UIView {
         if !duringSetup {
             newState.setup = nil
         }
-        doLayout(newState)
+        doLayoutFromState(newState)
         return nil
     }
 
@@ -737,7 +734,7 @@ class PlayingSurface: UIView {
         for card in gameState.cards {
             card.index = newIndices.removeFirst()
         }
-        doLayout(gameState)
+        doLayoutFromState(gameState)
         model.transmitSetup()
     }
 

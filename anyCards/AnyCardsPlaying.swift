@@ -30,7 +30,7 @@ struct PlayingSurfaceWrapper: UIViewRepresentable {
         return gameHandle.playingSurface
     }
     func updateUIView(_ uiView: PlayingSurface, context: Context) {
-        uiView.update()
+        uiView.update(context)
     }
 }
 
@@ -60,6 +60,10 @@ struct AnyCardsPlaying: View {
                     .popover(isPresented: $handle.showDealDialog,
                              attachmentAnchor: .point(gameHandle.boxAnchor)) {
                         DealDialog(box: box, hasHands: gameHandle.hasHands)
+                    }
+                   .popover(isPresented: $handle.showModifyBoxMenu,
+                             attachmentAnchor: .point(gameHandle.boxAnchor)) {
+                        ModifyBoxMenu()
                     }
             }
         }
