@@ -79,7 +79,7 @@ struct ModifyBoxMenu: View {
             Logger.log("Box kind read as \(boxKind)")
             owned = box.owner != GridBox.Unowned
             Logger.log("owned read as \(owned)")
-        }
+        }.padding()
     }
 }
 
