@@ -14,6 +14,7 @@
 		281F052C2CC2F292002772D4 /* AnyCardsGameHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */; };
 		281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */; };
 		285C93DF2CF4CDDB00061798 /* ModifyBoxMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285C93DE2CF4CDDB00061798 /* ModifyBoxMenu.swift */; };
+		285C93E12CF8DEDD00061798 /* GroupingToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 285C93E02CF8DEDD00061798 /* GroupingToggle.swift */; };
 		286629AE2CD9609800D10656 /* CBORCoding in Frameworks */ = {isa = PBXBuildFile; productRef = 286629AD2CD9609800D10656 /* CBORCoding */; };
 		286629B02CDA619B00D10656 /* SetupControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629AF2CDA619B00D10656 /* SetupControls.swift */; };
 		286629B22CDEAB6100D10656 /* DealDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 286629B12CDEAB6100D10656 /* DealDialog.swift */; };
@@ -45,6 +46,7 @@
 		281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsGameHandle.swift; sourceTree = "<group>"; };
 		281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsSetup.swift; sourceTree = "<group>"; };
 		285C93DE2CF4CDDB00061798 /* ModifyBoxMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModifyBoxMenu.swift; sourceTree = "<group>"; };
+		285C93E02CF8DEDD00061798 /* GroupingToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupingToggle.swift; sourceTree = "<group>"; };
 		286629AF2CDA619B00D10656 /* SetupControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupControls.swift; sourceTree = "<group>"; };
 		286629B12CDEAB6100D10656 /* DealDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DealDialog.swift; sourceTree = "<group>"; };
 		28D17EFA2CE39D9100CDFBFF /* SavedSetupsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSetupsView.swift; sourceTree = "<group>"; };
@@ -134,6 +136,7 @@
 				EE90290426DEDF7A00F87FF8 /* Deck.swift */,
 				EE9028FB26DEDF7A00F87FF8 /* GridBox.swift */,
 				28E25B802CF260E2005BF16E /* GridBoxMenu.swift */,
+				285C93E02CF8DEDD00061798 /* GroupingToggle.swift */,
 				285C93DE2CF4CDDB00061798 /* ModifyBoxMenu.swift */,
 				EE9028FE26DEDF7A00F87FF8 /* Player.swift */,
 				EE9028FC26DEDF7A00F87FF8 /* PlayingState.swift */,
@@ -244,6 +247,7 @@
 				280065C52BD962E1003A520D /* Auth0TokenProvider.swift in Sources */,
 				28E25B812CF260E2005BF16E /* GridBoxMenu.swift in Sources */,
 				28D17EFB2CE39D9100CDFBFF /* SavedSetupsView.swift in Sources */,
+				285C93E12CF8DEDD00061798 /* GroupingToggle.swift in Sources */,
 				285C93DF2CF4CDDB00061798 /* ModifyBoxMenu.swift in Sources */,
 				28F991C92CC2BFF600C87791 /* AnyCardsApp.swift in Sources */,
 				28FE44842CC53A5100477C74 /* PlayingSurface.swift in Sources */,

@@ -421,7 +421,7 @@ class PlayingSurface: UIView {
                 attemptNewGridBox(location)
             } else {
                 // Long press in the private area brings up the card grouping dislog
-                gameHandle.showGroupingAlert = true
+                gameHandle.showGroupingToggle = true
             }
         }
     }

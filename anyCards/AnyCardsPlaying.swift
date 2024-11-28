@@ -65,6 +65,10 @@ struct AnyCardsPlaying: View {
                              attachmentAnchor: .point(gameHandle.boxAnchor)) {
                         ModifyBoxMenu()
                     }
+                    .popover(isPresented: $handle.showGroupingToggle,
+                             attachmentAnchor: .point(gameHandle.privateAreaAnchor)) {
+                        GroupingToggle()
+                    }
             }
         }
     }

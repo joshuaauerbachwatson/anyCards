@@ -116,7 +116,18 @@ class AnyCardsGameHandle: GameHandle {
     }
 
     // Indicates that the grouping alert should be shown
-    var showGroupingAlert: Bool = false
+    var showGroupingToggle: Bool = false
+    
+    // Calculate the correct anchor for the grouping toggle popover
+    var privateAreaAnchor: UnitPoint {
+        guard let publicArea = playingSurface.publicArea else {
+            return .center
+        }
+        let point = CGPoint(x: publicArea.midX, y: playingSurface.publicArea.maxY)
+        let x = point.x / playingSurface.bounds.width
+        let y = point.y / playingSurface.bounds.height
+        return UnitPoint(x: x, y: y)
+    }
     
     // Indicates that the deal dialog should be shown
     var showDealDialog: Bool = false
