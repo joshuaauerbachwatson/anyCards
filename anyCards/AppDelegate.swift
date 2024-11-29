@@ -19,10 +19,13 @@ import UIKit
 class AppDelegate: NSObject, UIApplicationDelegate {
     static var orientationLock = UIInterfaceOrientationMask.all {
         didSet {
-            // Based on probably flawed recommendation in https://stackoverflow.com/questions/66037782/swiftui-how-do-i-lock-a-particular-view-in-portrait-mode-whilst-allowing-others
-            UIApplication.shared.connectedScenes.forEach { scene in
-                if let windowScene = scene as? UIWindowScene {
-                    windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: orientationLock))
+            // Based on probably flawed recommendation in https://stackoverflow.com/questions/
+            // 66037782/swiftui-how-do-i-lock-a-particular-view-in-portrait-mode-whilst-allowing-others
+            DispatchQueue.main.async {
+                UIApplication.shared.connectedScenes.forEach { scene in
+                    if let windowScene = scene as? UIWindowScene {
+                        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: orientationLock))
+                    }
                 }
             }
             // The following is deprecated as of iOS 16.  The recommended replacement is an instance method
