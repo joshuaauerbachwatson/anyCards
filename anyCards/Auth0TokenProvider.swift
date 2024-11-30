@@ -11,7 +11,7 @@ import AuerbachLook
 import unigame
 
 // An Auth0 implementation of unigame TokenProvider
-class Auth0TokenProvider: TokenProvider {
+final class Auth0TokenProvider: TokenProvider {
     func login() async -> (unigame.Credentials?, LocalizedError?) {
         do {
             let auth0creds = try await Auth0.webAuth().useHTTPS().audience("https://unigame.com").start()
