@@ -178,6 +178,7 @@ class PlayingSurface: UIView {
 
     // Perform layout after changes.  The PlayingState argument contains the new desired state.
     private func doLayoutFromState(_ gs: PlayingState) {
+        removeAllCardsAndBoxes()
         if let setup = gs.setup, !model.leadPlayer {
             Logger.log("Still in initial setup, processing deck type and public area, locking orientation")
             cards = sourceDeck.makePlayingDeck(setup.deckType)
@@ -243,7 +244,7 @@ class PlayingSurface: UIView {
             } else {
                 card.turnFaceUp(true)
             }
-            model.transmitState()
+            model.transmit()
         } else {
             Logger.logFatalError("Card gesture recognizer called with non-card")
         }
@@ -318,7 +319,7 @@ class PlayingSurface: UIView {
                 }
             }
             refreshBoxCounts()
-            model.transmitState()
+            model.transmit()
             setCanDeal()
         }
     }
@@ -356,7 +357,7 @@ class PlayingSurface: UIView {
                     hand.removeFromSuperview()
                 }
             }
-            self.model.transmitSetup()
+            self.model.transmit()
         }
     }
 
@@ -388,16 +389,13 @@ class PlayingSurface: UIView {
     }
     
     // Accept new game state
-    func newPlayingState(_ data: [UInt8], duringSetup: Bool) -> Error? {
+    func newPlayingState(_ data: [UInt8]) -> Error? {
         let decoder = CBORDecoder()
         let newState: PlayingState
         do {
             newState = try decoder.decode(PlayingState.self, from: Data(data))
         } catch {
             return error
-        }
-        if !duringSetup {
-            newState.setup = nil
         }
         doLayoutFromState(newState)
         return nil
@@ -465,7 +463,7 @@ class PlayingSurface: UIView {
         runAnimationSequence(animations) {
             // Delete the box
             box.removeFromSuperview()
-            self.model.transmitState()
+            self.model.transmit()
         }
     }
 
@@ -635,7 +633,7 @@ class PlayingSurface: UIView {
         cards = sourceDeck.makePlayingDeck(deckType)
         addCardGestureRecognizers()
         newShuffle()
-        model.transmitSetup()
+        model.transmit()
     }
 
     // Place a new GridBox into the playingArea after determining that it fits
@@ -716,7 +714,7 @@ class PlayingSurface: UIView {
             hide(handAreaMarker)
         }
         if transmit {
-            model.transmitSetup()
+            model.transmit()
         }
     }
 
@@ -735,7 +733,7 @@ class PlayingSurface: UIView {
             card.index = newIndices.removeFirst()
         }
         doLayoutFromState(gameState)
-        model.transmitSetup()
+        model.transmit()
     }
 
 

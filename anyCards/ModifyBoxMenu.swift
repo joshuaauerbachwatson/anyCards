@@ -64,7 +64,7 @@ struct ModifyBoxMenu: View {
                 box.owner = owned ? model.thisPlayer : GridBox.Unowned
                 Logger.log("Set owner to \(box.owner)")
                 dismiss()
-                model.transmitState()
+                model.transmit()
             } label: {
                 Text("Apply Changes")
                 .frame(maxWidth: .infinity)

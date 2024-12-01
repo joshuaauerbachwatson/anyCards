@@ -63,8 +63,8 @@ class AnyCardsGameHandle: GameHandle {
     }
     
     // Conforms to GameHandle
-    func stateChanged(_ data: [UInt8], duringSetup: Bool) -> (any Error)? {
-        return playingSurface.newPlayingState(data, duringSetup: duringSetup)
+    func stateChanged(_ data: [UInt8]) -> (any Error)? {
+        return playingSurface.newPlayingState(data)
     }
     
     // Conforms to GameHandle

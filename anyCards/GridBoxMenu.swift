@@ -38,7 +38,7 @@ struct GridBoxMenu: View {
     // Use this function to dismiss the popup when state has been modified
     private func done() {
         dismiss()
-        model.transmitState()
+        model.transmit()
     }
 
     var body: some View {

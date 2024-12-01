@@ -46,6 +46,7 @@ struct SetupControls: View {
                     .disabled(!gameHandle.canDeal)
                 Button("Reset", systemImage: "clear") {
                     surface.newShuffle()
+                    surface.model.transmit()
                 }.buttonStyle(.borderedProminent)
             }
             SavedSetupsView()

@@ -206,7 +206,7 @@ class GridBox : UIView {
                     cards.forEach { $0.frame = cardFrame }
                 }
                 if recognizer.state == .ended {
-                    host.model.transmitState()
+                    host.model.transmit()
                     host.setCanDeal()
                 }
             }
