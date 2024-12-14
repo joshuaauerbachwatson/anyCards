@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		280033462D0DDA37008CD66B /* AnyCardsHelpHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 280033452D0DDA37008CD66B /* AnyCardsHelpHandle.swift */; };
 		280065C32BD94BCD003A520D /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = 280065C22BD94BCD003A520D /* Auth0.plist */; };
 		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
 		281F052A2CC2E3FB002772D4 /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 281F05292CC2E3FB002772D4 /* Auth0 */; };
@@ -38,6 +39,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		280033452D0DDA37008CD66B /* AnyCardsHelpHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCardsHelpHandle.swift; sourceTree = "<group>"; };
 		280065C12BD94B2E003A520D /* anyCards.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = anyCards.entitlements; sourceTree = "<group>"; };
 		280065C22BD94BCD003A520D /* Auth0.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
 		281EE3882C4B101400750B72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = anyCards/Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 				EE9028F126DE962700F87FF8 /* Info.plist */,
 				28F991C82CC2BFF600C87791 /* AnyCardsApp.swift */,
 				281F052B2CC2F292002772D4 /* AnyCardsGameHandle.swift */,
+				280033452D0DDA37008CD66B /* AnyCardsHelpHandle.swift */,
 				28FE44852CC53CD200477C74 /* AnyCardsPlaying.swift */,
 				281F052D2CC2FA26002772D4 /* AnyCardsSetup.swift */,
 				28E25B7E2CF22AAA005BF16E /* AppDelegate.swift */,
@@ -241,6 +244,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				281F052E2CC2FA26002772D4 /* AnyCardsSetup.swift in Sources */,
+				280033462D0DDA37008CD66B /* AnyCardsHelpHandle.swift in Sources */,
 				28E25B812CF260E2005BF16E /* GridBoxMenu.swift in Sources */,
 				28D17EFB2CE39D9100CDFBFF /* SavedSetupsView.swift in Sources */,
 				285C93E12CF8DEDD00061798 /* GroupingToggle.swift in Sources */,
