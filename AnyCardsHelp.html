@@ -3,11 +3,13 @@
     </h2>
 	<p>
 		To familiarize yourself with how to move cards and use boxes, it is
-		helpful to go to the <b>Players</b> dialog, set yourself as leader,
-		and set the number of players to 1 ("solitaire mode"). Then you can
+		helpful play for a while in "solitaire mode".  When starting the game,
+        set yourself as leader and set the number of players to 1.  Touch <b>Play</b> to
+        reveal the "setup" screen", then touch <b>Setup complete</b>.  You can then
 		experiment with the features discussed here.
 	</p>
-	<p>The illustration shows examples of cards (both face up and face
+	<p><img alt="cards and boxes" src="./cardsAndBoxes.png" style='height: 100%; width: 100%; object-fit: contain'>
+        The illustration shows examples of cards (both face up and face
 		down) and boxes which contain cards. As you work through the details
 		of this section, you should eventually be able to reproduce the
 		illustration pretty closely (suits and denominations will differ
@@ -42,7 +44,7 @@
 	<h3>Boxes</h3>
 
 	<p>Boxes hold cards. They also have a "legend" containing an
-		optional name label, an access-style indicator (up and/or down arrows),
+		optional name label, an access-style indicator (up and/or down arrows or an exclamation mark),
 		and a number (in red) indicating how many cards the box is currently
 		holding.  The access-style indicator is explained below.</p>
 
@@ -60,45 +62,60 @@
 
 	<h4>Box access styles</h4>
 
-	<p>The access-style indicator consists of an arrow pointing toward the
-		cards, an arrow pointing away from the cards, or both. Roughly, these
-		indicate that you would mostly be adding cards, mostly removing cards,
-		or both. But, the rules are a little more complex, with the purpose of
-		avoiding common playing errors.</p>
+	<p>Possible box access styles are
+    <ul><li><em>deck</em> (indicated by an arrow pointing away from the cards)</li>
+        <li><em>hand</em> (indicated by an exclamation point)</li>
+        <li><em>discard</em> (indicated by an arrow pointing toward the cards)</li>
+        <li><em>general</em> (indicated by arrows pointing in both directions)</li>
+    </ul>
+		Roughly speaking, the symbols indicate that you would most likely be adding
+        cards, removing cards, both, or neither. But, the rules are a little more complex,
+        with the purpose of avoiding common playing errors.
+    </p>
 
 	<p>
-		A box with just the "away" pointing arrow is called a <em>Deck</em>.
-		It may contain only face down cards. Cards may not be added to it. The
+		A <em>deck</em> box may contain only face down cards. Cards may not be added to it. The
 		top card cannot be turned over in place but it can be moved entirely
 		or partially off the box, after which it becomes an ordinary card. The
-		deck box in the illustration happens to have the name "Deck", too,
-		but, in general, a box's name is distinct from its access-style.
+		deck box in the illustration happens to have the <em>name</em> "Deck", too,
+		but, a box's name is distinct from its access-style.
 	</p>
 
 	<p>
-		A box with just the "toward" pointing arrow is called a <em>Discard</em>
-		box. It may contain only face-up cards. Cards may be added by dragging
-		them onto the box (and will automatically turn face up). The top card
-		may also be dragged off (but not turned over in place). In some games,
-		removing a card from a discard box is illegal.  In other games it is allowed.
-        For flexibility we allow it.
-	</p>
-
+		A <em>hand</em> box is always the result of dealing.  The cards in the box are always face down
+        and cannot be added to or removed individually.  A player may "take" a hand box, causing its
+        contents to move into the private hand area, where the cards are turned face up.
+    </p>
+    
+    <p>
+        A <em>discard</em> box may contain only face up cards.  Cards may be added
+		the box (and will automatically turn face up). The top card may also be dragged off
+        (but not turned over in place). In some games, taking the top card from the discard
+        pile is allowed, hence it is allowed with a discard box.
+    </p>
+    
+    <p>Some discard boxes have an "auto-yield" property (not visible), which can be selected when
+        box is created.  This property causes a player's turn to end as a side-effect of adding a card
+        to the discard box.  In <em>some</em> games this is a convenience, which tends to speed up the game
+        because players don't have to both discard and touch the <b>End Turn</b> button.  This setting is not
+        appropriate for all games.
+    </p>
+    
 	<p>
-		The presence of both arrows indicates a <em>General</em> box. It may
+		A <em>general</em> box may
 		contain both face up and face down cards. If face up cards are added
 		they go to the top of the pile and remain face up. If face down cards
-		are added they go to the bottom and remain face down.  Cards may be
-        freely removed from a General box.
+		are added they go to the bottom and remain face down.  The top card of a
+        general box can always be removed.
 	</p>
 	
 	<h4>Box ownership</h4>
 
-	<p>In some games, after a deal, there may be a box for each player.
+	<p>In some games, after a deal, there may be a box for each player (often a hand, but sometimes an "owned deck").
 		A common error in such games is drawing or turning over a card from
 		the wrong box. To avoid these errors, a box may be owned by a specific
 		player. Only that player may add or remove cards, turn over the top
-		card, or change the box's characteristics. Boxes become owned as a
+		card, take it (if it is a hand) or change the box's characteristics. Boxes become owned as a
 		result of dealing (this feature can be turned off in the dealing
 		dialog), at creation time (in which case they are owned by the
 		creator), or in the box modification dialog.</p>
@@ -112,15 +129,18 @@
 		immediately "snapped" up into the box.</p>
 
 	<p>Before actualy creating the box, you will be presented with a
-		dialog that looks like the picture. You can set the access style (or
-		"kind of box") to "General", "Deck", or "Discard". You can also
-		specify the name of the box, and indicate whether you want to own the
+		dialog that looks like the picture. <img alt='box characteristics menu' src="./ModifyBoxMenu.png"
+            style='height: 100%; width: 100%; object-fit: contain'>
+        You can set the access style (or
+		"kind of box") to "General", "Hand", ""Deck", "Discard", or "Discard (yield)".
+        You can also specify the name of the box, and indicate whether you want to own the
 		box.</p>
 
 	<p>Once a box is created (unless it is owned by another player),
 		you can access special actions for it by tapping in the legend. A long
 		press on the cards will also bring up the dialog. The result will look
-		something like the nearby picture. Not all of the buttons in the
+		something like the nearby picture. <img alt="Box menu" src="./GridBoxMenu.png">
+        Not all of the buttons in the
 		picture will necessarily appear, depending on the state of the box and
 		of the game.</p>
 
