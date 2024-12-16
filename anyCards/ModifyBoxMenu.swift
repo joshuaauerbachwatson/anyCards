@@ -49,7 +49,7 @@ struct ModifyBoxMenu: View {
                 Text("Box type:").bold()
                 Spacer()
                 Picker("", selection: $boxKind) {
-                    ForEach(GridBox.Kind.allCases) { kind in
+                    ForEach(GridBox.Kind.settableCases(gameHandle.hasHands)) { kind in
                         Text(kind.label).tag(kind)
                     }
                 }

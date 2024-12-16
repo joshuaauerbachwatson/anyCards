@@ -72,6 +72,13 @@ class GridBox : UIView {
                 return true
             }
         }
+        
+        static func settableCases(_ hasHands: Bool) -> [Kind] {
+            if hasHands {
+                return Self.allCases
+            }
+            return Self.allCases.filter { $0 != .Hand}
+        }
     }
 
     // An variable to save the previous "kind" of a GridBox as it is being changed.
