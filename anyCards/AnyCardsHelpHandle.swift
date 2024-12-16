@@ -46,6 +46,8 @@ struct AnyCardsHelpHandle: HelpHandle {
     let path = Bundle.main.url(forResource: "AnyCardsHelp", withExtension: "html")!
     let appSpecificTOC = [
         HelpTOCEntry("Basics", "Card Manipulation Basics"),
+        HelpTOCEntry("Boxes", "Boxes", indented: true),
+        HelpTOCEntry("Hands", "The Private Hand Area", indented: true),
         HelpTOCEntry("Setup", "Setting up a Game"),
         HelpTOCEntry("Playing", "Playing and Ending a Game")
     ]
