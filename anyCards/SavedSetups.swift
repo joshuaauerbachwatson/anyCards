@@ -19,19 +19,25 @@ import AuerbachLook
 
 // Keeps the game setups being stored persistently
 class SavedSetups : Codable {
+    struct Setup: Codable {
+        let numPlayers: Int
+        let contents: PlayingState
+    }
+    
     // The setups being stored persistently
-    var setups = Dictionary<String, PlayingState>()
+    var setups = Dictionary<String, Setup>()
 
-    var setupNames: [String] {
-        get {
-            return setups.keys.map { String($0) } // Surprisingly, the type of setups.keys is not [String]
-        }
+    // Get the names of eligible setups (matching numPlayers)
+    func setupNames(_ numPlayers: Int) -> [String] {
+        let eligible = setups.filter { $0.value.numPlayers == numPlayers }
+        return eligible.keys.map { String($0) } // Surprisingly, the type of Disctionary<T,_>.keys is not [T]
     }
 
-    var first: (String, PlayingState)? {
-        get {
-            return setups.first
+    func first(_ numPlayers: Int) -> (String, PlayingState)? {
+        if let ans = setups.first(where: {$0.value.numPlayers == numPlayers }) {
+            return (ans.key, ans.value.contents)
         }
+        return nil
     }
 
     // Remove item by name
@@ -53,14 +59,14 @@ class SavedSetups : Codable {
         Logger.log("savedSetups file contents at save time: \(String(bytes: encoded, encoding: .utf8) ?? "")")
     }
 
-    // Store a new entry (name, GameState) in the dictionary.  This may be protected against overwriting
+    // Store a new entry in the dictionary.  This may be protected against overwriting
     // depending on the third argument
     @discardableResult
-    func storeEntry(_ name: String, _ gameState: PlayingState, _ overwrite: Bool) -> Bool {
+    func storeEntry(_ name: String, _ state: PlayingState, _ numPlayers: Int, _ overwrite: Bool) -> Bool {
         if !overwrite && setups[name] != nil {
             return false
         }
-        setups[name] = gameState
+        setups[name] = Setup(numPlayers: numPlayers, contents: state)
         save()
         return true
     }

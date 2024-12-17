@@ -42,8 +42,37 @@ class AnyCardsGameHandle: GameHandle {
         }
     }
     
+    // Management for saved setups.  Makes sure only setups with the right number of players are used
+    
     // SavedSetups stored permanently
-    var savedSetups: SavedSetups = SavedSetups.load()
+    private let savedSetups: SavedSetups = SavedSetups.load()
+    
+    // The set of eligible setup names based on the number of players
+    var setupNames: [String] {
+        savedSetups.setupNames(playingSurface.model.numPlayers)
+    }
+    
+    // Store a new setup
+    func newSetup(_ name: String, _ state: PlayingState, _ overwrite: Bool) -> Bool {
+        return savedSetups.storeEntry(name, state, playingSurface.model.numPlayers, overwrite)
+    }
+    
+    // Get a saved setup.  Logic should prevent this from being called unless the setup is present and has the right
+    // number of players.
+    func getSetup(_ name: String) -> PlayingState {
+        guard let entry = savedSetups.setups[name] else {
+            Logger.logFatalError("Attempting to load a setup that doesn't exist")
+        }
+        if entry.numPlayers != playingSurface.model.numPlayers {
+            Logger.logFatalError("Attempting to load a setup with the wrong number of players")
+        }
+        return entry.contents
+    }
+    
+    // Remove a saved setup
+    func removeSetup(_ name: String) {
+        savedSetups.remove(name)
+    }
     
     // Tolerate a broad range of players (including solitaire).  Conforms to GameHandle
     var numPlayerRange: ClosedRange<Int> = 1...6

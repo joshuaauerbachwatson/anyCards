@@ -21,17 +21,17 @@ struct SavedSetupsView: View {
             Text("Saved Setups:").bold()
             Spacer()
             Picker("Saved Setup", selection: $currentSetup) {
-                ForEach(gameHandle.savedSetups.setupNames, id: \.self) { setup in
+                ForEach(gameHandle.setupNames, id: \.self) { setup in
                     Text(setup).tag(setup)
                 }
             }
             Spacer()
             Button("Load", systemImage: "square.and.arrow.up.fill") {
-                guard let name = currentSetup,
-                      let state = gameHandle.savedSetups.setups[name] else {
+                guard let name = currentSetup else {
                     Logger.log("Load button should have been disabled with no currentSetup")
                     return
                 }
+                let state = gameHandle.getSetup(name)
                 gameHandle.playingSurface.restoreGameState(state)
             }
             .disabled(currentSetup == nil)
@@ -41,8 +41,8 @@ struct SavedSetupsView: View {
                     Logger.log("Delete button should have been disabled with no currentSetup")
                     return
                 }
-                gameHandle.savedSetups.remove(name)
-                currentSetup = gameHandle.savedSetups.first?.0
+                gameHandle.removeSetup(name)
+                currentSetup = gameHandle.setupNames.first
             }
             .disabled(currentSetup == nil)
             .foregroundStyle(.red)
@@ -56,7 +56,7 @@ struct SavedSetupsView: View {
                 Button("Save") {
                     let state = PlayingState(gameHandle.playingSurface)
                     state.addSetupInfo(deckType: gameHandle.deckType, hasHands: gameHandle.hasHands)
-                    if !gameHandle.savedSetups.storeEntry(newSetupName, state, false) {
+                    if !gameHandle.newSetup(newSetupName, state, false) {
                         overwriteError = true
                     }
                 }
