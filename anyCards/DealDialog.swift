@@ -69,11 +69,11 @@ enum TargetKind : CaseIterable, Identifiable {
 // A dialog view for performing the deal (shows as popover)
 struct DealDialog: View {
     @Environment(AnyCardsGameHandle.self) var gameHandle
+    @Environment(UnigameModel.self) var model
     @Environment(\.dismiss) private var dismiss
     
     let box: GridBox
     
-    @State private var hands: Int = 2
     @State private var cards: Int = 5
     @State var targetKind: TargetKind
     let availableKinds: [TargetKind]
@@ -91,13 +91,11 @@ struct DealDialog: View {
     
     var body: some View {
         VStack {
-            Stepper(value: $hands,
-                    in: 2...6) {
-                HStack {
-                    Text("Number of targets:").bold()
-                    Spacer()
-                    Text("\(hands)")
-                }
+            HStack {
+                Text("Number of players:")
+                    .font(.headline)
+                Spacer()
+                Text("\(model.numPlayers)")
             }
             Stepper(value: $cards,
                     in: 2...200) {
@@ -116,12 +114,12 @@ struct DealDialog: View {
                     }
                 }
             }
-            if hands * cards > box.cards.count {
+            if model.numPlayers * cards > box.cards.count {
                 Text("Not enough cards available for this deal")
                     .foregroundStyle(.red)
             } else {
                 Button("Deal", systemImage: "rectangle.portrait.and.arrow.right") {
-                    gameHandle.playingSurface.deal(hands: hands, cards: cards,
+                    gameHandle.playingSurface.deal(hands: model.numPlayers, cards: cards,
                                                    kind: targetKind, from: box)
                     dismiss()
                 }.buttonStyle(.borderedProminent)
@@ -134,4 +132,5 @@ struct DealDialog: View {
     let playingSurface = PlayingSurface().initializeView().newShuffle()
     DealDialog(box: playingSurface.deck!, hasHands: true)
         .environment(playingSurface.gameHandle)
+        .environment(playingSurface.model)
 }
