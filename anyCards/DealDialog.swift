@@ -130,7 +130,8 @@ struct DealDialog: View {
 
 #Preview {
     let playingSurface = PlayingSurface().initializeView().newShuffle()
-    DealDialog(box: playingSurface.deck!, hasHands: true)
+    playingSurface.model.numPlayers = 2
+    return DealDialog(box: playingSurface.deck!, hasHands: true)
         .environment(playingSurface.gameHandle)
         .environment(playingSurface.model)
 }
