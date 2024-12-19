@@ -55,6 +55,7 @@ struct ModifyBoxMenu: View {
                 }
             }
             Toggle("Owned:", isOn: $owned)
+                .disabled(boxKind == .Hand)
             Button {
                 Logger.log("Applying changes from ModifyBoxMenu")
                 box.name = boxName
