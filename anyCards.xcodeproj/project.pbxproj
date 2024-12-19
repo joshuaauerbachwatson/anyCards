@@ -11,6 +11,7 @@
 		280033572D0F2EBC008CD66B /* cardsAndBoxes.png in Resources */ = {isa = PBXBuildFile; fileRef = 280033542D0F2EBC008CD66B /* cardsAndBoxes.png */; };
 		280033582D0F2EBC008CD66B /* GridBoxMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = 280033552D0F2EBC008CD66B /* GridBoxMenu.png */; };
 		280033592D0F2EBC008CD66B /* ModifyBoxMenu.png in Resources */ = {isa = PBXBuildFile; fileRef = 280033562D0F2EBC008CD66B /* ModifyBoxMenu.png */; };
+		2800335E2D145A9F008CD66B /* DealDialog.png in Resources */ = {isa = PBXBuildFile; fileRef = 2800335D2D145A9F008CD66B /* DealDialog.png */; };
 		280065C32BD94BCD003A520D /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = 280065C22BD94BCD003A520D /* Auth0.plist */; };
 		281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 281EE3872C4B101400750B72 /* LaunchScreen.storyboard */; };
 		281F052A2CC2E3FB002772D4 /* Auth0 in Frameworks */ = {isa = PBXBuildFile; productRef = 281F05292CC2E3FB002772D4 /* Auth0 */; };
@@ -46,6 +47,7 @@
 		280033542D0F2EBC008CD66B /* cardsAndBoxes.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = cardsAndBoxes.png; sourceTree = SOURCE_ROOT; };
 		280033552D0F2EBC008CD66B /* GridBoxMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = GridBoxMenu.png; sourceTree = SOURCE_ROOT; };
 		280033562D0F2EBC008CD66B /* ModifyBoxMenu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ModifyBoxMenu.png; sourceTree = SOURCE_ROOT; };
+		2800335D2D145A9F008CD66B /* DealDialog.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = DealDialog.png; sourceTree = SOURCE_ROOT; };
 		280065C12BD94B2E003A520D /* anyCards.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = anyCards.entitlements; sourceTree = "<group>"; };
 		280065C22BD94BCD003A520D /* Auth0.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
 		281EE3882C4B101400750B72 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = anyCards/Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 			children = (
 				280065C12BD94B2E003A520D /* anyCards.entitlements */,
 				280033542D0F2EBC008CD66B /* cardsAndBoxes.png */,
+				2800335D2D145A9F008CD66B /* DealDialog.png */,
 				280033552D0F2EBC008CD66B /* GridBoxMenu.png */,
 				280033562D0F2EBC008CD66B /* ModifyBoxMenu.png */,
 				EE68816E29B7D02C003F4831 /* AnyCardsHelp.html */,
@@ -241,6 +244,7 @@
 				281EE3892C4B101400750B72 /* LaunchScreen.storyboard in Resources */,
 				EE68816F29B7D02C003F4831 /* AnyCardsHelp.html in Resources */,
 				EE90290E26DEDF7A00F87FF8 /* Assets.xcassets in Resources */,
+				2800335E2D145A9F008CD66B /* DealDialog.png in Resources */,
 				280065C32BD94BCD003A520D /* Auth0.plist in Resources */,
 				280033572D0F2EBC008CD66B /* cardsAndBoxes.png in Resources */,
 				280033582D0F2EBC008CD66B /* GridBoxMenu.png in Resources */,
