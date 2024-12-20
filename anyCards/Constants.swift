@@ -49,4 +49,3 @@ let PlayingColor = UIColor(white: 0.875, alpha: 1.0)
 let BadGridBoxMessage = "Too close to other card boxes or to an edge"
 let MainDeckName = "Deck"
 let OwnedGridBoxTemplate = "Box is owned by '%@'"
-O
