@@ -26,6 +26,7 @@ fileprivate let HasHandsKey = "HasHands"
 // It goes into the environment as an @Observable, alongside the UnigameModel.
 @Observable
 class AnyCardsGameHandle: GameHandle {
+    weak var model: UnigameModel? = nil
 
     // Settings stored permanently
     var hasHands : Bool = UserDefaults.standard.bool(forKey: HasHandsKey) {
@@ -81,7 +82,7 @@ class AnyCardsGameHandle: GameHandle {
     var appId: String = "anyoldcardgame"
     
     // The TokenProvider (conforms to GameHandle)
-    var tokenProvider: any unigame.TokenProvider = Auth0TokenProvider()
+    var tokenProvider: (any unigame.TokenProvider)? = Auth0TokenProvider()
 
     // The playing surface view, which fills the unigame "playing" view and is also part of the unigame "setup" view.
     var playingSurface: PlayingSurface!
