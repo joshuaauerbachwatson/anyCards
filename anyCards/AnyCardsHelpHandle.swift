@@ -53,7 +53,7 @@ struct AnyCardsHelpHandle: HelpHandle {
     ]
     let generalDescription = description
     let appSpecificHelp: String
-    let email = "anycardsreports@gmail.com"
+    let email: String? = "anycardsreports@gmail.com"
     let appName = "AnyCards"
     let tipResetter: TipResetter? = nil
 
