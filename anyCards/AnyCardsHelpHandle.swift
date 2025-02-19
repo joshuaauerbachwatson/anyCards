@@ -43,7 +43,6 @@ fileprivate let description = """
 // Fulfill the HelpHandle contract.
 struct AnyCardsHelpHandle: HelpHandle {
     let baseURL: URL?
-    let path = Bundle.main.url(forResource: "AnyCardsHelp", withExtension: "html")!
     let appSpecificTOC = [
         HelpTOCEntry("Basics", "Card Manipulation Basics"),
         HelpTOCEntry("Boxes", "Boxes", indented: true),
