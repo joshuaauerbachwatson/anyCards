@@ -27,6 +27,8 @@ fileprivate let HasHandsKey = "HasHands"
 @Observable
 class AnyCardsGameHandle: GameHandle {
     weak var model: UnigameModel? = nil
+    
+    var helpHandle: any HelpHandle = AnyCardsHelpHandle()
 
     // Settings stored permanently
     var hasHands : Bool = UserDefaults.standard.bool(forKey: HasHandsKey) {
