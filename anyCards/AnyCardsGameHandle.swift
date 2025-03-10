@@ -30,6 +30,10 @@ class AnyCardsGameHandle: GameHandle {
     
     var helpHandle: any HelpHandle = AnyCardsHelpHandle()
 
+    // No scoring for now.  ".Off" is probably the right default but it should be possible to
+    // enable scoring during setup.
+    var initialScoring: Scoring = .Off
+
     // Settings stored permanently
     var hasHands : Bool = UserDefaults.standard.bool(forKey: HasHandsKey) {
         didSet {
