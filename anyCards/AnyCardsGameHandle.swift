@@ -26,7 +26,7 @@ fileprivate let HasHandsKey = "HasHands"
 // It goes into the environment as an @Observable, alongside the UnigameModel.
 @Observable
 final class AnyCardsGameHandle: GameHandle {
-    weak var model: UnigameModel? = nil
+    weak var model: UnigameModel<AnyCardsGameHandle>? = nil
     
     var helpHandle: any HelpHandle = AnyCardsHelpHandle()
 

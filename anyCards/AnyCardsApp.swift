@@ -24,7 +24,7 @@ struct AnyCardsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            unigame.ContentView()
+            unigame.ContentView<AnyCardsGameHandle>()
                 .environment(surface.model)
                 .environment(surface.gameHandle)
         }

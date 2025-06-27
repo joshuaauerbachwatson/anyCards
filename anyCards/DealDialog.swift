@@ -69,7 +69,7 @@ enum TargetKind : CaseIterable, Identifiable {
 // A dialog view for performing the deal (shows as popover)
 struct DealDialog: View {
     @Environment(AnyCardsGameHandle.self) var gameHandle
-    @Environment(UnigameModel.self) var model
+    @Environment(UnigameModel<AnyCardsGameHandle>.self) var model
     @Environment(\.dismiss) private var dismiss
     
     let box: GridBox

@@ -26,13 +26,13 @@ import SwiftUI
 // Because it holds references to both the UnigameModel and the AnyCardsGameHandle, we treat it as the root object
 // when instantiating the app.
 class PlayingSurface: UIView {
-    let model: UnigameModel
+    let model: UnigameModel<AnyCardsGameHandle>
     let gameHandle: AnyCardsGameHandle
 
     init() {
         Logger.log("A new playing surface is being constructed")
         self.model = UnigameModel(gameHandle: AnyCardsGameHandle.self)
-        self.gameHandle = self.model.gameHandle as! AnyCardsGameHandle
+        self.gameHandle = self.model.gameHandle
         Logger.log("Unigame model has been created")
         super.init(frame: CGRect.zero)
         Logger.log("Playing surface init has been run")

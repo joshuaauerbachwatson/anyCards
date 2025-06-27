@@ -22,7 +22,7 @@ import AuerbachLook
 // Allows certain GridBox attributes to be changed.
 struct ModifyBoxMenu: View {
     @Environment(AnyCardsGameHandle.self) var gameHandle
-    @Environment(UnigameModel.self) var model
+    @Environment(UnigameModel<AnyCardsGameHandle>.self) var model
     @Environment(\.dismiss) var dismiss
     
     @State private var boxName: String = ""

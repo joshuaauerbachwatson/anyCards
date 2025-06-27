@@ -21,7 +21,7 @@ import AuerbachLook
 // A dialog view for actions centered on a GridBox (shows as popover)
 struct GridBoxMenu: View {
     @Environment(AnyCardsGameHandle.self) var gameHandle
-    @Environment(UnigameModel.self) var model
+    @Environment(UnigameModel<AnyCardsGameHandle>.self) var model
     @Environment(\.dismiss) var dismiss
 
     var surface: PlayingSurface {
