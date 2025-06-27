@@ -31,9 +31,8 @@ class PlayingSurface: UIView {
 
     init() {
         Logger.log("A new playing surface is being constructed")
-        self.gameHandle = AnyCardsGameHandle()
-        Logger.log("AnyCardsGameHandle has been created")
-        self.model = UnigameModel(gameHandle: gameHandle)
+        self.model = UnigameModel(gameHandle: AnyCardsGameHandle.self)
+        self.gameHandle = self.model.gameHandle as! AnyCardsGameHandle
         Logger.log("Unigame model has been created")
         super.init(frame: CGRect.zero)
         Logger.log("Playing surface init has been run")
