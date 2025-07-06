@@ -91,9 +91,6 @@ final class AnyCardsGameHandle: GameHandle {
     // The name of this app (conforms to GameHandle)
     var appId: String = "anyoldcardgame"
     
-    // The TokenProvider (conforms to GameHandle)
-    var tokenProvider: (any unigame.TokenProvider)? = Auth0TokenProvider()
-
     // The playing surface view, which fills the unigame "playing" view and is also part of the unigame "setup" view.
     var playingSurface: PlayingSurface!
     
