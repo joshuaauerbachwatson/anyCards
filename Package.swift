@@ -12,7 +12,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "AnyCards",
-            targets: ["AnyCards"]),
+            targets: ["anyCards"]),
     ],
     dependencies: [
         .package(url: "https://github.com/joshuaauerbachwatson/AuerbachLook.git", branch: "main"),
@@ -23,7 +23,7 @@ let package = Package(
         // Targets are the basic building blocks of a package, defining a module or a test suite.
         // Targets can depend on other targets in this package and products from dependencies.
         .target(
-            name: "AnyCards",
+            name: "anyCards",
             dependencies: [
                 .product(name: "AuerbachLook", package: "auerbachlook"),
                 .product(name: "unigame", package: "unigame"),
