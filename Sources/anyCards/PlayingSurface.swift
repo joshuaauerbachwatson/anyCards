@@ -69,7 +69,16 @@ class PlayingSurface: UIView {
     // Set the orientation lock fields
     private func setOrientationLocks(_ landscape: Bool) {
         Logger.log("Leader has sent setup information.  Orientation locked to \(landscape ? "landscape" : "portrait")")
-        AppDelegate.orientationLock = landscape ? .landscape : .portrait
+        setSceneGeometry(landscape ? .landscape : .portrait)
+    }
+    
+    // Sets the geometry of the current window scene
+    private func setSceneGeometry(_ mask: UIInterfaceOrientationMask) {
+        if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: mask)) { error in
+                Logger.log("Orientation setting was denied \(error)")
+            }
+        }
     }
 
     // The public area within this view (excludes a possible "hand area" at the bottom)
@@ -655,7 +664,7 @@ class PlayingSurface: UIView {
     // Reset the playing state (called from gameHandle.reset() as appropriate)
     func reset() {
         // Clean up former game
-        AppDelegate.orientationLock = .all
+        setSceneGeometry(.all)
         // Shuffle cards
         newShuffle()
     }

@@ -2,7 +2,6 @@
 xcuserdata/
 xcshareddata/
 Secrets.swift
-.swiftpm/
 .build/
 Package.resolved
 .nimbella/
@@ -11,4 +10,5 @@ sim-build/
 /backend/packages/**/Keys.swift
 /backend/packages/**/Cleanup.swift
 /backend/packages/**/build.sh
+Package.resolved
 
