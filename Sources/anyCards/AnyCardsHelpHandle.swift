@@ -57,7 +57,7 @@ struct AnyCardsHelpHandle: HelpHandle {
     let tipResetter: TipResetter? = nil
 
     init() {
-        let path = Bundle.main.url(forResource: "AnyCardsHelp", withExtension: "html")!
+        let path = Bundle.module.url(forResource: "AnyCardsHelp", withExtension: "html")!
         baseURL = path
         guard let html = try? String(contentsOf: path, encoding: .utf8) else {
             Logger.logFatalError("Help for AnyCards could not be found or could not be read")
