@@ -165,7 +165,7 @@ class DefaultDeck : SourceDeck {
         var back: UIImage
         var index = 0
         var allCards = [Card]()
-        if let image = UIImage(named: DefaultDeckName) {
+        if let image = UIImage(named: DefaultDeckName, in: Bundle.module, compatibleWith: nil) {
             let horizontalStep = image.size.width / DefaultDeckFrontColumns
             let verticalStep = image.size.height / DefaultDeckAllRows
             aspectRatio = horizontalStep / verticalStep
@@ -183,7 +183,7 @@ class DefaultDeck : SourceDeck {
         } else {
             Logger.logFatalError("Could not load image for default card deck")
         }
-        if let jokerImage = UIImage(named: JokerImageName) {
+        if let jokerImage = UIImage(named: JokerImageName, in: Bundle.module, compatibleWith: nil) {
             let frontRect = allCards[0].bounds
             let front = cropImage(jokerImage, frontRect)
             allCards.append(Card(index, front: front, back: back))
