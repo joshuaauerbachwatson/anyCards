@@ -21,25 +21,18 @@ import CBORCoding
 import SwiftUI
 
 // The playing surface view for the AnyCards Game app.
-// Although AnyCards uses the unigame framework, which is SwiftUI-based, this view had much existing code from before
-// the dependency on unigame was introduced.  So, it is retained as a UIKit view.
-// Because it holds references to both the UnigameModel and the AnyCardsGameHandle, we treat it as the root object
-// when instantiating the app.
+// Although AnyCards uses the unigame framework, which is SwiftUI-based, this view had much existing code
+// from before the dependency on unigame was introduced.  So, it is retained as a UIKit view.
 class PlayingSurface: UIView {
     let model: UnigameModel<AnyCardsGameHandle>
     let gameHandle: AnyCardsGameHandle
 
     init() {
-        Logger.log("A new playing surface is being constructed")
-        self.model = AnyCardsGameHandle.makeModel()
-        self.gameHandle = self.model.gameHandle
-        Logger.log("Unigame model has been created")
+        self.gameHandle = AnyCardsGameHandle()
+        self.model = UnigameModel<AnyCardsGameHandle>(gameHandle: gameHandle)
         super.init(frame: CGRect.zero)
-        Logger.log("Playing surface init has been run")
         self.gameHandle.playingSurface = self
-        Logger.log("Constructed circular reference between PlayingSurface and AnyCardsGemeHandle")
         self.cards = sourceDeck.makePlayingDeck(gameHandle.deckType)
-        Logger.log("Initial cards array constructed (without gesture recognizers)")
         Logger.log("Initialization of playing view is complete")
    }
        

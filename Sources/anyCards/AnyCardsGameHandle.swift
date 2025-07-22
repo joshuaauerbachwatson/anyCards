@@ -92,7 +92,7 @@ public final class AnyCardsGameHandle: GameHandle {
     public var appId: String = "anyoldcardgame"
     
     // The playing surface view, which fills the unigame "playing" view and is also part of the unigame "setup" view.
-    var playingSurface: PlayingSurface!
+    unowned var playingSurface: PlayingSurface!
     
     // Conforms to GameHandle
     public func reset() {
@@ -111,12 +111,12 @@ public final class AnyCardsGameHandle: GameHandle {
     
     // Conforms to GameHandle
     public var setupView: (any View)? {
-        AnyCardsSetup()
+        AnyCardsSetup().environment(self).environment(model)
     }
     
     // Conforms to GameHandle
     public var playingView: any View {
-        AnyCardsPlaying()
+        AnyCardsPlaying().environment(self).environment(model)
     }
     
     // Shows that a setup global deal is possible (there is a main deck present and the dealing area is clear)
