@@ -25,11 +25,12 @@ import SwiftUI
 // from before the dependency on unigame was introduced.  So, it is retained as a UIKit view.
 class PlayingSurface: UIView {
     let model: UnigameModel<AnyCardsGameHandle>
-    let gameHandle: AnyCardsGameHandle
+    unowned let gameHandle: AnyCardsGameHandle!
 
     init() {
-        self.gameHandle = AnyCardsGameHandle()
-        self.model = UnigameModel<AnyCardsGameHandle>(gameHandle: gameHandle)
+        let handle = AnyCardsGameHandle()
+        self.model = UnigameModel<AnyCardsGameHandle>(gameHandle: handle)
+        self.gameHandle = handle
         super.init(frame: CGRect.zero)
         self.gameHandle.playingSurface = self
         self.cards = sourceDeck.makePlayingDeck(gameHandle.deckType)

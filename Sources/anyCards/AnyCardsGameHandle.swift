@@ -91,12 +91,13 @@ public final class AnyCardsGameHandle: GameHandle {
     // The name of this app (conforms to GameHandle)
     public var appId: String = "anyoldcardgame"
     
-    // The playing surface view, which fills the unigame "playing" view and is also part of the unigame "setup" view.
-    unowned var playingSurface: PlayingSurface!
+    // The playing surface view, which fills the unigame "playing" view and is also part of the unigame
+    // "setup" view.
+    var playingSurface: PlayingSurface!
     
     // Conforms to GameHandle
     public func reset() {
-        playingSurface?.reset()
+        playingSurface.reset()
     }
     
     // Conforms to GameHandle
