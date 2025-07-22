@@ -27,7 +27,7 @@ fileprivate let HasHandsKey = "HasHands"
 @Observable
 public final class AnyCardsGameHandle: GameHandle {
     public static func makeModel() -> unigame.UnigameModel<AnyCardsGameHandle> {
-        UnigameModel(gameHandle: AnyCardsGameHandle())
+        PlayingSurface().model
     }
     
     public weak var model: UnigameModel<AnyCardsGameHandle>? = nil
