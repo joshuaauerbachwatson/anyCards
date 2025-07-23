@@ -96,8 +96,11 @@ public final class AnyCardsGameHandle: GameHandle {
     var playingSurface: PlayingSurface!
     
     // Conforms to GameHandle
+    // Note: most of the methods requiring playingSurface to be initialized are called only when
+    // safe.  However, reset may be called early in game construction when playingSurface has not
+    // yet been initialized.  In that case, it should function as a no-op.
     public func reset() {
-        playingSurface.reset()
+        playingSurface?.reset()
     }
     
     // Conforms to GameHandle
