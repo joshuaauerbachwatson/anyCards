@@ -88,8 +88,11 @@ public final class AnyCardsGameHandle: GameHandle {
     // Tolerate a broad range of players (including solitaire).  Conforms to GameHandle
     public var numPlayerRange: ClosedRange<Int> = 1...6
 
-    // The name of this app (conforms to GameHandle)
-    public var appId: String = "anyoldcardgame"
+    // The name of this game for internal tracking (conforms to GameHandle)
+    public var gameId: String = "anyoldcardgame"
+    
+    // The human-friendly name of this game
+    public var gameName: String = "Any Old Card Game"
     
     // The playing surface view, which fills the unigame "playing" view and is also part of the unigame
     // "setup" view.
