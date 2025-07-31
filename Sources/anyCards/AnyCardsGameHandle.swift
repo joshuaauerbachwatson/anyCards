@@ -26,9 +26,9 @@ fileprivate let HasHandsKey = "HasHands"
 // It goes into the environment as an @Observable, alongside the UnigameModel.
 @Observable
 public final class AnyCardsGameHandle: GameHandle {
-    public static func makeModel() -> unigame.UnigameModel<AnyCardsGameHandle> {
-        PlayingSurface().model
-    }
+    public static var instance: UnigameModel<AnyCardsGameHandle>? = nil
+    
+    public init() {}
     
     public weak var model: UnigameModel<AnyCardsGameHandle>? = nil
     
@@ -98,12 +98,10 @@ public final class AnyCardsGameHandle: GameHandle {
     // "setup" view.
     var playingSurface: PlayingSurface!
     
-    // Conforms to GameHandle
-    // Note: most of the methods requiring playingSurface to be initialized are called only when
-    // safe.  However, reset may be called early in game construction when playingSurface has not
-    // yet been initialized.  In that case, it should function as a no-op.
-    public func reset() {
-        playingSurface?.reset()
+    // Conforms to GameHandle, ends game
+    public func endGame() {
+        Self.instance = nil
+        playingSurface = nil
     }
     
     // Conforms to GameHandle
